@@ -163,19 +163,38 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-back]')) { haptic(); back(); }
 });
 
-// Barra compatta quando il titolo grande esce dallo schermo
-let ticking = false;
-function updateNavbar() {
-  const sentinel = views[active].querySelector('[data-sentinel]');
-  const visible = sentinel.getBoundingClientRect().bottom < navbar.getBoundingClientRect().bottom;
+// Barra compatta quando il titolo grande esce dallo schermo.
+// Un osservatore al posto del listener di scroll: zero lavoro per frame.
+let observer = null;
+
+function setNavbar(visible) {
   navbar.classList.toggle('is-visible', visible);
   navbar.setAttribute('aria-hidden', String(!visible));
   navBack.tabIndex = visible && isSub(active) ? 0 : -1;
 }
-window.addEventListener('scroll', () => {
-  if (ticking) return;
-  ticking = true;
-  requestAnimationFrame(() => { updateNavbar(); ticking = false; });
+
+function updateNavbar() {
+  const sentinel = views[active].querySelector('[data-sentinel]');
+  setNavbar(sentinel.getBoundingClientRect().bottom < navbar.getBoundingClientRect().bottom);
+  watchSentinel(sentinel);
+}
+
+function watchSentinel(sentinel) {
+  observer?.disconnect();
+  if (!('IntersectionObserver' in window)) return;
+  const edge = Math.round(navbar.getBoundingClientRect().bottom);
+  observer = new IntersectionObserver(([entry]) => setNavbar(!entry.isIntersecting), {
+    rootMargin: `-${edge}px 0px 0px 0px`,
+    threshold: 0,
+  });
+  observer.observe(sentinel);
+}
+
+// La safe area cambia ruotando il telefono: si rimisura il bordo
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(updateNavbar, 160);
 }, { passive: true });
 
 // Cambio di giorno (app lasciata aperta oltre la mezzanotte)

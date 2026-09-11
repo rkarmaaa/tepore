@@ -1,17 +1,30 @@
 @use "../abstracts" as *;
 
-.view--settings {
-  // Backup dei dati
-  .group--data {
-    .data {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: $sp-2;
-      padding: $sp-3;
+.view.settings {
+  // Backup dei dati: i pulsanti stanno sulla carta, senza card sotto
+  .group.data {
+    .body {
+      overflow: visible;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
 
-      @include mq-down(xs) {
-        grid-template-columns: 1fr;
+      .data {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: $sp-2;
+        padding-block: $sp-2;
+
+        @include mq-down(xs) {
+          grid-template-columns: 1fr;
+        }
       }
+    }
+  }
+
+  .group.options {
+    .body {
+      margin-block: $sp-2;
     }
   }
 
@@ -22,24 +35,24 @@
     text-align: center;
     @include enter(rise, $dur-slow, 0ms, 180ms);
 
-    .about__icon {
+    .icon {
       @include size(64px);
       margin-bottom: $sp-3;
       border-radius: 15px;
       box-shadow: var(--shadow-lift);
     }
 
-    .about__name {
+    .name {
       @include font-display($fs-xl, $fw-medium, 100);
       color: var(--ink);
     }
 
-    .about__meta {
+    .meta {
       @include font-ui($fs-xs, $fw-medium);
       color: var(--ink-faint);
     }
 
-    .about__version {
+    .version {
       margin-top: $sp-3;
       padding: 3px 10px;
       border-radius: $r-pill;

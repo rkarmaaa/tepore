@@ -17,6 +17,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="icons/favicon-16.png" sizes="16x16" type="image/png">
+  <link rel="alternate icon" href="icons/favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- Social -->
@@ -36,77 +38,77 @@
   <div class="app" id="app">
 
     <header class="navbar" data-navbar aria-hidden="true">
-      <div class="navbar__inner">
-        <button class="navbar__back" type="button" data-back tabindex="-1">
+      <div class="inner">
+        <button class="back" type="button" data-back tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
           <span data-navbar-back></span>
         </button>
-        <span class="navbar__title" data-navbar-title>Oggi</span>
+        <span class="title" data-navbar-title>Oggi</span>
       </div>
     </header>
 
-    <main class="app__views">
+    <main class="views">
 
       <!-- OGGI -->
-      <section class="view view--today" id="view-today" data-view="today" aria-labelledby="today-title">
+      <section class="view today" id="view-today" data-view="today" aria-labelledby="today-title">
         <header class="hero">
-          <div class="hero__top">
-            <p class="hero__date" data-today-date></p>
-            <div class="hero__actions">
-              <span class="hero__slot" data-today-actions></span>
-              <button class="glass-btn glass-btn--settings" type="button" data-go="settings" aria-label="Impostazioni">
+          <div class="top">
+            <p class="date" data-today-date></p>
+            <div class="actions">
+              <span class="slot" data-today-actions></span>
+              <button class="glass-btn gear" type="button" data-go="settings" aria-label="Impostazioni">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
           </div>
-          <h1 class="hero__title" id="today-title" data-today-title data-sentinel>Oggi</h1>
-          <p class="hero__lede" data-today-lede>Come ti senti oggi?</p>
+          <h1 class="title" id="today-title" data-today-title data-sentinel>Oggi</h1>
+          <p class="lede" data-today-lede>Come ti senti oggi?</p>
         </header>
 
         <figure class="bloom" data-bloom aria-hidden="true">
-          <div class="bloom__aura" data-bloom-aura></div>
-          <div class="bloom__stage" data-bloom-stage></div>
-          <figcaption class="bloom__caption" data-bloom-caption></figcaption>
+          <div class="aura" data-bloom-aura></div>
+          <div class="stage" data-bloom-stage></div>
+          <figcaption class="caption" data-bloom-caption></figcaption>
         </figure>
 
-        <section class="group group--moods" aria-labelledby="moods-title">
-          <div class="group__head">
-            <h2 class="group__title" id="moods-title">Quanto l'hai sentito</h2>
-            <span class="group__aside" data-moods-aside></span>
+        <section class="group moods collapsible" aria-labelledby="moods-title" data-moods>
+          <div class="head">
+            <h2 class="title" id="moods-title">Quanto l'hai sentito</h2>
+            <span class="aside" data-moods-aside></span>
           </div>
-          <div class="group__body">
+          <div class="body">
             <ul class="mood-list" data-mood-list></ul>
           </div>
         </section>
 
-        <section class="group group--apathy">
-          <div class="group__body">
-            <label class="apathy" for="apathy-input">
-              <span class="apathy__icon" data-emo="apatia" data-apathy-icon></span>
-              <span class="apathy__text">
+        <section class="group apathy">
+          <div class="body">
+            <label class="toggle" for="apathy-input">
+              <span class="icon" data-emo="apatia" data-apathy-icon></span>
+              <span class="text">
                 <strong>Apatia</strong>
                 <span>Oggi non ho sentito nulla</span>
               </span>
               <span class="switch">
-                <input class="switch__input" id="apathy-input" type="checkbox" role="switch" data-apathy>
-                <span class="switch__track" aria-hidden="true"></span>
+                <input class="input" id="apathy-input" type="checkbox" role="switch" data-apathy>
+                <span class="track" aria-hidden="true"></span>
               </span>
             </label>
           </div>
-          <p class="group__foot">Nel calendario la giornata apparirà come un anello grigio.</p>
+          <p class="foot">Nel calendario la giornata apparirà come un anello grigio.</p>
         </section>
 
-        <section class="group group--note" aria-labelledby="note-title">
-          <div class="group__head">
-            <h2 class="group__title" id="note-title">Nota della giornata</h2>
+        <section class="group note" aria-labelledby="note-title">
+          <div class="head">
+            <h2 class="title" id="note-title">Nota della giornata</h2>
           </div>
-          <div class="group__body">
-            <div class="note">
+          <div class="body">
+            <div class="editor">
               <label class="sr-only" for="note-field">Nota della giornata</label>
-              <textarea class="note__field" id="note-field" rows="4" placeholder="Cosa ti porti via da questa giornata?" data-note></textarea>
-              <div class="note__meta">
-                <span class="note__status" data-note-status></span>
-                <span class="note__count" data-note-count>0</span>
+              <textarea class="field" id="note-field" rows="4" placeholder="Cosa ti porti via da questa giornata?" data-note></textarea>
+              <div class="meta">
+                <span class="status" data-note-status></span>
+                <span class="count" data-note-count>0</span>
               </div>
             </div>
           </div>
@@ -114,11 +116,11 @@
       </section>
 
       <!-- CALENDARIO -->
-      <section class="view view--calendar" id="view-calendar" data-view="calendar" aria-labelledby="cal-title" hidden>
+      <section class="view calendar" id="view-calendar" data-view="calendar" aria-labelledby="cal-title" hidden>
         <header class="hero">
-          <div class="hero__top">
-            <p class="hero__date" data-cal-year></p>
-            <div class="hero__actions">
+          <div class="top">
+            <p class="date" data-cal-year></p>
+            <div class="actions">
               <button class="glass-btn" type="button" data-cal-prev aria-label="Mese precedente">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
               </button>
@@ -127,67 +129,67 @@
               </button>
             </div>
           </div>
-          <h1 class="hero__title" id="cal-title" data-cal-title data-sentinel></h1>
+          <h1 class="title" id="cal-title" data-cal-title data-sentinel></h1>
         </header>
 
         <section class="month" aria-label="Giorni del mese">
-          <div class="month__weekdays" aria-hidden="true">
+          <div class="weekdays" aria-hidden="true">
             <span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span>
           </div>
-          <div class="month__grid" data-cal-grid></div>
+          <div class="grid" data-cal-grid></div>
         </section>
 
-        <section class="group group--summary" aria-live="polite">
-          <div class="group__body">
-            <div class="summary" data-summary></div>
+        <section class="group summary" aria-live="polite">
+          <div class="body">
+            <div class="recap" data-summary></div>
           </div>
         </section>
 
-        <section class="group group--legend" aria-labelledby="legend-title">
-          <div class="group__head">
-            <h2 class="group__title" id="legend-title">Le forme delle emozioni</h2>
+        <section class="group legend" aria-labelledby="legend-title">
+          <div class="head">
+            <h2 class="title" id="legend-title">Le forme delle emozioni</h2>
           </div>
-          <div class="group__body">
-            <ul class="legend" data-legend></ul>
+          <div class="body">
+            <ul class="shapes" data-legend></ul>
           </div>
         </section>
 
-        <section class="group group--notebook">
-          <div class="group__body">
+        <section class="group book">
+          <div class="body">
             <button class="notebook-card" type="button" data-go="notebook" data-notebook-card>
-              <span class="notebook-card__icon" aria-hidden="true">
+              <span class="icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M6.5 3.5h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-10A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M8.5 3.5v17M11.5 8.5h4M11.5 11.5h4"/></svg>
               </span>
-              <span class="notebook-card__text">
+              <span class="text">
                 <strong>Quaderno</strong>
                 <span data-notebook-meta></span>
               </span>
-              <svg class="notebook-card__chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
-              <span class="notebook-card__quote" data-notebook-quote hidden></span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
+              <span class="quote" data-notebook-quote hidden></span>
             </button>
           </div>
         </section>
       </section>
 
       <!-- IMPOSTAZIONI -->
-      <section class="view view--settings" id="view-settings" data-view="settings" aria-labelledby="settings-title" hidden>
+      <section class="view settings" id="view-settings" data-view="settings" aria-labelledby="settings-title" hidden>
         <header class="hero">
-          <div class="hero__top">
+          <div class="top">
             <button class="chip" type="button" data-back>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
               Oggi
             </button>
           </div>
-          <h1 class="hero__title" id="settings-title" data-sentinel>Impostazioni</h1>
-          <p class="hero__lede">Il tuo diario, custodito su questo dispositivo.</p>
+          <h1 class="title" id="settings-title" data-sentinel>Impostazioni</h1>
+          <p class="lede">Il tuo diario, custodito su questo dispositivo.</p>
         </header>
 
-        <section class="group group--data" aria-labelledby="data-title">
-          <div class="group__head">
-            <h2 class="group__title" id="data-title">I tuoi dati</h2>
-            <span class="group__aside" data-data-stats></span>
+        <section class="group data" aria-labelledby="data-title">
+          <div class="head">
+            <h2 class="title" id="data-title">I tuoi dati</h2>
+            <span class="aside" data-data-stats></span>
           </div>
-          <div class="group__body">
+          <div class="body">
             <div class="data">
               <button class="pill-btn" type="button" data-export>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>
@@ -200,50 +202,72 @@
               <input type="file" accept="application/json,.json" data-import-input hidden>
             </div>
           </div>
-          <p class="group__foot">Tutto resta su questo dispositivo, niente viaggia online. Un backup ogni tanto ti mette al riparo.</p>
+          <p class="foot">Tutto resta su questo dispositivo, niente viaggia online. Un backup ogni tanto ti mette al riparo.</p>
+        </section>
+
+        <section class="group options" aria-labelledby="options-title">
+          <div class="head">
+            <h2 class="title" id="options-title">Interazione</h2>
+          </div>
+          <div class="body">
+            <label class="toggle" for="haptics-input">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M8.5 4.5h7a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 18V6a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M3.4 9.4v5.2M20.6 9.4v5.2"/></svg>
+              </span>
+              <span class="text">
+                <strong>Feedback aptico</strong>
+                <span>Un piccolo tocco a ogni gesto</span>
+              </span>
+              <span class="switch">
+                <input class="input" id="haptics-input" type="checkbox" role="switch" data-haptics checked>
+                <span class="track" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+          <p class="foot">Si sente negli slider, nei cambi di sezione e nelle conferme. Su alcuni dispositivi potrebbe non essere disponibile.</p>
         </section>
 
         <footer class="about">
-          <img class="about__icon" src="icons/icon.svg" alt="" width="64" height="64">
-          <strong class="about__name">Tepore</strong>
-          <span class="about__meta">Il diario delle emozioni</span>
-          <span class="about__version" data-version></span>
+          <img class="icon" src="icons/icon.svg" alt="" width="64" height="64" decoding="async">
+          <strong class="name">Tepore</strong>
+          <span class="meta">Il diario delle emozioni</span>
+          <span class="version" data-version></span>
         </footer>
       </section>
 
       <!-- QUADERNO -->
-      <section class="view view--notebook" id="view-notebook" data-view="notebook" aria-labelledby="notebook-title" hidden>
+      <section class="view notebook" id="view-notebook" data-view="notebook" aria-labelledby="notebook-title" hidden>
         <header class="hero">
-          <div class="hero__top">
+          <div class="top">
             <button class="chip" type="button" data-back>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
               Calendario
             </button>
           </div>
-          <h1 class="hero__title" id="notebook-title" data-sentinel>Quaderno</h1>
-          <p class="hero__lede" data-notebook-lede></p>
+          <h1 class="title" id="notebook-title" data-sentinel>Quaderno</h1>
+          <p class="lede" data-notebook-lede></p>
         </header>
 
-        <ol class="notebook" data-notebook></ol>
+        <ol class="timeline" data-notebook></ol>
 
-        <div class="notebook__end" data-notebook-end hidden>
+        <div class="end" data-notebook-end hidden>
           <p>Sei arrivato alla nota più recente</p>
-          <button class="pill-btn pill-btn--ghost" type="button" data-write>Scrivi la nota di oggi</button>
+          <button class="pill-btn ghost" type="button" data-write>Scrivi la nota di oggi</button>
         </div>
       </section>
     </main>
 
     <nav class="tabbar" aria-label="Sezioni">
-      <div class="tabbar__glass" role="tablist">
-        <span class="tabbar__indicator" data-tab-indicator aria-hidden="true"></span>
-        <button class="tabbar__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="view-today" data-tab="today">
+      <div class="glass" role="tablist">
+        <span class="indicator" data-tab-indicator aria-hidden="true"></span>
+        <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="view-today" data-tab="today">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle class="fill-on" cx="12" cy="12" r="4.2"/>
             <path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.5 5.5 17 7M7 17l-1.5 1.5M18.5 18.5 17 17M7 7 5.5 5.5"/>
           </svg>
           <span>Oggi</span>
         </button>
-        <button class="tabbar__tab" type="button" role="tab" aria-selected="false" aria-controls="view-calendar" data-tab="calendar">
+        <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-calendar" data-tab="calendar">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect class="fill-on" x="3.5" y="5" width="17" height="15.5" rx="4"/>
             <path d="M3.5 10h17M8 3v4M16 3v4"/>
@@ -256,6 +280,19 @@
 
     <div class="toast" role="status" aria-live="polite" data-toast><span></span></div>
 
+  </div>
+
+  <!-- Scheda dell'emozione: tocco prolungato su una riga -->
+  <div class="sheet" data-sheet hidden>
+    <div class="scrim" data-sheet-close></div>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1" data-sheet-card>
+      <span class="grabber" aria-hidden="true"></span>
+      <span class="icon" data-sheet-icon aria-hidden="true"></span>
+      <h2 class="title" id="sheet-title" data-sheet-title></h2>
+      <p class="lede" data-sheet-lede></p>
+      <p class="text" data-sheet-text></p>
+      <button class="pill-btn ghost close" type="button" data-sheet-close>Chiudi</button>
+    </div>
   </div>
 
   <noscript>Tepore ha bisogno di JavaScript per salvare le tue giornate.</noscript>

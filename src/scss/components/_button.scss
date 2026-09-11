@@ -47,17 +47,17 @@
     stroke-linejoin: round;
   }
 
-  &--ember {
+  // Brace piena, senza alone: il colore basta da solo
+  &.ember {
     background: var(--ember);
     color: #FFF8F0;
-    box-shadow: 0 8px 18px -10px var(--ember);
 
     @include dark {
       color: #2A1710;
     }
   }
 
-  &--ghost {
+  &.ghost {
     background: color-mix(in oklab, var(--ember) 12%, transparent);
     color: var(--ember);
   }

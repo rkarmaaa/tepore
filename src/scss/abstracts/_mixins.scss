@@ -187,7 +187,7 @@
   flex-shrink: 0;
   border-radius: $radius;
   background: linear-gradient(160deg, var(--ember-glow), var(--ember) 55%, var(--ember-deep));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 8px 16px -8px var(--ember);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
   color: #FFF8F0;
 
   svg {
@@ -203,4 +203,21 @@
 // Tinta dell'emozione corrente (--emo)
 @mixin emo-tint($amount: 18%) {
   background: color-mix(in oklab, var(--emo) #{$amount}, transparent);
+}
+
+// Contenimento: il browser salta il layout di ciò che è fuori schermo
+@mixin offscreen-skip($h) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto $h;
+}
+
+// Animazioni continue in pausa quando l'elemento non è visibile
+@mixin idle-pause {
+  &.is-idle {
+    *,
+    &::before,
+    &::after {
+      animation-play-state: paused;
+    }
+  }
 }

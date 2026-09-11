@@ -22,7 +22,8 @@ Principi da non tradire:
 - Hero con data, titolo grande "Oggi" e sottotitolo. Scorrendo, il titolo passa nella navbar compatta in alto (pattern iOS large title, via `data-sentinel`).
 - **Ritratto del giorno** (`.bloom`): le 8 forme disposte in cerchio (coordinate `x/y` in `emotions.js`) crescono e si illuminano con l'intensità. Sotto, l'**aura**: una macchia sfocata per emozione, grande quanto l'intensità, fuse in un unico bagliore che respira (`plus-lighter` nel tema scuro). L'emozione dominante unica "respira" con glow. Una didascalia in corsivo commenta la giornata ("Prevale la gioia.").
 - **8 slider** (`MoodSlider`), ispirati al selettore modello dell'app ChatGPT: 6 livelli 0–5 (`LEVELS`: Per niente → Moltissimo), riempimento del colore dell'emozione, tacche, tick aptico a ogni scatto, drag col dito, frecce da tastiera, `role="slider"` con `aria-valuenow`. Il pomello ha `touch-action: none` e area di presa allargata; sulla traccia un gesto orizzontale blocca lo scroll (touchmove non passivo).
-- **Apatia**: switch "Oggi non ho sentito nulla". Attenua gli slider, spegne l'aura, mostra un alone grigio caldo.
+- **Scheda dell'emozione**: tocco prolungato (420 ms) sulla riga `.head` di uno slider. Si apre un foglio in stile iOS con forma, nome, emozione opposta e la descrizione (`desc` in `emotions.js`). Si chiude trascinandolo verso il basso, toccando lo sfondo, dal pulsante o con Esc. Tutto in `sheet.js`.
+- **Apatia**: switch "Oggi non ho sentito nulla". Richiude l'intera sezione degli slider (`.group.moods.collapsible`, altezza misurata da JS), spegne l'aura e mostra un alone grigio caldo. **I valori restano nello store e tornano al primo sblocco**: l'apatia non cancella mai nulla.
 - **Nota della giornata**: textarea con salvataggio automatico (debounce), ora dell'ultimo salvataggio e conteggio caratteri.
 - Si possono modificare anche i giorni passati: dal calendario si apre il giorno nella vista Oggi ("5 giorni fa", chip "Torna a oggi").
 - Ingranaggio in alto a destra: apre la pagina **Impostazioni**.
@@ -36,6 +37,7 @@ Principi da non tradire:
 
 **Impostazioni** (pagina interna di Oggi)
 - I tuoi dati: conteggio, esporta/importa backup JSON (share sheet su iOS).
+- Interazione: interruttore **Feedback aptico**, attivo di default, salvato in `localStorage['tepore:haptics']`.
 - Firma dell'app con icona e versione.
 
 **Quaderno** (pagina interna di Calendario)
@@ -57,6 +59,8 @@ HTML + SCSS + JavaScript vanilla a moduli ES. Nessun framework, nessun bundler. 
 ```
 tepore/
 ├─ CLAUDE.md
+├─ README.md              # presentazione pubblica del progetto
+├─ IDEE.md                # idee per aggiornamenti futuri
 ├─ package.json            # dev (sass watch + server live), build (compressed + stamp)
 ├─ scripts/stamp.mjs       # versione app (n. di commit) + cache del SW
 ├─ .github/workflows/deploy.yml  # push su main → build → GitHub Pages
@@ -64,15 +68,18 @@ tepore/
    ├─ index.html           # markup di entrambe le viste, tab bar, toast
    ├─ manifest.webmanifest # start_url e scope RELATIVI (./)
    ├─ sw.js                # cache offline dell'app shell + font
-   ├─ icons/               # icon.svg, apple-touch-icon, 192, 512, maskable, favicon
+   ├─ icons/               # icon.svg (sorgente 1024) + png generati: favicon-16/32/48,
+   │                        # favicon.ico, icon-192, icon-512, icon-maskable-512,
+   │                        # apple-touch-icon (180, opaco)
    ├─ css/main.css         # COMPILATO: non modificare a mano
    ├─ js/
-   │  ├─ app.js            # bootstrap, tab, navbar, toast, registrazione SW
+   │  ├─ app.js            # bootstrap, tab, navbar (observer), toast, SW
    │  ├─ store.js          # persistenza localStorage + pub/sub + export/import
    │  ├─ emotions.js       # dati delle emozioni, forme SVG, regole di dominanza
    │  ├─ dates.js          # chiavi data locali, formattazione it-IT
    │  ├─ haptics.js        # aptica (vibrate / trucco switch iOS 18+)
    │  ├─ slider.js         # classe MoodSlider
+   │  ├─ sheet.js          # foglio modale iOS + helper longPress
    │  ├─ today.js          # vista Oggi (bloom, aura, slider, apatia, nota)
    │  ├─ calendar.js       # vista Calendario
    │  ├─ settings.js       # pagina Impostazioni (backup, versione)
@@ -83,7 +90,7 @@ tepore/
       ├─ abstracts/        # _variables, _mixins (forward da _index)
       ├─ base/             # _root (custom property), _reset, _typography, _animations, _utilities
       ├─ layout/           # _app, _navbar, _tabbar
-      ├─ components/       # _group, _slider, _switch, _shape, _hero, _button, _toast
+      ├─ components/       # _group, _slider, _switch, _toggle, _shape, _hero, _button, _toast, _sheet
       └─ pages/            # _today, _calendar, _settings, _notebook
 ```
 
@@ -160,7 +167,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Raggi: `$r-xs` 8 · `sm` 12 · `md` 18 · `lg` 26 (card) · `xl` 34 · `pill` 999.
 - Layout: colonna max `$app-max` 540px centrata, `$gutter` 20px, navbar 48px, tab bar 62px flottante a 10px dal bordo + safe area.
 - Breakpoint (`mq`/`mq-down`): xs 360 · sm 400 · md 640 · lg 960. Mobile first.
-- z-index solo tramite variabili: `$z-bloom` 1 · `$z-navbar` 40 · `$z-tabbar` 50 · `$z-toast` 60.
+- z-index solo tramite variabili: `$z-bloom` 1 · `$z-navbar` 40 · `$z-tabbar` 50 · `$z-toast` 60 · `$z-sheet` 70.
 
 ### Motion
 
@@ -176,22 +183,35 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - **Liquid glass** (`@include liquid-glass($radius, $blur)`): vetro caldo con blur + saturazione, bordo a gradiente luminoso (`::before` mascherato) e riflesso speculare (`::after`). Usato per tab bar, chip e controlli flottanti. Occupa entrambi gli pseudo-elementi: non aggiungerne altri sullo stesso elemento.
 - **Tab bar**: capsula di vetro flottante in basso, icona + etichetta, aptica al cambio. La pillola si muove come una goccia animando `left`/`right`: il bordo d'attacco parte subito, quello di coda insegue (`is-going-left/right`), con lieve sollevamento (`pill-lift`); l'icona attiva fa `tab-bounce`. Non animarla con transform e `var()` nei keyframe.
 - **Navbar**: invisibile in cima, compare in vetro con il titolo quando il large title esce dallo schermo.
-- **Group** (`.group`, `__head`, `__title`, `__aside`, `__body`, `__foot`): sezione stile Impostazioni iOS; il body è una card `@include surface`.
+- **Group** (`.group` con `.head`, `.title`, `.aside`, `.body`, `.foot` annidati): sezione stile Impostazioni iOS; il body è una card `@include surface`. Con `.collapsible` si richiude: il JS misura l'altezza e commuta `is-collapsed`.
 - **Slider**: traccia sabbia alta `$slider-h` 34px, riempimento `var(--emo)` di larghezza `calc(var(--h) + (100% - var(--h)) * var(--p))`, pomello bianco con vetro, tacche per ogni livello.
 - **Switch**: stile iOS, tinta brace.
-- **Shape** (`.shape--{id}`): SVG con `fill: var(--emo)`.
+- **Toggle** (`.toggle` con `.icon`, `.text` e uno `.switch`): riga completa usata dall'apatia e dalle opzioni.
+- **Shape** (`.shape` con `data-emo="{id}"`): SVG con `fill: var(--emo)`; l'apatia è un anello vuoto.
+- **Sheet** (`.sheet` con `.scrim` e `.card`): foglio modale iOS, vive fuori da `.app`, con maniglia, tinta dell'emozione e gesture di chiusura. Si apre con `openSheet(id)`; il tocco prolungato si aggancia con `longPress(nodo, cb)` su elementi che espongono `data-press`.
 - **Toast**: pillola in vetro sopra la tab bar per le conferme (export, import).
 - **Ember tile** (`@include ember-tile($size, $radius)`): tessera a gradiente brace stile icona iOS (card Quaderno, stati vuoti).
 
 ## 6. Convenzioni SCSS (obbligatorie)
 
 - Commenti corti: massimo 2 righe.
-- Nesting pesante e alta specificità: ogni vista sotto il suo scope (`.view--today { … }`, `.view--calendar { … }`), elementi BEM nidificati con `&__` e figli annidati.
+- **Nomi di classe semplici: niente `--` e niente `__`.** Una parola quando basta (`head`, `body`, `title`, `track`, `fill`), al massimo con un trattino singolo (`mood-list`, `glass-btn`, `notebook-card`). I nomi generici si disambiguano con il nesting, non con i prefissi.
+- Nesting pesante e alta specificità: ogni vista sotto il suo scope (`.view.today { … }`, `.view.calendar { … }`) e dentro ogni componente i figli annidati per nome (`.group { .head { .title { … } } }`). È il nesting a dare il significato: `.mood .head` e `.entry .head` convivono senza conflitti.
+- Le varianti sono classi affiancate, non modificatori: `.pill-btn.ember`, `.day.filled`, `.glass-btn.gear`.
 - Media query **dentro** il singolo selettore nidificato (`@include mq(sm) { … }`), mai blocchi responsive separati a fondo file.
 - Usa sempre mixin e variabili esistenti prima di scrivere valori a mano (`flex`, `size`, `cover`, `grid-center`, `pressable`, `focus-ring`, `button-reset`, `tap-reset`, `visually-hidden`, `surface`, `liquid-glass`, `emo-tint`, `ember-tile`, `enter`, `safe-top`, `safe-bottom`, `dark`, `hover`, `standalone`, `reduced-motion`). Se un valore si ripete, diventa una variabile o un mixin.
 - Stati con classi `is-*` (`is-active`, `is-dominant`, `is-apathy`, `is-today`…); aggancio JS con attributi `data-*`, mai con le classi di stile.
 - `:hover` solo dentro `@include hover` (evita hover appiccicati su touch).
 - Non modificare mai `src/css/main.css` a mano: si genera con `npm run dev` / `npm run build`.
+
+### Prestazioni (l'app deve stare a 60 fps)
+
+- Animazioni continue in pausa fuori schermo: `@include idle-pause` più un `IntersectionObserver` che aggiunge `is-idle`.
+- Niente listener di `scroll` per la navbar: la comanda un `IntersectionObserver` sul `[data-sentinel]`.
+- Niente `mix-blend-mode` su strati a tutto schermo: la grana di carta (`--grain`) è già tinta per tema.
+- `backdrop-filter` solo quando l'elemento è davvero visibile (navbar in `is-visible`).
+- `contain` sulle card, `@include offscreen-skip($h)` sulle liste lunghe (note del quaderno). Mai `contain: paint` dove ci sono ombre o glow che escono dal riquadro (il ritratto del giorno).
+- Dal JS si scrivono solo le custom property che cambiano davvero: confronta prima di assegnare.
 
 ## 7. Convenzioni JavaScript
 
@@ -200,7 +220,8 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Selettori `data-*`; stato visivo con classi `is-*` o custom property (`--p`, `--bloom-c`).
 - Testi UI in italiano, tono gentile e mai giudicante. Etichette dei livelli in `LEVELS`.
 - Accessibilità: ruoli ARIA corretti (slider, tablist, status), focus visibile (`focus-ring`), tutto usabile da tastiera.
-- Aptica con `haptic()` solo su azioni significative (scatto slider, cambio tab, toggle), mai in raffica.
+- Aptica con `haptic()` solo su azioni significative (scatto slider, cambio tab, toggle, tocco prolungato, export/import, apertura di una nota), mai in raffica. `haptics.js` espone anche `hapticsEnabled()` e `setHaptics(on)`: se l'utente la spegne, `haptic()` non fa nulla.
+- `sheet.js` espone `openSheet(id)`, `closeSheet()` e `longPress(nodo, cb)`: il tocco prolungato cerca il primo antenato con `data-press` e si annulla se il dito si sposta di oltre 10 px.
 
 ## 8. Requisiti Apple / PWA
 
@@ -227,6 +248,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 5. Nuovi file aggiunti a `_index.scss` e/o a `SHELL` in `sw.js`.
 6. Schema dati invariato, oppure migrazione scritta.
 7. Accessibilità: ruoli, etichette, tastiera, contrasto.
+8. Nessun listener per frame, nessuna animazione continua fuori schermo, nessuno strato fisso che si ricompone durante lo scroll.
 
 ## 11. Da non fare
 
@@ -234,4 +256,6 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Framework, librerie UI, CDN aggiuntive, tracciamento, backend.
 - Percorsi assoluti (`/`), `localStorage` con chiavi nuove senza prefisso `tepore:`.
 - Media query separate dal selettore, commenti lunghi, valori "magici" ripetuti.
+- Classi con `--` o `__`: la nomenclatura è semplice e il significato lo dà il nesting.
+- Scorrimento orizzontale: `html`, `body` e `.app` stanno in `overflow-x: clip` con `touch-action: pan-y pinch-zoom`. Non introdurre elementi più larghi della colonna.
 - Rimuovere le forme delle emozioni o l'etichetta testuale del livello.

@@ -20,7 +20,7 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
   let m = now.getMonth();
 
   els.legend.innerHTML = [...EMOTIONS, APATHY]
-    .map((e) => `<li class="legend__item" data-emo="${e.id}">${shapeSVG(e.id)}<span>${e.name}</span></li>`)
+    .map((e) => `<li class="item" data-emo="${e.id}">${shapeSVG(e.id)}<span>${e.name}</span></li>`)
     .join('');
 
   function render(direction) {
@@ -38,7 +38,7 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
     onTitle?.(`${name} ${y}`);
 
     const cells = [];
-    for (let i = 0; i < offset; i++) cells.push('<span class="day day--pad" aria-hidden="true"></span>');
+    for (let i = 0; i < offset; i++) cells.push('<span class="day pad" aria-hidden="true"></span>');
 
     const counts = new Map();
     let logged = 0;
@@ -52,15 +52,15 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
       if (!future) elapsed++;
       if (dom) { logged++; counts.set(dom.id, (counts.get(dom.id) || 0) + 1); }
 
-      const cls = ['day', future ? 'day--future' : dom ? 'day--data' : 'day--empty'];
+      const cls = ['day', future ? 'future' : dom ? 'filled' : 'empty'];
       if (key === today) cls.push('is-today');
       const label = `${d} ${name}${dom ? `, ${dom.name.toLowerCase()}` : ''}${day?.note ? ', con nota' : ''}`;
       cells.push(`
         <button class="${cls.join(' ')}" type="button" data-date="${key}" ${dom ? `data-emo="${dom.id}"` : ''}
           style="--i:${offset + d}" aria-label="${label}" ${future ? 'disabled' : ''}>
-          <span class="day__num">${d}</span>
+          <span class="num">${d}</span>
           ${dom ? shapeSVG(dom.id) : ''}
-          ${dom && day.note?.trim() ? '<span class="day__note" aria-hidden="true"></span>' : ''}
+          ${dom && day.note?.trim() ? '<span class="dot" aria-hidden="true"></span>' : ''}
         </button>`);
     }
     els.grid.innerHTML = cells.join('');
@@ -77,21 +77,21 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
   function renderSummary({ name, logged, elapsed, counts, isCurrent }) {
     if (!logged) {
       els.summary.innerHTML = `
-        <p class="summary__title">${name} è ancora da scrivere</p>
-        <p class="summary__text">${isCurrent
+        <p class="title">${name} è ancora da scrivere</p>
+        <p class="text">${isCurrent
           ? 'Segna come ti senti oggi: qui vedrai il mese prendere colore.'
           : 'Nessuna giornata registrata in questo mese.'}</p>
-        ${isCurrent ? '<button class="pill-btn pill-btn--ember summary__cta" type="button" data-go-today>Segna la giornata di oggi</button>' : ''}`;
+        ${isCurrent ? '<button class="pill-btn ember cta" type="button" data-go-today>Segna la giornata di oggi</button>' : ''}`;
       return;
     }
     const order = [...EMOTIONS, APATHY].filter((e) => counts.has(e.id));
     const top = [...order].sort((a, b) => counts.get(b.id) - counts.get(a.id))[0];
     const n = counts.get(top.id);
     els.summary.innerHTML = `
-      <p class="summary__title">${name} ha il colore ${top.of}</p>
-      <p class="summary__text">${logged} ${logged === 1 ? 'giornata registrata' : 'giornate registrate'} su ${elapsed}.
+      <p class="title">${name} ha il colore ${top.of}</p>
+      <p class="text">${logged} ${logged === 1 ? 'giornata registrata' : 'giornate registrate'} su ${elapsed}.
         ${cap(top.the)} prevale in ${n} ${n === 1 ? 'giornata' : 'giornate'}.</p>
-      <div class="summary__bar" role="img" aria-label="Distribuzione delle emozioni prevalenti">
+      <div class="bar" role="img" aria-label="Distribuzione delle emozioni prevalenti">
         ${order.map((e, i) => `<span data-emo="${e.id}" style="--n:${counts.get(e.id)};--i:${i}"></span>`).join('')}
       </div>`;
   }

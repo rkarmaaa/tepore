@@ -1,10 +1,12 @@
 import { EMOTIONS, APATHY, MAX_LEVEL, shapeSVG, topEmotions } from './emotions.js';
 import { todayKey, longDate, dayMonth, daysBetween, timeNow, cap } from './dates.js';
 import { MoodSlider } from './slider.js';
+import { openSheet, longPress } from './sheet.js';
 import { haptic } from './haptics.js';
 
 const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg>';
 const BACK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>';
+const COLLAPSE_MS = 700;
 
 export function createToday({ store, onTitle }) {
   const root = document.getElementById('view-today');
@@ -17,6 +19,7 @@ export function createToday({ store, onTitle }) {
     bloom: $('[data-bloom]'),
     stage: $('[data-bloom-stage]'),
     caption: $('[data-bloom-caption]'),
+    moods: $('[data-moods]'),
     list: $('[data-mood-list]'),
     aside: $('[data-moods-aside]'),
     apathy: $('[data-apathy]'),
@@ -34,20 +37,28 @@ export function createToday({ store, onTitle }) {
   const aura = root.querySelector('[data-bloom-aura]');
   EMOTIONS.forEach((e, i) => {
     const item = document.createElement('span');
-    item.className = 'bloom__item';
+    item.className = 'item';
     item.dataset.emo = e.id;
     item.style.cssText = `--x:${e.x};--y:${e.y};--i:${i};--p:0`;
     item.innerHTML = shapeSVG(e.id);
     els.stage.appendChild(item);
     const blob = document.createElement('span');
-    blob.className = 'bloom__blob';
+    blob.className = 'blob';
     blob.dataset.emo = e.id;
     blob.style.cssText = item.style.cssText;
     aura.appendChild(blob);
     item.blob = blob;
+    item.p = 0;
     bloomItems.set(e.id, item);
   });
   root.querySelector('[data-apathy-icon]').innerHTML = shapeSVG(APATHY.id);
+
+  // Fuori schermo il ritratto si ferma: niente animazioni a vuoto
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      els.bloom.classList.toggle('is-idle', !entry.isIntersecting);
+    }, { rootMargin: '80px' }).observe(els.bloom);
+  }
 
   // Slider
   const sliders = EMOTIONS.map((e, i) => {
@@ -59,6 +70,9 @@ export function createToday({ store, onTitle }) {
     return s;
   });
 
+  // Tocco prolungato su una riga: scheda dell'emozione
+  longPress(els.list, (target) => openSheet(target.dataset.press));
+
   const current = () => {
     const values = {};
     EMOTIONS.forEach((e) => { values[e.id] = live[e.id]?.v ?? 0; });
@@ -66,15 +80,22 @@ export function createToday({ store, onTitle }) {
   };
 
   let lastCaption = '';
+  let lastAside = '';
   function paintBloom() {
     const day = current();
     const tops = day.apatia ? [] : topEmotions(day);
     const past = key !== todayKey();
+    const only = tops.length === 1 ? tops[0].id : null;
 
+    // Si scrive solo ciò che è cambiato davvero
     bloomItems.forEach((item, id) => {
-      item.style.setProperty('--p', live[id]?.p ?? 0);
-      item.blob.style.setProperty('--p', live[id]?.p ?? 0);
-      item.classList.toggle('is-dominant', tops.length === 1 && tops[0].id === id);
+      const p = live[id]?.p ?? 0;
+      if (p !== item.p) {
+        item.p = p;
+        item.style.setProperty('--p', p);
+        item.blob.style.setProperty('--p', p);
+      }
+      item.classList.toggle('is-dominant', only === id);
     });
     els.bloom.classList.toggle('is-apathy', day.apatia);
     els.bloom.style.setProperty('--bloom-c', day.apatia
@@ -82,7 +103,11 @@ export function createToday({ store, onTitle }) {
       : tops.length ? `var(--emo-${tops[0].id})` : 'transparent');
 
     const felt = EMOTIONS.filter((e) => day.values[e.id] > 0).length;
-    els.aside.textContent = felt ? `${felt} di ${EMOTIONS.length}` : '';
+    const aside = felt ? `${felt} di ${EMOTIONS.length}` : '';
+    if (aside !== lastAside) {
+      lastAside = aside;
+      els.aside.textContent = aside;
+    }
 
     let text;
     if (day.apatia) text = 'Una giornata in pausa. Va bene anche così.';
@@ -105,7 +130,7 @@ export function createToday({ store, onTitle }) {
     const diff = daysBetween(key, today);
     let title = 'Oggi';
     let lede = 'Come ti senti oggi?';
-    if (diff === 1) { title = 'Ieri'; lede = "Com'è andata ieri?"; }
+    if (diff === 1) { title = 'Ieri'; lede = 'Com\'è andata ieri?'; }
     else if (diff > 1 && diff < 7) { title = `${diff} giorni fa`; lede = 'Come ti sentivi quel giorno?'; }
     else if (diff >= 7) { title = cap(dayMonth(key)); lede = 'Come ti sentivi quel giorno?'; }
 
@@ -132,9 +157,36 @@ export function createToday({ store, onTitle }) {
     els.note.style.height = `${els.note.scrollHeight}px`;
   }
 
-  function setApathy(flag) {
+  // Apre e chiude la sezione misurandone l'altezza: i dati restano dove sono
+  let collapseTimer = null;
+  function collapse(el, on, instant) {
+    clearTimeout(collapseTimer);
+    if (instant) {
+      el.style.height = '';
+      el.classList.toggle('is-collapsed', on);
+      return;
+    }
+    if (el.classList.contains('is-collapsed') === on) return;
+
+    const start = el.getBoundingClientRect().height;
+    let end = 0;
+    if (!on) {
+      el.classList.remove('is-collapsed');
+      el.style.height = 'auto';
+      end = el.getBoundingClientRect().height;
+      el.classList.add('is-collapsed');
+    }
+    el.style.height = `${start}px`;
+    void el.offsetHeight;
+    el.classList.toggle('is-collapsed', on);
+    el.style.height = `${end}px`;
+    collapseTimer = setTimeout(() => { el.style.height = ''; }, COLLAPSE_MS);
+  }
+
+  function setApathy(flag, instant) {
     root.classList.toggle('is-apathy', flag);
     sliders.forEach((s) => s.setDisabled(flag));
+    collapse(els.moods, flag, instant);
   }
 
   function load(nextKey = key) {
@@ -147,7 +199,7 @@ export function createToday({ store, onTitle }) {
       live[s.emotion.id] = { v, p: v / MAX_LEVEL };
     });
     els.apathy.checked = Boolean(day?.apatia);
-    setApathy(els.apathy.checked);
+    setApathy(els.apathy.checked, true);
     els.note.value = day?.note || '';
     autosize();
     paintNoteMeta();
@@ -204,4 +256,3 @@ export function createToday({ store, onTitle }) {
     get title() { return els.title.textContent; },
   };
 }
-

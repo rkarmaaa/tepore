@@ -1,0 +1,45 @@
+@use '../abstracts' as *;
+
+// Riga con icona, testo e interruttore (apatia, opzioni)
+.toggle {
+  @include flex(row, center, flex-start, $sp-3);
+  padding: $sp-4;
+  cursor: pointer;
+  @include tap-reset;
+
+  .icon {
+    @include grid-center;
+    @include size(30px);
+    flex: none;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--emo, var(--ember)) 18%, transparent);
+
+    .shape {
+      @include size(18px);
+    }
+
+    svg {
+      @include size(17px);
+      fill: none;
+      stroke: var(--emo, var(--ember));
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
+  .text {
+    display: grid;
+    flex: 1;
+    gap: 1px;
+
+    strong {
+      @include font-ui($fs-md, $fw-semibold);
+    }
+
+    span {
+      @include font-ui($fs-sm, $fw-regular);
+      color: var(--ink-soft);
+    }
+  }
+}

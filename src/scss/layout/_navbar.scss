@@ -1,4 +1,4 @@
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 // Barra compatta: compare quando il titolo grande esce dallo schermo
 .navbar {
@@ -7,75 +7,83 @@
   z-index: $z-navbar;
   @include safe-top(0px);
   pointer-events: none;
+  contain: layout style;
 
   &::before {
-    content: '';
+    content: "";
     @include cover;
     background: color-mix(in oklab, var(--paper) 74%, transparent);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    backdrop-filter: blur(18px) saturate(180%);
-    border-bottom: .5px solid var(--line);
+    border-bottom: 0.5px solid var(--line);
     opacity: 0;
     transition: opacity $dur-base $ease-out;
   }
 
-  &__inner {
+  .inner {
     position: relative;
     height: $navbar-h;
     max-width: $app-max;
     margin-inline: auto;
     @include flex(row, center, center);
-  }
 
-  // Indietro, solo nelle pagine interne
-  &__back {
-    position: absolute;
-    top: 50%;
-    left: $sp-2;
-    @include flex(row, center, flex-start, 0);
-    height: 40px;
-    padding: 0 $sp-3 0 0;
-    color: var(--ember);
-    @include font-ui($fs-md, $fw-medium);
-    opacity: 0;
-    translate: 8px -50%;
-    pointer-events: none;
-    @include pressable(.94);
-    transition: opacity $dur-base $ease-out, translate $dur-base $ease-out, transform $dur-fast $ease-out;
-    @include focus-ring;
+    // Indietro, solo nelle pagine interne
+    .back {
+      position: absolute;
+      top: 50%;
+      left: $sp-2;
+      @include flex(row, center, flex-start, 0);
+      height: 40px;
+      padding: 0 $sp-3 0 0;
+      color: var(--ember);
+      @include font-ui($fs-md, $fw-medium);
+      opacity: 0;
+      translate: 8px -50%;
+      pointer-events: none;
+      @include pressable(0.94);
+      transition:
+        opacity $dur-base $ease-out,
+        translate $dur-base $ease-out,
+        transform $dur-fast $ease-out;
+      @include focus-ring;
 
-    svg {
-      @include size(26px);
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2.2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      svg {
+        @include size(26px);
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+
+    .title {
+      @include font-ui($fs-md, $fw-semibold);
+      font-weight: 400;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity $dur-base $ease-out,
+        transform $dur-base $ease-out;
     }
   }
 
-  &__title {
-    @include font-ui($fs-md, $fw-semibold);
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity $dur-base $ease-out, transform $dur-base $ease-out;
-  }
-
+  // Il vetro si accende solo quando serve: nessun blur calcolato a vuoto
   &.is-visible {
     &::before {
       opacity: 1;
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      backdrop-filter: blur(18px) saturate(180%);
     }
 
-    .navbar__inner {
-      .navbar__title {
+    .inner {
+      .title {
         opacity: 1;
         transform: none;
       }
     }
 
     &.has-back {
-      .navbar__inner {
-        .navbar__back {
+      .inner {
+        .back {
           opacity: 1;
           translate: 0 -50%;
           pointer-events: auto;

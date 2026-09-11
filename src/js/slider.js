@@ -13,9 +13,9 @@ export class MoodSlider {
     this.onChange = onChange;
     this.el = this.#build(index);
     this.slider = this.el.querySelector('.slider');
-    this.track = this.el.querySelector('.slider__track');
+    this.track = this.slider.querySelector('.track');
     this.level = this.el.querySelector('[data-level]');
-    this.stops = [...this.el.querySelectorAll('.slider__stops i')];
+    this.stops = [...this.slider.querySelectorAll('.stops i')];
     this.#bind();
     this.set(0, { silent: true });
     const settle = (e) => {
@@ -33,16 +33,16 @@ export class MoodSlider {
     li.dataset.emo = id;
     li.style.setProperty('--i', index);
     li.innerHTML = `
-      <div class="mood__head">
-        <span class="mood__icon">${shapeSVG(id)}</span>
-        <span class="mood__name" id="mood-${id}">${name}</span>
-        <span class="mood__level" data-level aria-hidden="true"></span>
+      <div class="head" data-press="${id}">
+        <span class="icon">${shapeSVG(id)}</span>
+        <span class="name" id="mood-${id}">${name}</span>
+        <span class="level" data-level aria-hidden="true"></span>
       </div>
       <div class="slider" role="slider" tabindex="0" aria-labelledby="mood-${id}"
         aria-valuemin="0" aria-valuemax="${MAX_LEVEL}">
-        <div class="slider__track">
-          <span class="slider__stops" aria-hidden="true">${'<i></i>'.repeat(MAX_LEVEL + 1)}</span>
-          <span class="slider__fill"><span class="slider__thumb"></span></span>
+        <div class="track">
+          <span class="stops" aria-hidden="true">${'<i></i>'.repeat(MAX_LEVEL + 1)}</span>
+          <span class="fill"><span class="thumb"></span></span>
         </div>
       </div>`;
     return li;
@@ -64,7 +64,7 @@ export class MoodSlider {
     let touch = null;
     s.addEventListener('touchstart', (e) => {
       const t = e.touches[0];
-      const onThumb = !!e.target.closest('.slider__thumb');
+      const onThumb = !!e.target.closest('.thumb');
       touch = { x: t.clientX, y: t.clientY, decided: onThumb, lock: onThumb };
     }, { passive: true });
 
@@ -110,7 +110,7 @@ export class MoodSlider {
 
     s.addEventListener('pointerdown', (e) => {
       if (this.disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      const thumb = e.target.closest('.slider__thumb');
+      const thumb = e.target.closest('.thumb');
       grab = 0;
       if (thumb) {
         const r = thumb.getBoundingClientRect();

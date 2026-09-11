@@ -1,5 +1,6 @@
 import { todayKey } from './dates.js';
 import { VERSION } from './version.js';
+import { haptic, hapticsEnabled, setHaptics } from './haptics.js';
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
@@ -13,7 +14,15 @@ export function createSettings({ store, toast }) {
     exportBtn: $('[data-export]'),
     importBtn: $('[data-import]'),
     importInput: $('[data-import-input]'),
+    haptics: $('[data-haptics]'),
   };
+
+  // Feedback aptico: attivo di default, la scelta resta salvata
+  els.haptics.checked = hapticsEnabled();
+  els.haptics.addEventListener('change', () => {
+    setHaptics(els.haptics.checked);
+    haptic();
+  });
 
   function render() {
     const days = Object.values(store.all());
@@ -24,6 +33,7 @@ export function createSettings({ store, toast }) {
   }
 
   els.exportBtn.addEventListener('click', async () => {
+    haptic();
     const name = `tepore-backup-${todayKey()}.json`;
     const blob = new Blob([store.exportJSON()], { type: 'application/json' });
     const file = new File([blob], name, { type: 'application/json' });
@@ -44,13 +54,14 @@ export function createSettings({ store, toast }) {
     toast('Backup esportato');
   });
 
-  els.importBtn.addEventListener('click', () => els.importInput.click());
+  els.importBtn.addEventListener('click', () => { haptic(); els.importInput.click(); });
   els.importInput.addEventListener('change', async () => {
     const file = els.importInput.files?.[0];
     els.importInput.value = '';
     if (!file) return;
     try {
       const n = store.importJSON(await file.text());
+      haptic();
       toast(n ? `Backup importato: ${plural(n, 'giornata', 'giornate')}` : 'Il backup non contiene giornate');
     } catch {
       toast('File non valido: scegli un backup di Tepore (.json)');

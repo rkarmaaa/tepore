@@ -1,5 +1,6 @@
 import { dominantOf, shapeSVG } from './emotions.js';
 import { dateOf, todayKey, daysBetween, monthName, cap } from './dates.js';
+import { haptic } from './haptics.js';
 
 const fmtDay = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric' });
 const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
@@ -39,11 +40,11 @@ export function createNotebook({ store, onPick, onWrite }) {
     if (!all.length) {
       lede.textContent = 'Qui si raccolgono le tue note.';
       list.innerHTML = `
-        <li class="notebook__empty">
-          <span class="notebook__empty-icon">${BOOK}</span>
+        <li class="empty">
+          <span class="icon">${BOOK}</span>
           <strong>Il quaderno è ancora vuoto</strong>
           <p>Ogni nota che scrivi nella giornata trova posto qui, una dopo l'altra.</p>
-          <button class="pill-btn pill-btn--ember" type="button" data-write>Scrivi la nota di oggi</button>
+          <button class="pill-btn ember" type="button" data-write>Scrivi la nota di oggi</button>
         </li>`;
       return;
     }
@@ -59,21 +60,21 @@ export function createNotebook({ store, onPick, onWrite }) {
         if (month) html += '</ol></li>';
         month = key.slice(0, 7);
         const y = d.getFullYear();
-        html += `<li class="notebook__month"><h2 class="notebook__label">${monthName(y, d.getMonth())}${y !== year ? ` ${y}` : ''}</h2><ol class="notebook__entries">`;
+        html += `<li class="period"><h2 class="label">${monthName(y, d.getMonth())}${y !== year ? ` ${y}` : ''}</h2><ol class="entries">`;
       }
       const dom = dominantOf(day);
       // Cascata dal basso: le più recenti entrano per prime
       const i = Math.min(all.length - 1 - idx, 10);
       html += `
-        <li class="entry${dom ? '' : ' entry--plain'}"${dom ? ` data-emo="${dom.id}"` : ''} style="--i:${i}">
-          <button class="entry__btn" type="button" data-key="${key}">
-            <span class="entry__node" aria-hidden="true">${dom ? shapeSVG(dom.id) : ''}</span>
-            <span class="entry__paper">
-              <span class="entry__head">
+        <li class="entry${dom ? '' : ' plain'}"${dom ? ` data-emo="${dom.id}"` : ''} style="--i:${i}">
+          <button class="btn" type="button" data-key="${key}">
+            <span class="node" aria-hidden="true">${dom ? shapeSVG(dom.id) : ''}</span>
+            <span class="paper">
+              <span class="head">
                 <time datetime="${key}">${cap(fmtDay.format(d))}</time>
-                ${dom ? `<span class="entry__mood">${dom.name}</span>` : ''}
+                ${dom ? `<span class="mood">${dom.name}</span>` : ''}
               </span>
-              <span class="entry__text">${esc(day.note.trim())}</span>
+              <span class="text">${esc(day.note.trim())}</span>
             </span>
           </button>
         </li>`;
@@ -89,8 +90,8 @@ export function createNotebook({ store, onPick, onWrite }) {
 
   root.addEventListener('click', (e) => {
     const entry = e.target.closest('[data-key]');
-    if (entry) onPick(entry.dataset.key);
-    else if (e.target.closest('[data-write]')) onWrite();
+    if (entry) { haptic(); onPick(entry.dataset.key); }
+    else if (e.target.closest('[data-write]')) { haptic(); onWrite(); }
   });
 
   store.subscribe(() => render());

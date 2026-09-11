@@ -6,16 +6,41 @@
   flex: none;
   @include size(52px, 32px);
 
-  &__input {
+  .input {
     @include cover;
     z-index: 2;
     @include size(100%);
     margin: 0;
     opacity: 0;
     cursor: pointer;
+
+    &:active + .track {
+      &::after {
+        width: 34px;
+      }
+    }
+
+    &:checked + .track {
+      background: var(--ember);
+
+      &::after {
+        transform: translateX(20px);
+      }
+    }
+
+    &:checked:active + .track {
+      &::after {
+        transform: translateX(14px);
+      }
+    }
+
+    &:focus-visible + .track {
+      outline: 2px solid var(--ember);
+      outline-offset: 3px;
+    }
   }
 
-  &__track {
+  .track {
     @include cover;
     border-radius: $r-pill;
     background: var(--sand-deep);
@@ -32,33 +57,6 @@
       background: #FFFBF6;
       box-shadow: 0 2px 6px rgba(60, 26, 8, .25), 0 0 0 .5px rgba(60, 26, 8, .06);
       transition: transform $dur-base $ease-spring, width $dur-fast $ease-out;
-    }
-  }
-
-  .switch__input {
-    &:active + .switch__track {
-      &::after {
-        width: 34px;
-      }
-    }
-
-    &:checked + .switch__track {
-      background: var(--ember);
-
-      &::after {
-        transform: translateX(20px);
-      }
-    }
-
-    &:checked:active + .switch__track {
-      &::after {
-        transform: translateX(14px);
-      }
-    }
-
-    &:focus-visible + .switch__track {
-      outline: 2px solid var(--ember);
-      outline-offset: 3px;
     }
   }
 }

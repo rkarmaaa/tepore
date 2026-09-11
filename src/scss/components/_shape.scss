@@ -22,7 +22,7 @@
   }
 
   // Apatia: anello vuoto
-  &--apatia {
+  &[data-emo='apatia'] {
     path {
       fill: none;
       stroke-width: 2.6;

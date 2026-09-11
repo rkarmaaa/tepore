@@ -7,8 +7,11 @@
   max-width: $app-max;
   min-height: 100dvh;
   margin-inline: auto;
+  // Solo scorrimento verticale: niente pan laterale accidentale
+  overflow-x: clip;
+  touch-action: pan-y pinch-zoom;
 
-  &__views {
+  .views {
     position: relative;
     padding-inline: $gutter;
     @include safe-top($sp-2);
@@ -34,13 +37,4 @@
       }
     }
   }
-}
-
-// Sensore per il feedback aptico iOS (switch nascosto)
-.haptic {
-  position: fixed;
-  top: -100px;
-  left: -100px;
-  opacity: 0;
-  pointer-events: none;
 }

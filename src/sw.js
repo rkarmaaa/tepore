@@ -17,12 +17,15 @@ const SHELL = [
   './js/calendar.js',
   './js/settings.js',
   './js/notebook.js',
+  './js/sheet.js',
   './js/version.js',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/favicon-32.png',
 ];
 
 self.addEventListener('install', (event) => {

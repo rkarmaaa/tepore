@@ -14,8 +14,10 @@ html {
   text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  // Niente scorrimento laterale: si blocca su html, non solo su body
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   @include tap-reset;
 
   @include reduced-motion {
@@ -24,9 +26,12 @@ html {
 }
 
 body {
+  position: relative;
+  width: 100%;
   min-height: 100dvh;
   line-height: 1.5;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 img,

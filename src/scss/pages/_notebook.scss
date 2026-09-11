@@ -1,19 +1,19 @@
 @use '../abstracts' as *;
 
-// Quaderno: timeline verticale, dalla nota più lontana alla più recente
-.view--notebook {
+// Quaderno: timeline verticale, dalla nota piu lontana alla piu recente
+.view.notebook {
   $node: 36px;
 
-  .notebook {
+  .timeline {
     margin-top: $sp-6;
 
-    .notebook__month {
-      & + .notebook__month {
+    .period {
+      & + .period {
         margin-top: $sp-8;
       }
 
       // Etichetta del mese che resta agganciata sotto la navbar
-      .notebook__label {
+      .label {
         @include liquid-glass($r-pill, 14px);
         position: sticky;
         top: calc(env(safe-area-inset-top) + #{$navbar-h} + #{$sp-2});
@@ -27,7 +27,7 @@
         color: var(--ink-soft);
       }
 
-      .notebook__entries {
+      .entries {
         position: relative;
         @include flex(column, stretch, flex-start, $sp-3);
 
@@ -45,8 +45,10 @@
 
         .entry {
           @include enter(rise, $dur-slow, 40ms);
+          // Le note fuori schermo non costano layout
+          @include offscreen-skip(128px);
 
-          .entry__btn {
+          .btn {
             display: grid;
             grid-template-columns: $node 1fr;
             align-items: start;
@@ -56,7 +58,7 @@
             @include pressable(.98);
             @include focus-ring;
 
-            .entry__node {
+            .node {
               position: relative;
               @include grid-center;
               @include size($node);
@@ -78,13 +80,13 @@
               }
             }
 
-            .entry__paper {
+            .paper {
               @include surface($r-md);
               display: block;
               min-width: 0;
               padding: $sp-3 $sp-4 $sp-4;
 
-              .entry__head {
+              .head {
                 @include flex(row, baseline, space-between, $sp-2);
 
                 time {
@@ -92,13 +94,13 @@
                   color: var(--ink);
                 }
 
-                .entry__mood {
+                .mood {
                   @include font-ui($fs-xs, $fw-semibold);
                   color: color-mix(in oklab, var(--emo) 78%, var(--ink));
                 }
               }
 
-              .entry__text {
+              .text {
                 display: block;
                 margin-top: 6px;
                 @include font-display($fs-md, $fw-regular, 100);
@@ -111,18 +113,18 @@
             }
           }
 
-          &--plain {
+          &.plain {
             --emo: var(--ink-faint);
           }
         }
       }
 
-      // La nota più recente respira appena
+      // La nota piu recente respira appena
       &:last-child {
-        .notebook__entries {
+        .entries {
           .entry:last-child {
-            .entry__btn {
-              .entry__node {
+            .btn {
+              .node {
                 box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px color-mix(in oklab, var(--emo) 28%, transparent);
                 animation: breathe 3.4s ease-in-out infinite;
 
@@ -137,14 +139,14 @@
     }
 
     // Quaderno vuoto
-    .notebook__empty {
+    .empty {
       @include flex(column, center, center, $sp-2);
       @include surface($r-lg);
       padding: $sp-10 $sp-6;
       text-align: center;
       @include enter(rise);
 
-      .notebook__empty-icon {
+      .icon {
         @include ember-tile(58px, 17px);
         margin-bottom: $sp-2;
       }
@@ -168,7 +170,7 @@
   }
 
   // Fine del quaderno
-  .notebook__end {
+  .end {
     @include flex(column, center, center, $sp-3);
     margin-top: $sp-10;
 

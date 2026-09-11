@@ -1,35 +1,57 @@
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 // Gruppi inset in stile iOS
 .group {
   margin-top: $sp-7;
 
-  &__head {
+  .head {
     @include flex(row, baseline, space-between, $sp-3);
-    padding: 0 $sp-2 $sp-2 $sp-4;
+    padding: $sp-1 0;
 
-    .group__title {
+    .title {
       @include font-ui($fs-sm, $fw-semibold);
       color: var(--ink-soft);
+      font-weight: 400;
     }
 
-    .group__aside {
+    .aside {
       @include font-ui($fs-xs, $fw-medium);
       color: var(--ink-faint);
       font-variant-numeric: tabular-nums;
     }
   }
 
-  &__body {
+  .body {
     position: relative;
     overflow: hidden;
+    contain: layout paint style;
     @include surface($r-lg);
   }
 
-  &__foot {
-    padding: $sp-2 $sp-4 0;
+  .foot {
     @include font-ui($fs-xs, $fw-regular);
+    padding-top: $sp-2;
     color: var(--ink-faint);
     line-height: 1.45;
+  }
+
+  // Gruppo richiudibile: altezza guidata da JS, opacita in dissolvenza
+  &.collapsible {
+    overflow: hidden;
+    transition:
+      height $dur-slow $ease-in-out,
+      opacity $dur-base $ease-out,
+      margin-top $dur-slow $ease-in-out;
+
+    &.is-collapsed {
+      height: 0;
+      margin-top: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @include reduced-motion {
+      transition: none;
+    }
   }
 }

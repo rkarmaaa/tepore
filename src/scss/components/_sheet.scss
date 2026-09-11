@@ -1,0 +1,156 @@
+@use "../abstracts" as *;
+
+// Foglio modale in stile iOS: sale dal basso, si chiude trascinandolo giu
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: $z-sheet;
+  @include flex(column, center, flex-end);
+  contain: layout style;
+
+  .scrim {
+    @include cover;
+    background: rgba(38, 22, 14, 0.34);
+    opacity: 0;
+    transition: opacity $dur-base $ease-out;
+
+    @include dark {
+      background: rgba(0, 0, 0, 0.52);
+    }
+  }
+
+  .card {
+    @include safe-bottom($sp-6);
+    @include tap-reset;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: $sheet-max;
+    padding: $sp-3 $sp-6 $sp-6;
+    border-radius: $sheet-radius $sheet-radius 0 0;
+    background: var(--surface);
+    box-shadow:
+      0 -1px 0 var(--line),
+      0 -24px 60px -20px rgba(60, 26, 8, 0.45);
+    touch-action: none;
+    translate: 0 100%;
+    transition: translate $dur-slow $ease-spring;
+
+    @include mq(md) {
+      margin-bottom: $sp-6;
+      border-radius: $sheet-radius;
+    }
+
+    @include dark {
+      box-shadow:
+        0 -1px 0 var(--line),
+        0 -24px 60px -20px rgba(0, 0, 0, 0.7);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: calc(100% - 1px);
+      width: 100%;
+      height: 100%;
+      background: var(--surface);
+    }
+
+    // Maniglia: invita al trascinamento
+    .grabber {
+      display: block;
+      @include size(38px, 5px);
+      margin: 0 auto $sp-5;
+      border-radius: $r-pill;
+      background: var(--sand-deep);
+    }
+
+    .icon {
+      @include grid-center;
+      @include size(66px);
+      margin-bottom: $sp-4;
+      border-radius: 22px;
+      @include emo-tint(20%);
+      box-shadow: inset 0 0 0 0.5px
+        color-mix(in oklab, var(--emo) 30%, transparent);
+
+      .shape {
+        @include size(34px);
+      }
+    }
+
+    .title {
+      @include font-display($fs-2xl, $fw-medium, 100);
+      color: var(--ink);
+      font-weight: 400;
+    }
+
+    .lede {
+      margin-top: 2px;
+      @include font-ui($fs-xs, $fw-semibold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: color-mix(in oklab, var(--emo) 62%, var(--ink-faint));
+    }
+
+    // Paragrafo lungo: allineato a sinistra, si legge meglio
+    .text {
+      margin-top: $sp-4;
+      @include font-ui($fs-md, $fw-regular);
+      line-height: 1.58;
+      color: var(--ink-soft);
+      text-align: left;
+      text-wrap: pretty;
+    }
+
+    .close {
+      width: 100%;
+      margin-top: $sp-6;
+    }
+
+    // Il contenuto entra dopo la card, con un lieve ritardo a cascata
+    > * {
+      opacity: 0;
+    }
+
+    // Trascinamento: segue il dito, senza inerzia di transizione
+    &.is-dragging {
+      transition: none;
+    }
+  }
+
+  // Apertura
+  &.is-open {
+    .scrim {
+      opacity: 1;
+    }
+
+    .card {
+      translate: 0 0;
+
+      > * {
+        @include enter(rise, $dur-base, 40ms, 180ms);
+        animation-fill-mode: both;
+
+        @for $i from 1 through 6 {
+          &:nth-child(#{$i}) {
+            --i: #{$i - 1};
+          }
+        }
+      }
+    }
+  }
+
+  @include reduced-motion {
+    .scrim,
+    .card {
+      transition: none;
+    }
+
+    .card > * {
+      opacity: 1;
+      animation: none;
+    }
+  }
+}

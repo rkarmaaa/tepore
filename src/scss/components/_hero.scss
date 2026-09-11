@@ -1,28 +1,28 @@
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 // Titolo grande in stile iOS, con carattere editoriale
 .hero {
   padding: $sp-5 $sp-1 $sp-2;
 
-  &__top {
+  .top {
     @include flex(row, center, space-between, $sp-3);
     min-height: 42px;
 
-    .hero__date {
+    .date {
       @include font-ui($fs-sm, $fw-semibold);
       color: var(--ember);
       transition: opacity $dur-base $ease-out;
     }
 
-    .hero__actions {
+    .actions {
       @include flex(row, center, flex-end, $sp-2);
 
-      .hero__slot {
+      .slot {
         display: contents;
       }
 
       // Ingranaggio: ruota di un dente alla pressione
-      .glass-btn--settings {
+      .glass-btn.gear {
         svg {
           @include size(21px);
           stroke-width: 1.8;
@@ -38,10 +38,11 @@
     }
   }
 
-  &__title {
+  .title {
     margin-top: $sp-1;
     @include font-display($fs-3xl, $fw-medium, 100);
     color: var(--ink);
+    font-weight: 400;
 
     @include mq-down(xs) {
       font-size: $fs-2xl;
@@ -52,7 +53,7 @@
     }
   }
 
-  &__lede {
+  .lede {
     margin-top: $sp-2;
     max-width: 32ch;
     @include font-ui($fs-md, $fw-regular);
@@ -70,7 +71,7 @@
   background: color-mix(in oklab, var(--ember) 13%, transparent);
   color: var(--ember);
   @include font-ui($fs-xs, $fw-semibold);
-  @include pressable(.94);
+  @include pressable(0.94);
   @include focus-ring;
   animation: pop $dur-base $ease-spring backwards;
 
