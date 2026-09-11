@@ -1,0 +1,181 @@
+@use '../abstracts' as *;
+
+// Quaderno: timeline verticale, dalla nota più lontana alla più recente
+.view--notebook {
+  $node: 36px;
+
+  .notebook {
+    margin-top: $sp-6;
+
+    .notebook__month {
+      & + .notebook__month {
+        margin-top: $sp-8;
+      }
+
+      // Etichetta del mese che resta agganciata sotto la navbar
+      .notebook__label {
+        @include liquid-glass($r-pill, 14px);
+        position: sticky;
+        top: calc(env(safe-area-inset-top) + #{$navbar-h} + #{$sp-2});
+        z-index: 2;
+        width: fit-content;
+        margin: 0 0 $sp-3;
+        padding: 6px $sp-3;
+        @include font-ui($fs-xs, $fw-semibold);
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+
+      .notebook__entries {
+        position: relative;
+        @include flex(column, stretch, flex-start, $sp-3);
+
+        // Filo che unisce le giornate
+        &::before {
+          content: '';
+          position: absolute;
+          top: $sp-4;
+          bottom: $sp-4;
+          left: calc(#{$node} / 2 - 1px);
+          width: 2px;
+          border-radius: 2px;
+          background: linear-gradient(to bottom, transparent, var(--sand-deep) $sp-8, var(--sand-deep) calc(100% - #{$sp-8}), transparent);
+        }
+
+        .entry {
+          @include enter(rise, $dur-slow, 40ms);
+
+          .entry__btn {
+            display: grid;
+            grid-template-columns: $node 1fr;
+            align-items: start;
+            column-gap: $sp-3;
+            width: 100%;
+            text-align: left;
+            @include pressable(.98);
+            @include focus-ring;
+
+            .entry__node {
+              position: relative;
+              @include grid-center;
+              @include size($node);
+              margin-top: 10px;
+              border-radius: 50%;
+              background: color-mix(in oklab, var(--emo) 20%, var(--paper));
+              box-shadow: 0 0 0 4px var(--paper);
+
+              .shape {
+                @include size(18px);
+              }
+
+              // Nota senza emozioni: un punto neutro
+              &:empty::before {
+                content: '';
+                @include size(8px);
+                border-radius: 50%;
+                background: var(--ink-faint);
+              }
+            }
+
+            .entry__paper {
+              @include surface($r-md);
+              display: block;
+              min-width: 0;
+              padding: $sp-3 $sp-4 $sp-4;
+
+              .entry__head {
+                @include flex(row, baseline, space-between, $sp-2);
+
+                time {
+                  @include font-ui($fs-sm, $fw-semibold);
+                  color: var(--ink);
+                }
+
+                .entry__mood {
+                  @include font-ui($fs-xs, $fw-semibold);
+                  color: color-mix(in oklab, var(--emo) 78%, var(--ink));
+                }
+              }
+
+              .entry__text {
+                display: block;
+                margin-top: 6px;
+                @include font-display($fs-md, $fw-regular, 100);
+                line-height: 1.5;
+                letter-spacing: -.005em;
+                color: var(--ink);
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+              }
+            }
+          }
+
+          &--plain {
+            --emo: var(--ink-faint);
+          }
+        }
+      }
+
+      // La nota più recente respira appena
+      &:last-child {
+        .notebook__entries {
+          .entry:last-child {
+            .entry__btn {
+              .entry__node {
+                box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px color-mix(in oklab, var(--emo) 28%, transparent);
+                animation: breathe 3.4s ease-in-out infinite;
+
+                @include reduced-motion {
+                  animation: none;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Quaderno vuoto
+    .notebook__empty {
+      @include flex(column, center, center, $sp-2);
+      @include surface($r-lg);
+      padding: $sp-10 $sp-6;
+      text-align: center;
+      @include enter(rise);
+
+      .notebook__empty-icon {
+        @include ember-tile(58px, 17px);
+        margin-bottom: $sp-2;
+      }
+
+      strong {
+        @include font-display($fs-xl, $fw-medium, 100);
+        color: var(--ink);
+      }
+
+      p {
+        max-width: 28ch;
+        @include font-ui($fs-sm, $fw-regular);
+        line-height: 1.45;
+        color: var(--ink-soft);
+      }
+
+      .pill-btn {
+        margin-top: $sp-3;
+      }
+    }
+  }
+
+  // Fine del quaderno
+  .notebook__end {
+    @include flex(column, center, center, $sp-3);
+    margin-top: $sp-10;
+
+    p {
+      @include font-display($fs-sm, $fw-regular, 100);
+      font-style: italic;
+      color: var(--ink-faint);
+    }
+  }
+}

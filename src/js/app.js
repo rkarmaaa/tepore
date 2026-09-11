@@ -1,22 +1,32 @@
 import { store } from './store.js';
 import { createToday } from './today.js';
 import { createCalendar } from './calendar.js';
+import { createSettings } from './settings.js';
+import { createNotebook } from './notebook.js';
 import { todayKey } from './dates.js';
 import { haptic } from './haptics.js';
 
 store.init();
 
-const VIEWS = ['today', 'calendar'];
-const views = Object.fromEntries(VIEWS.map((v) => [v, document.querySelector(`[data-view="${v}"]`)]));
+// Tab principali e pagine interne, ognuna con la sua tab di appartenenza
+const TABS = ['today', 'calendar'];
+const PARENT = { today: 'today', calendar: 'calendar', settings: 'today', notebook: 'calendar' };
+const HASH = { today: '', calendar: 'calendario', settings: 'impostazioni', notebook: 'quaderno' };
+const BACK_LABEL = { settings: 'Oggi', notebook: 'Calendario' };
+
+const views = Object.fromEntries(Object.keys(PARENT).map((v) => [v, document.querySelector(`[data-view="${v}"]`)]));
 const tabs = [...document.querySelectorAll('[data-tab]')];
 const indicator = document.querySelector('[data-tab-indicator]');
 const navbar = document.querySelector('[data-navbar]');
-const navTitle = document.querySelector('[data-navbar-title]');
+const navTitle = navbar.querySelector('[data-navbar-title]');
+const navBack = navbar.querySelector('[data-back]');
+const navBackLabel = navbar.querySelector('[data-navbar-back]');
 const toastEl = document.querySelector('[data-toast]');
 
+const isSub = (v) => PARENT[v] !== v;
+const titles = { today: 'Oggi', calendar: '', settings: 'Impostazioni', notebook: 'Quaderno' };
+const scrollMemory = {};
 let active = 'today';
-const scrollMemory = { today: 0, calendar: 0 };
-const titles = { today: 'Oggi', calendar: '' };
 
 // Toast
 let toastTimer;
@@ -32,72 +42,135 @@ const setTitle = (view) => (t) => {
   if (active === view) navTitle.textContent = t;
 };
 
+const openDay = (key) => { today.open(key); go('today'); };
+
 const today = createToday({ store, onTitle: setTitle('today') });
-const calendar = createCalendar({
+const calendar = createCalendar({ store, toast, onTitle: setTitle('calendar'), onPick: openDay });
+const settings = createSettings({ store, toast });
+const notebook = createNotebook({
   store,
-  toast,
-  onTitle: setTitle('calendar'),
-  onPick: (key) => { today.open(key); show('today'); },
+  onPick: openDay,
+  onWrite: () => {
+    openDay(todayKey());
+    const field = document.getElementById('note-field');
+    requestAnimationFrame(() => {
+      field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      field.focus({ preventScroll: true });
+    });
+  },
 });
 
-// Navigazione tra le sezioni
+// Pillola della tab bar: il bordo d'attacco parte, quello di coda insegue
+function moveIndicator(from, to, instant) {
+  const a = TABS.indexOf(from);
+  const b = TABS.indexOf(to);
+  indicator.dataset.pos = b;
+  if (instant) {
+    indicator.style.transition = 'none';
+    void indicator.offsetWidth;
+    indicator.style.transition = '';
+    return;
+  }
+  if (a === b) return;
+  indicator.classList.remove('is-moving', 'is-going-left', 'is-going-right');
+  void indicator.offsetWidth;
+  indicator.classList.add('is-moving', b > a ? 'is-going-right' : 'is-going-left');
+}
+indicator.addEventListener('animationend', () => indicator.classList.remove('is-moving'));
+
+// Navigazione: push/pop nelle pagine interne, scorrimento tra le tab
 function show(name, { instant = false } = {}) {
   if (!views[name]) return;
-  const from = VIEWS.indexOf(active);
-  const to = VIEWS.indexOf(name);
+  const prev = active;
 
-  if (name !== active) {
-    scrollMemory[active] = window.scrollY;
-    views[active].hidden = true;
+  if (name !== prev) {
+    scrollMemory[prev] = window.scrollY;
+    const dir = PARENT[name] === PARENT[prev]
+      ? (isSub(name) ? 'right' : 'left')
+      : (TABS.indexOf(PARENT[name]) > TABS.indexOf(PARENT[prev]) ? 'right' : 'left');
+
+    views[prev].hidden = true;
     const el = views[name];
     el.hidden = false;
     el.classList.remove('is-entering-left', 'is-entering-right');
     if (!instant) {
       void el.offsetWidth;
-      el.classList.add(to > from ? 'is-entering-right' : 'is-entering-left');
+      el.classList.add(`is-entering-${dir}`);
     }
     active = name;
+
     if (name === 'calendar') calendar.refresh();
-    window.scrollTo({ top: name === 'today' ? 0 : scrollMemory[name], behavior: 'instant' });
+    if (name === 'settings') settings.refresh();
+    if (name === 'notebook') notebook.refresh();
+
+    // Il quaderno si apre sulla nota più recente, in fondo
+    const back = PARENT[prev] === name;
+    const top = name === 'notebook' ? document.documentElement.scrollHeight
+      : (name === 'calendar' || back) ? (scrollMemory[name] || 0) : 0;
+    window.scrollTo({ top, behavior: 'instant' });
   }
 
+  moveIndicator(PARENT[prev], PARENT[name], instant);
   tabs.forEach((t) => {
-    const on = t.dataset.tab === name;
+    const on = t.dataset.tab === PARENT[name];
     t.classList.toggle('is-active', on);
     t.setAttribute('aria-selected', String(on));
   });
 
-  // Goccia di vetro: si allunga mentre scivola
-  indicator.style.setProperty('--from', `${from * 100}%`);
-  indicator.style.setProperty('--to', `${to * 100}%`);
-  if (from !== to && !instant) {
-    indicator.classList.remove('is-moving');
-    void indicator.offsetWidth;
-    indicator.classList.add('is-moving');
-  }
-
   navTitle.textContent = titles[name];
-  history.replaceState(null, '', name === 'today' ? location.pathname + location.search : `#${name === 'calendar' ? 'calendario' : name}`);
+  navBackLabel.textContent = BACK_LABEL[name] || '';
+  navbar.classList.toggle('has-back', isSub(name));
   updateNavbar();
 }
+
+const urlOf = (name) => (HASH[name] ? `#${HASH[name]}` : location.pathname + location.search);
+const fromHash = () => Object.keys(HASH).find((k) => HASH[k] && `#${HASH[k]}` === location.hash) || 'today';
+
+// Cambio di tab o apertura di un giorno
+function go(name) {
+  if (name === active) return;
+  show(name);
+  history.replaceState(null, '', urlOf(name));
+}
+
+// Pagina interna: entra nella cronologia, così funziona anche "indietro"
+function push(name) {
+  if (name === active) return;
+  show(name);
+  history.pushState({ sub: name }, '', urlOf(name));
+}
+
+function back() {
+  if (!isSub(active)) return;
+  if (history.state?.sub === active) history.back();
+  else go(PARENT[active]);
+}
+
+window.addEventListener('popstate', () => show(fromHash()));
 
 tabs.forEach((t) => t.addEventListener('click', () => {
   const name = t.dataset.tab;
   haptic();
-  // Tocco sulla tab attiva: torna in cima (come su iOS)
-  if (name === active) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-  show(name);
+  // Tab attiva: da una pagina interna torna alla radice, altrimenti in cima
+  if (name === PARENT[active] && isSub(active)) back();
+  else if (name === active) window.scrollTo({ top: 0, behavior: 'smooth' });
+  else go(name);
 }));
-indicator.addEventListener('animationend', () => indicator.classList.remove('is-moving'));
+
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('[data-go]');
+  if (target) { haptic(); push(target.dataset.go); return; }
+  if (e.target.closest('[data-back]')) { haptic(); back(); }
+});
 
 // Barra compatta quando il titolo grande esce dallo schermo
 let ticking = false;
 function updateNavbar() {
   const sentinel = views[active].querySelector('[data-sentinel]');
-  const limit = navbar.getBoundingClientRect().bottom;
-  const visible = sentinel.getBoundingClientRect().bottom < limit;
+  const visible = sentinel.getBoundingClientRect().bottom < navbar.getBoundingClientRect().bottom;
   navbar.classList.toggle('is-visible', visible);
   navbar.setAttribute('aria-hidden', String(!visible));
+  navBack.tabIndex = visible && isSub(active) ? 0 : -1;
 }
 window.addEventListener('scroll', () => {
   if (ticking) return;
@@ -118,7 +191,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 setInterval(checkDay, 60_000);
 
 // Avvio
-show(location.hash === '#calendario' ? 'calendar' : 'today', { instant: true });
+show(fromHash(), { instant: true });
 if (!store.persistent) toast('Il browser non permette di salvare: i dati spariranno alla chiusura');
 
 // Service worker (offline). In sviluppo locale resta spento.

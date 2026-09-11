@@ -111,17 +111,24 @@
   }
 }
 
-// Goccia di vetro che si allunga mentre scorre
-@keyframes squish {
-  0% {
-    transform: translateX(var(--from)) scaleX(1);
+// Pillola della tab bar: lieve sollevamento durante lo scorrimento
+@keyframes pill-lift {
+  0%, 100% {
+    scale: 1;
+    filter: none;
   }
-  45% {
-    transform: translateX(calc((var(--from) + var(--to)) / 2)) scale(1.18, .9);
+  35% {
+    scale: 1 1.08;
+    filter: brightness(1.06) saturate(1.1);
   }
-  100% {
-    transform: translateX(var(--to)) scaleX(1);
-  }
+}
+
+// Icona della tab appena attivata
+@keyframes tab-bounce {
+  0% { scale: 1; }
+  30% { scale: .84; }
+  65% { scale: 1.1; }
+  100% { scale: 1; }
 }
 
 @keyframes tick {

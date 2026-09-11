@@ -52,11 +52,35 @@ export class MoodSlider {
     const s = this.slider;
     let start = null;
     let dragging = false;
+    let grab = 0;
 
+    // Distanza dito-centro del pomello: niente salti alla presa
     const pFromX = (x) => {
       const r = this.track.getBoundingClientRect();
-      return clamp01((x - r.left - r.height / 2) / (r.width - r.height));
+      return clamp01((x - grab - r.left - r.height / 2) / (r.width - r.height));
     };
+
+    // iOS: blocca lo scroll se il gesto parte dal pomello o è orizzontale
+    let touch = null;
+    s.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      const onThumb = !!e.target.closest('.slider__thumb');
+      touch = { x: t.clientX, y: t.clientY, decided: onThumb, lock: onThumb };
+    }, { passive: true });
+
+    s.addEventListener('touchmove', (e) => {
+      if (!touch || this.disabled) return;
+      if (!touch.decided) {
+        const t = e.touches[0];
+        touch.decided = true;
+        touch.lock = Math.abs(t.clientX - touch.x) >= Math.abs(t.clientY - touch.y);
+      }
+      if (touch.lock && e.cancelable) e.preventDefault();
+    }, { passive: false });
+
+    const touchEnd = () => { touch = null; };
+    s.addEventListener('touchend', touchEnd);
+    s.addEventListener('touchcancel', touchEnd);
 
     const move = (p) => {
       this.el.style.setProperty('--p', p);
@@ -86,16 +110,23 @@ export class MoodSlider {
 
     s.addEventListener('pointerdown', (e) => {
       if (this.disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      const thumb = e.target.closest('.slider__thumb');
+      grab = 0;
+      if (thumb) {
+        const r = thumb.getBoundingClientRect();
+        grab = Math.max(-r.width / 2, Math.min(r.width / 2, e.clientX - r.left - r.width / 2));
+      }
       start = { x: e.clientX, y: e.clientY, v: this.value, id: e.pointerId };
-      // Col mouse si trascina subito; col dito si attende la direzione
-      if (e.pointerType === 'mouse') this.#startDrag(e, () => { dragging = true; });
+      // Mouse o pomello: si trascina subito; sulla traccia si attende la direzione
+      if (e.pointerType === 'mouse' || thumb) this.#startDrag(e, () => { dragging = true; });
     });
 
     s.addEventListener('pointermove', (e) => {
       if (!start || e.pointerId !== start.id) return;
       const dx = e.clientX - start.x;
       const dy = e.clientY - start.y;
-      if (!dragging && Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(dy)) {
+      const wants = touch?.decided ? touch.lock : Math.abs(dx) > 4 && Math.abs(dx) > Math.abs(dy);
+      if (!dragging && wants) {
         this.#startDrag(e, () => { dragging = true; });
       }
       if (dragging) move(pFromX(e.clientX));
@@ -105,6 +136,7 @@ export class MoodSlider {
       if (!start) return;
       // Tocco singolo: salta al livello toccato
       if (!dragging) {
+        grab = 0;
         const v = Math.round(pFromX(e.clientX) * MAX_LEVEL);
         if (v !== this.value) {
           this.value = v;

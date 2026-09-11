@@ -86,7 +86,16 @@
         border-radius: 50%;
         background: #FFFBF6;
         box-shadow: 0 1px 2px rgba(60, 26, 8, .22), 0 4px 10px -3px rgba(60, 26, 8, .28);
+        touch-action: none;
         transition: transform $dur-base $ease-spring, background $dur-base $ease-out, box-shadow $dur-base $ease-out;
+
+        // Area di presa più ampia per il dito
+        &::after {
+          content: '';
+          position: absolute;
+          inset: -12px;
+          border-radius: 50%;
+        }
       }
     }
   }

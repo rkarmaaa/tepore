@@ -27,6 +27,33 @@
     @include flex(row, center, center);
   }
 
+  // Indietro, solo nelle pagine interne
+  &__back {
+    position: absolute;
+    top: 50%;
+    left: $sp-2;
+    @include flex(row, center, flex-start, 0);
+    height: 40px;
+    padding: 0 $sp-3 0 0;
+    color: var(--ember);
+    @include font-ui($fs-md, $fw-medium);
+    opacity: 0;
+    translate: 8px -50%;
+    pointer-events: none;
+    @include pressable(.94);
+    transition: opacity $dur-base $ease-out, translate $dur-base $ease-out, transform $dur-fast $ease-out;
+    @include focus-ring;
+
+    svg {
+      @include size(26px);
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
   &__title {
     @include font-ui($fs-md, $fw-semibold);
     opacity: 0;
@@ -43,6 +70,16 @@
       .navbar__title {
         opacity: 1;
         transform: none;
+      }
+    }
+
+    &.has-back {
+      .navbar__inner {
+        .navbar__back {
+          opacity: 1;
+          translate: 0 -50%;
+          pointer-events: auto;
+        }
       }
     }
   }

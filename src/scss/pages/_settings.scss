@@ -1,0 +1,53 @@
+@use "../abstracts" as *;
+
+.view--settings {
+  // Backup dei dati
+  .group--data {
+    .data {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $sp-2;
+      padding: $sp-3;
+
+      @include mq-down(xs) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  // Firma dell'app in fondo alla pagina
+  .about {
+    @include flex(column, center, center, 2px);
+    margin-top: $sp-12;
+    text-align: center;
+    @include enter(rise, $dur-slow, 0ms, 180ms);
+
+    .about__icon {
+      @include size(64px);
+      margin-bottom: $sp-3;
+      border-radius: 15px;
+      box-shadow: var(--shadow-lift);
+    }
+
+    .about__name {
+      @include font-display($fs-xl, $fw-medium, 100);
+      color: var(--ink);
+    }
+
+    .about__meta {
+      @include font-ui($fs-xs, $fw-medium);
+      color: var(--ink-faint);
+    }
+
+    .about__version {
+      margin-top: $sp-3;
+      padding: 3px 10px;
+      border-radius: $r-pill;
+      background: var(--sand);
+      @include font-ui($fs-2xs, $fw-semibold);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: var(--ink-soft);
+    }
+  }
+}
