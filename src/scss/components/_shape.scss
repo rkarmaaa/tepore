@@ -1,0 +1,31 @@
+@use '../abstracts' as *;
+
+// Ogni emozione espone il proprio colore in --emo
+@each $name, $color in $emotions {
+  [data-emo='#{$name}'] {
+    --emo: var(--emo-#{$name});
+  }
+}
+
+.shape {
+  display: block;
+  @include size($shape-size);
+  color: var(--emo, var(--ink-faint));
+  transition: color $dur-slow $ease-out;
+
+  path {
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+    transition: fill $dur-slow $ease-out, stroke $dur-slow $ease-out;
+  }
+
+  // Apatia: anello vuoto
+  &--apatia {
+    path {
+      fill: none;
+      stroke-width: 2.6;
+    }
+  }
+}

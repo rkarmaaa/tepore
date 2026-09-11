@@ -1,0 +1,35 @@
+@use '../abstracts' as *;
+
+// Gruppi inset in stile iOS
+.group {
+  margin-top: $sp-7;
+
+  &__head {
+    @include flex(row, baseline, space-between, $sp-3);
+    padding: 0 $sp-2 $sp-2 $sp-4;
+
+    .group__title {
+      @include font-ui($fs-sm, $fw-semibold);
+      color: var(--ink-soft);
+    }
+
+    .group__aside {
+      @include font-ui($fs-xs, $fw-medium);
+      color: var(--ink-faint);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__body {
+    position: relative;
+    overflow: hidden;
+    @include surface($r-lg);
+  }
+
+  &__foot {
+    padding: $sp-2 $sp-4 0;
+    @include font-ui($fs-xs, $fw-regular);
+    color: var(--ink-faint);
+    line-height: 1.45;
+  }
+}

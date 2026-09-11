@@ -1,0 +1,66 @@
+@use '../abstracts' as *;
+
+// Titolo grande in stile iOS, con carattere editoriale
+.hero {
+  padding: $sp-5 $sp-1 $sp-2;
+
+  &__top {
+    @include flex(row, center, space-between, $sp-3);
+    min-height: 42px;
+
+    .hero__date {
+      @include font-ui($fs-sm, $fw-semibold);
+      color: var(--ember);
+      transition: opacity $dur-base $ease-out;
+    }
+
+    .hero__actions {
+      @include flex(row, center, flex-end, $sp-2);
+    }
+  }
+
+  &__title {
+    margin-top: $sp-1;
+    @include font-display($fs-3xl, $fw-medium, 100);
+    color: var(--ink);
+
+    @include mq-down(xs) {
+      font-size: $fs-2xl;
+    }
+
+    @include mq(md) {
+      font-size: 3.25rem;
+    }
+  }
+
+  &__lede {
+    margin-top: $sp-2;
+    max-width: 32ch;
+    @include font-ui($fs-md, $fw-regular);
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+}
+
+// Chip compatta per azioni contestuali
+.chip {
+  @include flex(row, center, center, 6px);
+  height: 32px;
+  padding: 0 $sp-3 0 10px;
+  border-radius: $r-pill;
+  background: color-mix(in oklab, var(--ember) 13%, transparent);
+  color: var(--ember);
+  @include font-ui($fs-xs, $fw-semibold);
+  @include pressable(.94);
+  @include focus-ring;
+  animation: pop $dur-base $ease-spring backwards;
+
+  svg {
+    @include size(15px);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}

@@ -1,0 +1,7 @@
+// Tepore — foglio di stile principale
+// Ordine: base → layout → componenti → pagine
+
+@use 'base';
+@use 'layout';
+@use 'components';
+@use 'pages';

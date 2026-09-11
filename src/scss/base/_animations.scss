@@ -1,0 +1,159 @@
+@use '../abstracts' as *;
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(.4);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) rotate(4deg);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    --glow: .55;
+  }
+  50% {
+    --glow: 1;
+  }
+}
+
+// Deriva lenta delle macchie dell'aura
+@keyframes aura-drift {
+  0%, 100% { translate: 0 0; }
+  33% { translate: 14px -10px; }
+  66% { translate: -12px 8px; }
+}
+
+@keyframes aura-breathe {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.07; }
+}
+
+@keyframes view-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes view-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes month-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes month-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// Goccia di vetro che si allunga mentre scorre
+@keyframes squish {
+  0% {
+    transform: translateX(var(--from)) scaleX(1);
+  }
+  45% {
+    transform: translateX(calc((var(--from) + var(--to)) / 2)) scale(1.18, .9);
+  }
+  100% {
+    transform: translateX(var(--to)) scaleX(1);
+  }
+}
+
+@keyframes tick {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px) scale(.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+// Riduci il movimento se richiesto dal sistema
+@include reduced-motion {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

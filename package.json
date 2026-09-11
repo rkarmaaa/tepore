@@ -1,0 +1,14 @@
+{
+  "name": "tepore",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tepore — il diario delle emozioni",
+  "scripts": {
+    "dev": "sass --watch --no-source-map src/scss/main.scss src/css/main.css",
+    "build": "sass --style=compressed --no-source-map src/scss/main.scss src/css/main.css && node scripts/stamp.mjs",
+    "serve": "npx serve src"
+  },
+  "devDependencies": {
+    "sass": "^1.80.0"
+  }
+}

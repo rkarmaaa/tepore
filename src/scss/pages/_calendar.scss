@@ -1,0 +1,217 @@
+@use '../abstracts' as *;
+
+.view--calendar {
+
+  .month {
+    margin-top: $sp-5;
+
+    .month__weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding-bottom: $sp-2;
+      text-align: center;
+      @include font-ui($fs-xs, $fw-semibold);
+      color: var(--ink-faint);
+
+      span {
+        &:nth-child(n + 6) {
+          color: color-mix(in oklab, var(--ember) 70%, var(--ink-faint));
+        }
+      }
+    }
+
+    .month__grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+
+      @include mq(sm) {
+        gap: 7px;
+      }
+
+      @include mq(md) {
+        gap: 10px;
+      }
+
+      &.is-in-right {
+        animation: month-in-right .44s $ease-out both;
+      }
+
+      &.is-in-left {
+        animation: month-in-left .44s $ease-out both;
+      }
+
+      .day {
+        position: relative;
+        @include grid-center;
+        aspect-ratio: 4 / 5;
+        border-radius: $r-sm;
+        color: var(--ink);
+        @include pressable(.9);
+        @include focus-ring(2px);
+        animation: fade .4s $ease-out backwards;
+        animation-delay: calc(var(--i, 0) * 10ms);
+
+        @include mq(md) {
+          border-radius: $r-md;
+        }
+
+        .day__num {
+          @include font-ui($fs-sm, $fw-semibold);
+          font-variant-numeric: tabular-nums;
+          transition: color $dur-base $ease-out;
+        }
+
+        // Giorno passato senza dati
+        &--empty {
+          background: color-mix(in oklab, var(--sand) 42%, transparent);
+
+          .day__num {
+            color: var(--ink-soft);
+          }
+        }
+
+        // Giorno con emozione prevalente
+        &--data {
+          @include emo-tint(17%);
+          box-shadow: inset 0 0 0 .5px color-mix(in oklab, var(--emo) 34%, transparent);
+
+          .day__num {
+            position: absolute;
+            inset: 4px 0 auto;
+            text-align: center;
+            font-size: $fs-2xs;
+            color: color-mix(in oklab, var(--emo) 50%, var(--ink));
+          }
+
+          .shape {
+            @include size(20px);
+            margin-top: 10px;
+            animation: pop .5s $ease-spring backwards;
+            animation-delay: calc(120ms + var(--i, 0) * 14ms);
+
+            @include mq(md) {
+              @include size(26px);
+            }
+          }
+
+          .day__note {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            @include size(4px);
+            margin-left: -2px;
+            border-radius: 50%;
+            background: color-mix(in oklab, var(--emo) 55%, var(--ink));
+            opacity: .6;
+          }
+        }
+
+        &--future {
+          opacity: .32;
+          pointer-events: none;
+        }
+
+        &--pad {
+          visibility: hidden;
+          animation: none;
+        }
+
+        &.is-today {
+          box-shadow: inset 0 0 0 2px var(--ember);
+
+          .day__num {
+            color: var(--ember);
+          }
+        }
+      }
+    }
+  }
+
+  // Legenda delle forme
+  .group--legend {
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: $sp-4 $sp-2;
+      padding: $sp-5 $sp-4;
+
+      @include mq-down(xs) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .legend__item {
+        @include flex(row, center, flex-start, $sp-2);
+        @include font-ui($fs-sm, $fw-medium);
+        color: var(--ink-soft);
+
+        .shape {
+          @include size(16px);
+          flex: none;
+        }
+      }
+    }
+  }
+
+  // Il mese in breve
+  .group--summary {
+    .summary {
+      padding: $sp-5 $sp-4 $sp-4;
+
+      .summary__title {
+        @include font-display($fs-xl, $fw-medium, 100);
+        line-height: 1.12;
+      }
+
+      .summary__text {
+        margin-top: $sp-2;
+        @include font-ui($fs-sm, $fw-regular);
+        color: var(--ink-soft);
+      }
+
+      .summary__bar {
+        display: flex;
+        gap: 3px;
+        height: 12px;
+        margin-top: $sp-4;
+        overflow: hidden;
+        border-radius: $r-pill;
+        background: var(--sand);
+
+        span {
+          flex: var(--n) 1 0;
+          min-width: 6px;
+          background: var(--emo);
+          transform-origin: left;
+          @include enter(rise, $dur-slow, 60ms, 100ms);
+
+          &:first-child {
+            border-radius: $r-pill 0 0 $r-pill;
+          }
+
+          &:last-child {
+            border-radius: 0 $r-pill $r-pill 0;
+          }
+        }
+      }
+
+      .summary__cta {
+        margin-top: $sp-4;
+      }
+    }
+  }
+
+  // Backup dei dati
+  .group--data {
+    .data {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $sp-2;
+      padding: $sp-3;
+
+      @include mq-down(xs) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}

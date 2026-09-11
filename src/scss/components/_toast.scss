@@ -1,0 +1,27 @@
+@use '../abstracts' as *;
+
+.toast {
+  @include liquid-glass($r-pill, 18px);
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + #{$tabbar-h} + #{$sp-6});
+  z-index: $z-toast;
+  @include flex(row, center, center, $sp-2);
+  padding: $sp-3 $sp-5;
+  @include font-ui($fs-sm, $fw-semibold);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 16px) scale(.94);
+  pointer-events: none;
+  transition: opacity $dur-base $ease-out, transform $dur-base $ease-spring;
+
+  &.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+  }
+}

@@ -1,0 +1,49 @@
+@use '../abstracts' as *;
+
+// Barra compatta: compare quando il titolo grande esce dallo schermo
+.navbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: $z-navbar;
+  @include safe-top(0px);
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    @include cover;
+    background: color-mix(in oklab, var(--paper) 74%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
+    border-bottom: .5px solid var(--line);
+    opacity: 0;
+    transition: opacity $dur-base $ease-out;
+  }
+
+  &__inner {
+    position: relative;
+    height: $navbar-h;
+    max-width: $app-max;
+    margin-inline: auto;
+    @include flex(row, center, center);
+  }
+
+  &__title {
+    @include font-ui($fs-md, $fw-semibold);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity $dur-base $ease-out, transform $dur-base $ease-out;
+  }
+
+  &.is-visible {
+    &::before {
+      opacity: 1;
+    }
+
+    .navbar__inner {
+      .navbar__title {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+}

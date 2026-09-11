@@ -1,0 +1,46 @@
+@use '../abstracts' as *;
+
+.app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: $app-max;
+  min-height: 100dvh;
+  margin-inline: auto;
+
+  &__views {
+    position: relative;
+    padding-inline: $gutter;
+    @include safe-top($sp-2);
+    padding-bottom: calc(env(safe-area-inset-bottom) + #{$tabbar-h} + #{$sp-12});
+
+    @include mq-down(xs) {
+      padding-inline: $sp-4;
+    }
+
+    @include mq(md) {
+      padding-inline: $sp-8;
+      @include safe-top($sp-8);
+    }
+
+    // Transizione tra le sezioni
+    .view {
+      &.is-entering-right {
+        animation: view-in-right $dur-base $ease-out both;
+      }
+
+      &.is-entering-left {
+        animation: view-in-left $dur-base $ease-out both;
+      }
+    }
+  }
+}
+
+// Sensore per il feedback aptico iOS (switch nascosto)
+.haptic {
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  opacity: 0;
+  pointer-events: none;
+}

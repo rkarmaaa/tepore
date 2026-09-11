@@ -1,0 +1,186 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+// Media query mobile-first
+@mixin mq($bp) {
+  @media (min-width: #{map.get($breakpoints, $bp)}) {
+    @content;
+  }
+}
+
+@mixin mq-down($bp) {
+  @media (max-width: #{map.get($breakpoints, $bp)}) {
+    @content;
+  }
+}
+
+@mixin dark {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// App avviata dalla Home (standalone)
+@mixin standalone {
+  @media (display-mode: standalone) {
+    @content;
+  }
+}
+
+// Hover solo su dispositivi con puntatore reale
+@mixin hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+@mixin flex($dir: row, $align: center, $justify: flex-start, $gap: 0) {
+  display: flex;
+  flex-direction: $dir;
+  align-items: $align;
+  justify-content: $justify;
+  gap: $gap;
+}
+
+@mixin grid-center {
+  display: grid;
+  place-items: center;
+}
+
+@mixin size($w, $h: $w) {
+  width: $w;
+  height: $h;
+}
+
+@mixin cover($inset: 0) {
+  position: absolute;
+  inset: $inset;
+}
+
+@mixin tap-reset {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+@mixin button-reset {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  @include tap-reset;
+}
+
+// Feedback visivo alla pressione
+@mixin pressable($scale: .96) {
+  transition: transform $dur-fast $ease-out, opacity $dur-fast $ease-out;
+
+  &:active {
+    transform: scale($scale);
+  }
+}
+
+@mixin focus-ring($offset: 3px) {
+  &:focus-visible {
+    outline: 2px solid var(--ember);
+    outline-offset: $offset;
+  }
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Liquid glass: vetro caldo, bordo luminoso e riflesso speculare
+@mixin liquid-glass($radius: $r-pill, $blur: 20px) {
+  position: relative;
+  border-radius: $radius;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: blur($blur) saturate(190%) brightness(1.04);
+  backdrop-filter: blur($blur) saturate(190%) brightness(1.04);
+  box-shadow: var(--glass-shadow);
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  // Bordo luminoso a gradiente
+  &::before {
+    padding: 1px;
+    background: var(--glass-rim);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  // Riflesso speculare
+  &::after {
+    background: var(--glass-sheen);
+  }
+}
+
+@mixin surface($radius: $r-lg) {
+  background: var(--surface);
+  border-radius: $radius;
+  box-shadow: var(--shadow-soft);
+}
+
+@mixin font-display($size, $weight: $fw-medium, $soft: 100) {
+  font-family: $font-display;
+  font-size: $size;
+  font-weight: $weight;
+  font-optical-sizing: auto;
+  font-variation-settings: 'SOFT' $soft, 'WONK' 1;
+  letter-spacing: -.022em;
+  line-height: 1.04;
+}
+
+@mixin font-ui($size: $fs-base, $weight: $fw-medium) {
+  font-family: $font-ui;
+  font-size: $size;
+  font-weight: $weight;
+  letter-spacing: -.005em;
+}
+
+@mixin safe-top($extra: 0px) {
+  padding-top: calc(env(safe-area-inset-top) + #{$extra});
+}
+
+@mixin safe-bottom($extra: 0px) {
+  padding-bottom: calc(env(safe-area-inset-bottom) + #{$extra});
+}
+
+// Ingresso animato con ritardo a cascata (--i)
+@mixin enter($name: rise, $dur: $dur-slow, $step: 45ms, $base: 0ms) {
+  animation: $name $dur $ease-out backwards;
+  animation-delay: calc(#{$base} + var(--i, 0) * #{$step});
+}
+
+// Tinta dell'emozione corrente (--emo)
+@mixin emo-tint($amount: 18%) {
+  background: color-mix(in oklab, var(--emo) #{$amount}, transparent);
+}

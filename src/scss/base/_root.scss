@@ -1,0 +1,76 @@
+@use '../abstracts' as *;
+
+// Registrazione per animare le custom property
+@property --p {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --bloom-c {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --glow {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+:root {
+  color-scheme: light dark;
+
+  --paper: #{$c-paper};
+  --surface: #{$c-paper-raised};
+  --sand: #{$c-sand};
+  --sand-deep: #{$c-sand-deep};
+  --ink: #{$c-ink};
+  --ink-soft: #{$c-ink-soft};
+  --ink-faint: #{$c-ink-faint};
+  --ember: #{$c-ember};
+  --ember-deep: #{$c-ember-deep};
+  --ember-glow: #{$c-ember-glow};
+  --line: color-mix(in oklab, var(--ink) 9%, transparent);
+
+  --shadow-soft: 0 1px 0 rgba(255, 255, 255, .8) inset, 0 1px 2px rgba(96, 54, 28, .05), 0 12px 28px -18px rgba(96, 54, 28, .35);
+  --shadow-lift: 0 18px 40px -18px rgba(96, 54, 28, .45);
+
+  --glass-tint: rgba(255, 247, 236, .5);
+  --glass-rim: linear-gradient(150deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .15) 38%, rgba(255, 222, 196, .12) 62%, rgba(255, 255, 255, .75));
+  --glass-sheen: radial-gradient(130% 100% at 18% -10%, rgba(255, 255, 255, .6), transparent 52%), linear-gradient(to top, rgba(255, 196, 150, .12), transparent 55%);
+  --glass-shadow: 0 14px 34px -12px rgba(88, 44, 20, .32), 0 3px 10px rgba(88, 44, 20, .08);
+
+  --aura: radial-gradient(90% 55% at 85% -8%, rgba(242, 164, 110, .34), transparent 60%), radial-gradient(70% 45% at -10% 8%, rgba(238, 176, 47, .16), transparent 62%);
+
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+
+  // Colori delle emozioni
+  @each $name, $color in $emotions {
+    --emo-#{$name}: #{$color};
+  }
+
+  @include dark {
+    --paper: #{$c-night};
+    --surface: #{$c-night-raised};
+    --sand: #{$c-night-sand};
+    --sand-deep: #{$c-night-sand-deep};
+    --ink: #{$c-night-ink};
+    --ink-soft: #{$c-night-ink-soft};
+    --ink-faint: #{$c-night-ink-faint};
+    --ember: #{$c-ember-glow};
+    --line: color-mix(in oklab, var(--ink) 10%, transparent);
+
+    --shadow-soft: 0 1px 0 rgba(255, 236, 214, .05) inset, 0 12px 30px -18px rgba(0, 0, 0, .7);
+    --shadow-lift: 0 18px 40px -16px rgba(0, 0, 0, .75);
+
+    --glass-tint: rgba(64, 48, 40, .48);
+    --glass-rim: linear-gradient(150deg, rgba(255, 236, 214, .42), rgba(255, 236, 214, .05) 40%, rgba(255, 190, 140, .06) 60%, rgba(255, 236, 214, .28));
+    --glass-sheen: radial-gradient(130% 100% at 18% -10%, rgba(255, 232, 208, .16), transparent 52%);
+    --glass-shadow: 0 16px 36px -10px rgba(0, 0, 0, .65), 0 2px 8px rgba(0, 0, 0, .3);
+
+    --aura: radial-gradient(90% 55% at 85% -8%, rgba(210, 96, 58, .26), transparent 60%), radial-gradient(70% 45% at -10% 8%, rgba(238, 176, 47, .08), transparent 62%);
+  }
+}

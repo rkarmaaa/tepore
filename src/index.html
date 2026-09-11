@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tepore — il diario delle emozioni</title>
+  <meta name="description" content="Tepore è un piccolo diario delle emozioni: otto intensità, una nota, un calendario che si colora giorno dopo giorno.">
+
+  <!-- iOS / PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tepore">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#F5ECE0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1F1713" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <!-- Social -->
+  <meta property="og:title" content="Tepore">
+  <meta property="og:description" content="Il diario delle emozioni, caldo e tascabile.">
+  <meta property="og:image" content="icons/icon-512.png">
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&display=swap">
+
+  <link rel="stylesheet" href="css/main.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+
+    <header class="navbar" data-navbar aria-hidden="true">
+      <div class="navbar__inner">
+        <span class="navbar__title" data-navbar-title>Oggi</span>
+      </div>
+    </header>
+
+    <main class="app__views">
+
+      <!-- OGGI -->
+      <section class="view view--today" id="view-today" data-view="today" aria-labelledby="today-title">
+        <header class="hero">
+          <div class="hero__top">
+            <p class="hero__date" data-today-date></p>
+            <div class="hero__actions" data-today-actions></div>
+          </div>
+          <h1 class="hero__title" id="today-title" data-today-title data-sentinel>Oggi</h1>
+          <p class="hero__lede" data-today-lede>Come ti senti oggi?</p>
+        </header>
+
+        <figure class="bloom" data-bloom aria-hidden="true">
+          <div class="bloom__aura" data-bloom-aura></div>
+          <div class="bloom__stage" data-bloom-stage></div>
+          <figcaption class="bloom__caption" data-bloom-caption></figcaption>
+        </figure>
+
+        <section class="group group--moods" aria-labelledby="moods-title">
+          <div class="group__head">
+            <h2 class="group__title" id="moods-title">Quanto l'hai sentito</h2>
+            <span class="group__aside" data-moods-aside></span>
+          </div>
+          <div class="group__body">
+            <ul class="mood-list" data-mood-list></ul>
+          </div>
+        </section>
+
+        <section class="group group--apathy">
+          <div class="group__body">
+            <label class="apathy" for="apathy-input">
+              <span class="apathy__icon" data-emo="apatia" data-apathy-icon></span>
+              <span class="apathy__text">
+                <strong>Apatia</strong>
+                <span>Oggi non ho sentito nulla</span>
+              </span>
+              <span class="switch">
+                <input class="switch__input" id="apathy-input" type="checkbox" role="switch" data-apathy>
+                <span class="switch__track" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+          <p class="group__foot">Nel calendario la giornata apparirà come un anello grigio.</p>
+        </section>
+
+        <section class="group group--note" aria-labelledby="note-title">
+          <div class="group__head">
+            <h2 class="group__title" id="note-title">Nota della giornata</h2>
+          </div>
+          <div class="group__body">
+            <div class="note">
+              <label class="sr-only" for="note-field">Nota della giornata</label>
+              <textarea class="note__field" id="note-field" rows="4" placeholder="Cosa ti porti via da questa giornata?" data-note></textarea>
+              <div class="note__meta">
+                <span class="note__status" data-note-status></span>
+                <span class="note__count" data-note-count>0</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- CALENDARIO -->
+      <section class="view view--calendar" id="view-calendar" data-view="calendar" aria-labelledby="cal-title" hidden>
+        <header class="hero">
+          <div class="hero__top">
+            <p class="hero__date" data-cal-year></p>
+            <div class="hero__actions">
+              <button class="glass-btn" type="button" data-cal-prev aria-label="Mese precedente">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+              </button>
+              <button class="glass-btn" type="button" data-cal-next aria-label="Mese successivo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
+              </button>
+            </div>
+          </div>
+          <h1 class="hero__title" id="cal-title" data-cal-title data-sentinel></h1>
+        </header>
+
+        <section class="month" aria-label="Giorni del mese">
+          <div class="month__weekdays" aria-hidden="true">
+            <span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span>
+          </div>
+          <div class="month__grid" data-cal-grid></div>
+        </section>
+
+        <section class="group group--summary" aria-live="polite">
+          <div class="group__body">
+            <div class="summary" data-summary></div>
+          </div>
+        </section>
+
+        <section class="group group--legend" aria-labelledby="legend-title">
+          <div class="group__head">
+            <h2 class="group__title" id="legend-title">Le forme delle emozioni</h2>
+          </div>
+          <div class="group__body">
+            <ul class="legend" data-legend></ul>
+          </div>
+        </section>
+
+        <section class="group group--data" aria-labelledby="data-title">
+          <div class="group__head">
+            <h2 class="group__title" id="data-title">I tuoi dati</h2>
+          </div>
+          <div class="group__body">
+            <div class="data">
+              <button class="pill-btn" type="button" data-export>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>
+                Esporta
+              </button>
+              <button class="pill-btn" type="button" data-import>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>
+                Importa
+              </button>
+              <input type="file" accept="application/json,.json" data-import-input hidden>
+            </div>
+          </div>
+          <p class="group__foot">Tutto resta su questo dispositivo, niente viaggia online. Un backup ogni tanto ti mette al riparo.</p>
+        </section>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Sezioni">
+      <div class="tabbar__glass" role="tablist">
+        <span class="tabbar__indicator" data-tab-indicator aria-hidden="true"></span>
+        <button class="tabbar__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="view-today" data-tab="today">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="fill-on" cx="12" cy="12" r="4.2"/>
+            <path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.5 5.5 17 7M7 17l-1.5 1.5M18.5 18.5 17 17M7 7 5.5 5.5"/>
+          </svg>
+          <span>Oggi</span>
+        </button>
+        <button class="tabbar__tab" type="button" role="tab" aria-selected="false" aria-controls="view-calendar" data-tab="calendar">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="fill-on" x="3.5" y="5" width="17" height="15.5" rx="4"/>
+            <path d="M3.5 10h17M8 3v4M16 3v4"/>
+            <circle cx="8.5" cy="14.5" r=".6"/><circle cx="12" cy="14.5" r=".6"/><circle cx="15.5" cy="14.5" r=".6"/>
+          </svg>
+          <span>Calendario</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="toast" role="status" aria-live="polite" data-toast><span></span></div>
+
+  </div>
+
+  <noscript>Tepore ha bisogno di JavaScript per salvare le tue giornate.</noscript>
+</body>
+</html>

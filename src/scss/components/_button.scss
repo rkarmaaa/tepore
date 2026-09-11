@@ -1,0 +1,68 @@
+@use '../abstracts' as *;
+
+// Pulsante rotondo in vetro
+.glass-btn {
+  @include liquid-glass(50%, 16px);
+  @include grid-center;
+  @include size(42px);
+  color: var(--ink);
+  @include pressable(.9);
+  @include focus-ring;
+
+  svg {
+    position: relative;
+    z-index: 1;
+    @include size(20px);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:disabled {
+    opacity: .35;
+    pointer-events: none;
+  }
+}
+
+// Pulsante a capsula
+.pill-btn {
+  @include flex(row, center, center, $sp-2);
+  min-height: 44px;
+  padding: 0 $sp-5;
+  border-radius: $r-pill;
+  background: var(--sand);
+  color: var(--ink);
+  @include font-ui($fs-sm, $fw-semibold);
+  @include pressable(.95);
+  @include focus-ring;
+
+  svg {
+    @include size(18px);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &--ember {
+    background: var(--ember);
+    color: #FFF8F0;
+    box-shadow: 0 8px 18px -10px var(--ember);
+
+    @include dark {
+      color: #2A1710;
+    }
+  }
+
+  &--ghost {
+    background: color-mix(in oklab, var(--ember) 12%, transparent);
+    color: var(--ember);
+  }
+
+  @include hover {
+    filter: brightness(1.04);
+  }
+}
