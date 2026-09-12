@@ -92,6 +92,22 @@ export const store = {
     return count;
   },
 
+  // Unisce un backup remoto: per ogni giornata vince la versione piu recente
+  merge(days) {
+    let changed = 0;
+    for (const [key, day] of Object.entries(days || {})) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) continue;
+      const clean = sanitize(day);
+      const cur = data.days[key];
+      if (cur && cur.updatedAt >= clean.updatedAt) continue;
+      if (isEmpty(clean)) continue;
+      data.days[key] = clean;
+      changed++;
+    }
+    if (changed) { write(); emit(null); }
+    return changed;
+  },
+
   subscribe(fn) {
     listeners.add(fn);
     return () => listeners.delete(fn);

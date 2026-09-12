@@ -1,8 +1,6 @@
 import { emotion, shapeSVG } from './emotions.js';
 import { haptic } from './haptics.js';
 
-const PRESS_MS = 420;
-const MOVE_TOLERANCE = 10;
 const CLOSE_DISTANCE = 96;
 const CLOSE_SPEED = .55;
 
@@ -93,41 +91,3 @@ const release = (e) => {
 };
 card.addEventListener('pointerup', release);
 card.addEventListener('pointercancel', release);
-
-// Tocco prolungato su un elemento: aptica, poi callback
-export function longPress(node, run) {
-  let press = null;
-
-  const cancel = () => {
-    if (!press) return;
-    clearTimeout(press.timer);
-    press.target.classList.remove('is-pressing');
-    press = null;
-  };
-
-  node.addEventListener('pointerdown', (e) => {
-    const target = e.target.closest('[data-press]');
-    if (!target || press) return;
-    press = {
-      target, x: e.clientX, y: e.clientY, id: e.pointerId, fired: false,
-      timer: setTimeout(() => {
-        press.fired = true;
-        press.target.classList.remove('is-pressing');
-        haptic();
-        run(press.target);
-      }, PRESS_MS),
-    };
-    target.classList.add('is-pressing');
-  });
-
-  node.addEventListener('pointermove', (e) => {
-    if (!press || e.pointerId !== press.id) return;
-    if (Math.abs(e.clientX - press.x) > MOVE_TOLERANCE || Math.abs(e.clientY - press.y) > MOVE_TOLERANCE) cancel();
-  });
-
-  node.addEventListener('pointerup', cancel);
-  node.addEventListener('pointercancel', cancel);
-  node.addEventListener('pointerleave', cancel);
-  // Niente menu contestuale di sistema sopra la nostra scheda
-  node.addEventListener('contextmenu', (e) => e.preventDefault());
-}

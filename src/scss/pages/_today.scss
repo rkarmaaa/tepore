@@ -173,13 +173,10 @@
           }
         }
 
-        // Tocco prolungato: apre la scheda dell'emozione
         .head {
           @include flex(row, center, flex-start, $sp-3);
           margin-bottom: $sp-3;
-          cursor: pointer;
           @include tap-reset;
-          transition: transform $dur-base $ease-out;
 
           .icon {
             @include grid-center;
@@ -210,9 +207,57 @@
             }
           }
 
-          // Il dito resta giu: la riga si comprime, poi si apre il foglio
-          &.is-pressing {
-            transform: scale(0.965);
+          // Cerchio "i": apre la scheda dell'emozione
+          .info {
+            position: relative;
+            @include grid-center;
+            @include size(26px);
+            flex: none;
+            margin-right: -2px;
+            margin-left: -$sp-1;
+            border-radius: 50%;
+            color: var(--ink-faint);
+            @include pressable(0.86);
+            @include focus-ring(2px);
+            transition:
+              color $dur-base $ease-out,
+              background $dur-base $ease-out,
+              transform $dur-fast $ease-out;
+
+            svg {
+              @include size(20px);
+              fill: none;
+              stroke: currentColor;
+              stroke-width: 1.55;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+            }
+
+            // Area di presa comoda per il dito, senza allargare la riga
+            &::after {
+              content: "";
+              position: absolute;
+              inset: -9px;
+              border-radius: 50%;
+            }
+
+            &:active {
+              color: var(--emo);
+              background: color-mix(in oklab, var(--emo) 14%, transparent);
+            }
+
+            @include hover {
+              color: var(--emo);
+              background: color-mix(in oklab, var(--emo) 12%, transparent);
+            }
+
+            @include mq-down(xs) {
+              @include size(24px);
+
+              svg {
+                @include size(18px);
+              }
+            }
           }
         }
 

@@ -43,10 +43,10 @@
           background: linear-gradient(to bottom, transparent, var(--sand-deep) $sp-8, var(--sand-deep) calc(100% - #{$sp-8}), transparent);
         }
 
+        // Niente content-visibility qui: il contenimento taglierebbe
+        // l'ombra e l'anello dei nodi, che escono dal riquadro.
         .entry {
           @include enter(rise, $dur-slow, 40ms);
-          // Le note fuori schermo non costano layout
-          @include offscreen-skip(128px);
 
           .btn {
             display: grid;

@@ -1,0 +1,11 @@
+@use '../abstracts' as *;
+
+// Attesa: anello brace che gira, usato dove serve un segnale di lavoro in corso
+.spinner {
+  @include size(18px);
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid color-mix(in oklab, var(--ember) 22%, transparent);
+  border-top-color: var(--ember);
+  animation: spin .76s linear infinite;
+}

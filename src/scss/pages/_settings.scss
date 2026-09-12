@@ -13,7 +13,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: $sp-2;
-        padding-block: $sp-2;
+        padding: $sp-3 0;
 
         @include mq-down(xs) {
           grid-template-columns: 1fr;
@@ -22,9 +22,110 @@
     }
   }
 
-  .group.options {
+  // Promemoria serale: si spegne da solo dove le notifiche non esistono
+  .group.reminder {
+    &.is-off {
+      .body {
+        opacity: 0.5;
+
+        .toggle {
+          cursor: default;
+        }
+      }
+    }
+  }
+
+  // Backup automatico: riga di stato e comandi
+  .group.backup {
+    .head {
+      .aside {
+        @include flex(row, center, flex-end, 6px);
+
+        .spinner {
+          @include size(12px);
+          border-width: 1.6px;
+        }
+      }
+    }
+
     .body {
-      margin-block: $sp-2;
+      .cloud {
+        display: grid;
+        gap: $sp-4;
+        padding: $sp-4;
+
+        .row {
+          @include flex(row, center, flex-start, $sp-3);
+
+          .icon {
+            @include ember-tile(38px, 12px);
+          }
+
+          .text {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+
+            strong {
+              @include font-ui($fs-md, $fw-semibold);
+            }
+
+            span {
+              @include font-ui($fs-sm, $fw-regular);
+              color: var(--ink-soft);
+              line-height: 1.4;
+            }
+          }
+        }
+
+        .actions {
+          display: grid;
+          gap: $sp-2;
+
+          &:empty {
+            display: none;
+          }
+
+          // Attesa mentre Dropbox verifica il codice incollato
+          .working {
+            @include flex(row, center, center, $sp-3);
+            min-height: 44px;
+            @include font-ui($fs-sm, $fw-medium);
+            color: var(--ink-soft);
+            animation: fade $dur-base $ease-out both;
+          }
+
+          .pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: $sp-2;
+          }
+
+          // Codice di Dropbox: lungo, centrato, facile da incollare
+          .code {
+            width: 100%;
+            min-height: 44px;
+            padding: 0 $sp-4;
+            border-radius: $r-pill;
+            background: var(--sand);
+            color: var(--ink);
+            @include font-ui($fs-sm, $fw-medium);
+            font-size: max(16px, #{$fs-sm});
+            text-align: center;
+            border: 0;
+            outline: none;
+
+            &::placeholder {
+              color: var(--ink-faint);
+            }
+
+            &:focus-visible {
+              outline: 2px solid var(--ember);
+              outline-offset: 2px;
+            }
+          }
+        }
+      }
     }
   }
 

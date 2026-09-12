@@ -3,6 +3,8 @@ import { createToday } from './today.js';
 import { createCalendar } from './calendar.js';
 import { createSettings } from './settings.js';
 import { createNotebook } from './notebook.js';
+import { createBackup } from './backup.js';
+import { createReminder } from './reminder.js';
 import { todayKey } from './dates.js';
 import { haptic } from './haptics.js';
 
@@ -46,7 +48,9 @@ const openDay = (key) => { today.open(key); go('today'); };
 
 const today = createToday({ store, onTitle: setTitle('today') });
 const calendar = createCalendar({ store, toast, onTitle: setTitle('calendar'), onPick: openDay });
-const settings = createSettings({ store, toast });
+const backup = createBackup({ store, toast });
+const reminder = createReminder({ store });
+const settings = createSettings({ store, toast, backup, reminder });
 const notebook = createNotebook({
   store,
   onPick: openDay,
@@ -212,6 +216,10 @@ setInterval(checkDay, 60_000);
 // Avvio
 show(fromHash(), { instant: true });
 if (!store.persistent) toast('Il browser non permette di salvare: i dati spariranno alla chiusura');
+
+// Sera inoltrata e giornata ancora vuota: il promemoria aspetta qui
+const invite = reminder.greet();
+if (invite) setTimeout(() => toast(invite), 900);
 
 // Service worker (offline). In sviluppo locale resta spento.
 const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname) || location.hostname.startsWith('192.168.');

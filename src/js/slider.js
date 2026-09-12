@@ -27,16 +27,19 @@ export class MoodSlider {
   }
 
   #build(index) {
-    const { id, name } = this.emotion;
+    const { id, name, the } = this.emotion;
     const li = document.createElement('li');
     li.className = 'mood';
     li.dataset.emo = id;
     li.style.setProperty('--i', index);
     li.innerHTML = `
-      <div class="head" data-press="${id}">
+      <div class="head">
         <span class="icon">${shapeSVG(id)}</span>
         <span class="name" id="mood-${id}">${name}</span>
         <span class="level" data-level aria-hidden="true"></span>
+        <button class="info" type="button" data-info="${id}" aria-label="Che cos'è ${the}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.1"/><path d="M12 11.1v5.3M12 7.7v.01"/></svg>
+        </button>
       </div>
       <div class="slider" role="slider" tabindex="0" aria-labelledby="mood-${id}"
         aria-valuemin="0" aria-valuemax="${MAX_LEVEL}">

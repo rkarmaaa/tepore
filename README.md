@@ -37,9 +37,10 @@ Il nome dice il tono: *tepore*, il calore mite di una cosa che ti sta vicino sen
 |---|---|
 | **Ritratto del giorno** | Le otto forme disposte in cerchio crescono e si illuminano con l'intensità che hai segnato. Sotto, un'aura di colore sfocato respira lentamente: è la giornata vista da lontano. |
 | **Otto slider a scatti** | Sei livelli, da *Per niente* a *Moltissimo*. Si trascinano col dito, con un tick aptico a ogni scatto, oppure si usano dalla tastiera. |
-| **Scheda dell'emozione** | Tocco prolungato su una riga: si apre un foglio in stile iOS con la spiegazione dell'emozione. Si chiude trascinandolo verso il basso. |
+| **Scheda dell'emozione** | Il cerchietto **i** in fondo alla riga apre un foglio in stile iOS con la spiegazione dell'emozione. Si chiude trascinandolo verso il basso. |
 | **Apatia** | *Oggi non ho sentito nulla.* La sezione degli slider si richiude con un'animazione; i valori restano salvati e tornano appena la riapri. |
 | **Nota della giornata** | Testo libero con salvataggio automatico mentre scrivi. |
+| **Promemoria serale** | Un invito gentile alle 22, solo se la giornata è ancora vuota. Si accende dalle impostazioni. |
 | **Giorni passati** | Dal calendario si apre qualsiasi giornata già trascorsa e la si completa. |
 
 ### Calendario
@@ -89,9 +90,20 @@ Dai dettagli Apple arrivano il *liquid glass* della tab bar, l'aptica a ogni sca
 
 ## Privacy
 
-**Niente backend, niente account, niente tracciamento.** Tutto vive in `localStorage`, sul dispositivo, sotto la chiave `tepore:v1`. Nessuna richiesta di rete oltre ai font.
+**Nessun server, nessun account, nessun tracciamento.** Tutto vive in `localStorage`, sul dispositivo, sotto la chiave `tepore:v1`.
 
-Da *Impostazioni* si esporta un backup JSON (su iPhone passa dal foglio di condivisione) e lo si reimporta quando serve.
+### Il backup non è un optional
+
+Su iOS una web app installata ha un contenitore dati tutto suo, separato da Safari, e **quel contenitore viene eliminato insieme all'icona**: rimuovendo Tepore dalla schermata Home spariscono tutte le giornate. Nessuno storage del browser sopravvive, IndexedDB compreso.
+
+Per questo *Impostazioni* offre due reti di sicurezza:
+
+- **Backup automatico su Dropbox** — si collega una volta e da lì in poi l'app salva da sé a ogni modifica, in un file dentro la sua cartella dedicata. Al primo accesso dopo una reinstallazione ritrovi tutto. La sincronizzazione unisce giornata per giornata, tenendo sempre la versione più recente: due dispositivi convivono senza sovrascriversi.
+- **Backup manuale** — esporta un JSON (su iPhone passa dal foglio di condivisione) e reimportalo quando vuoi.
+
+Il backup viaggia solo fra il tuo iPhone e il tuo Dropbox: nessun server di mezzo. Per attivarlo serve una chiave gratuita, vedi [Sviluppo](#sviluppo).
+
+I dati, in qualsiasi forma li guardi, hanno sempre questo aspetto:
 
 ```json
 {
@@ -117,20 +129,23 @@ HTML, SCSS e JavaScript vanilla a moduli ES. **Nessun framework, nessun bundler,
 tepore/
 ├─ CLAUDE.md                    guida di progetto (leggila prima di toccare il codice)
 ├─ scripts/stamp.mjs            versione dell'app + cache del service worker
+├─ scripts/fonts.mjs            scarica Fraunces e Figtree in src/fonts/
 ├─ .github/workflows/deploy.yml push su main → build → GitHub Pages
 └─ src/                         cartella pubblicata
    ├─ index.html
    ├─ manifest.webmanifest
    ├─ sw.js                     cache offline dell'app shell
-   ├─ icons/                    icon.svg + png generati
+   ├─ icons/                    icon.svg + png generati, splash/ per le schermate di avvio
+   ├─ fonts/                    Fraunces e Figtree in locale (woff2 variabili)
    ├─ css/main.css              COMPILATO: non si tocca a mano
-   ├─ js/                       app · store · emotions · dates · haptics
-   │                            slider · sheet · today · calendar · settings · notebook
+   ├─ js/                       app · store · emotions · dates · haptics · slider
+   │                            sheet · config · dropbox · backup · reminder
+   │                            today · calendar · settings · notebook
    └─ scss/
       ├─ abstracts/             variabili e mixin
-      ├─ base/                  root · reset · typography · animations · utilities
+      ├─ base/                  fonts · root · reset · typography · animations · utilities
       ├─ layout/                app · navbar · tabbar
-      ├─ components/            shape · hero · slider · switch · group · button · toast · sheet
+      ├─ components/            shape · hero · slider · switch · toggle · group · button · spinner · toast · sheet
       └─ pages/                 today · calendar · settings · notebook
 ```
 
@@ -165,9 +180,17 @@ npm run build   # SCSS compresso + nuova versione del service worker
 - **SCSS**: nesting pesante, alta specificità, ogni vista sotto il suo scope. Media query **dentro** il selettore annidato. Commenti corti, mai più di due righe.
 - **Classi**: nomi semplici, niente `--` e niente `__`. Gli stati usano `is-*`, gli agganci JS gli attributi `data-*`.
 - **Colori**: sempre da custom property (`var(--ink)`, `var(--emo)`), mai le variabili `$c-*` dirette, così il tema scuro funziona da solo.
-- Ogni nuovo file JS, CSS o icona va aggiunto a `SHELL` in `sw.js`, altrimenti l'app offline non lo vede.
+- Ogni nuovo file JS, CSS, font o icona va aggiunto a `SHELL` in `sw.js`, altrimenti l'app offline non lo vede. Fanno eccezione le schermate di avvio: le carica iOS al momento dell'installazione.
 
 Tutto il resto sta in [`CLAUDE.md`](CLAUDE.md): visione, design system, modello dati, checklist.
+
+### Attivare il backup su Dropbox
+
+1. Vai su [dropbox.com/developers/apps](https://www.dropbox.com/developers/apps) → **Create app** → *Scoped access* → **App folder** → nome `Tepore`.
+2. Nella scheda **Permissions** spunta `files.content.write` e `files.content.read`, poi **Submit**.
+3. Nella scheda **Settings** copia la **App key** e incollala in `src/js/config.js`.
+
+L'app usa OAuth con PKCE e nessun segreto: il collegamento avviene incollando il codice che Dropbox mostra a schermo, perché in una web app iOS un redirect tornerebbe in Safari, fuori dal contenitore dell'app. Senza chiave tutto il resto funziona lo stesso, il backup resta semplicemente spento.
 
 ### Icone
 

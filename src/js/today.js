@@ -1,7 +1,7 @@
 import { EMOTIONS, APATHY, MAX_LEVEL, shapeSVG, topEmotions } from './emotions.js';
 import { todayKey, longDate, dayMonth, daysBetween, timeNow, cap } from './dates.js';
 import { MoodSlider } from './slider.js';
-import { openSheet, longPress } from './sheet.js';
+import { openSheet } from './sheet.js';
 import { haptic } from './haptics.js';
 
 const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg>';
@@ -70,8 +70,13 @@ export function createToday({ store, onTitle }) {
     return s;
   });
 
-  // Tocco prolungato su una riga: scheda dell'emozione
-  longPress(els.list, (target) => openSheet(target.dataset.press));
+  // Pulsante "i" della riga: apre la scheda dell'emozione
+  els.list.addEventListener('click', (e) => {
+    const info = e.target.closest('[data-info]');
+    if (!info) return;
+    haptic();
+    openSheet(info.dataset.info);
+  });
 
   const current = () => {
     const values = {};

@@ -143,6 +143,13 @@
   }
 }
 
+// Anello di attesa
+@keyframes spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

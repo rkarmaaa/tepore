@@ -1,7 +1,6 @@
 // Service worker di Tepore: app disponibile anche offline.
 // La versione viene aggiornata da npm run build (scripts/stamp.mjs).
 const VERSION = 'tepore-202609111307';
-const FONTS = 'tepore-fonts';
 
 const SHELL = [
   './',
@@ -18,7 +17,14 @@ const SHELL = [
   './js/settings.js',
   './js/notebook.js',
   './js/sheet.js',
+  './js/config.js',
+  './js/dropbox.js',
+  './js/backup.js',
+  './js/reminder.js',
   './js/version.js',
+  './fonts/fraunces-normal-latin.woff2',
+  './fonts/fraunces-italic-latin.woff2',
+  './fonts/figtree-normal-latin.woff2',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/apple-touch-icon.png',
@@ -29,13 +35,18 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil((async () => {
+    const cache = await caches.open(VERSION);
+    // allSettled: se un file manca, il resto della shell resta comunque offline
+    await Promise.allSettled(SHELL.map((url) => cache.add(url)));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== FONTS).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -44,20 +55,6 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-
-  // Font Google: cache-first
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(
-      caches.open(FONTS).then(async (cache) => {
-        const hit = await cache.match(request);
-        if (hit) return hit;
-        const res = await fetch(request);
-        if (res.ok || res.type === 'opaque') cache.put(request, res.clone());
-        return res;
-      }),
-    );
-    return;
-  }
 
   if (url.origin !== location.origin) return;
 
@@ -85,4 +82,16 @@ self.addEventListener('fetch', (event) => {
       return hit || net;
     }),
   );
+});
+
+// Tocco sul promemoria serale: riporta all'app invece di aprire una scheda nuova
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const open = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of open) {
+      if ('focus' in client) return client.focus();
+    }
+    return self.clients.openWindow('./');
+  })());
 });
