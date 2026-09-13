@@ -91,7 +91,8 @@ export class MoodSlider {
       if (v !== this.value) {
         this.value = v;
         this.#paint(true);
-        haptic();
+        // Gli estremi si sentono più pieni: il dito capisce dov'è il fondo
+        haptic(v === 0 || v === MAX_LEVEL ? 'soft' : 'tick');
       }
       this.onInput?.(this.value, p);
     };
@@ -144,7 +145,7 @@ export class MoodSlider {
         if (v !== this.value) {
           this.value = v;
           this.#paint(true);
-          haptic();
+          haptic(v === 0 || v === MAX_LEVEL ? 'soft' : 'tick');
         }
       }
       end(true);
@@ -171,12 +172,15 @@ export class MoodSlider {
       v = Math.max(0, Math.min(MAX_LEVEL, v));
       if (v === this.value) return;
       this.set(v);
+      haptic(v === 0 || v === MAX_LEVEL ? 'soft' : 'tick');
       this.onInput?.(v, v / MAX_LEVEL);
       this.onChange?.(v);
     });
   }
 
+  // Presa del pomello: un tocco come quando si solleva un oggetto
   #startDrag(e, done) {
+    haptic('tick');
     this.slider.setPointerCapture?.(e.pointerId);
     this.slider.classList.add('is-dragging');
     this.el.classList.add('is-dragging');

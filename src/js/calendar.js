@@ -101,7 +101,6 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
     const d = new Date(y, m + delta, 1);
     y = d.getFullYear();
     m = d.getMonth();
-    haptic();
     render(delta);
   }
   els.prev.addEventListener('click', () => shift(-1));
@@ -117,15 +116,14 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
     const dy = e.changedTouches[0].clientY - sy;
     sx = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0 && !els.next.disabled) shift(1);
-      else if (dx > 0) shift(-1);
+      if (dx < 0 && !els.next.disabled) { haptic('soft'); shift(1); }
+      else if (dx > 0) { haptic('soft'); shift(-1); }
     }
   }, { passive: true });
 
   els.grid.addEventListener('click', (e) => {
     const cell = e.target.closest('[data-date]');
     if (!cell || cell.disabled) return;
-    haptic();
     onPick(cell.dataset.date);
   });
 

@@ -7,9 +7,9 @@
   max-width: $app-max;
   min-height: 100dvh;
   margin-inline: auto;
-  // Solo scorrimento verticale: niente pan laterale accidentale
+  // Solo scorrimento verticale: niente pan laterale, niente zoom
   overflow-x: clip;
-  touch-action: pan-y pinch-zoom;
+  touch-action: pan-y;
 
   .views {
     position: relative;

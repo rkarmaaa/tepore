@@ -7,6 +7,7 @@
   bottom: calc(env(safe-area-inset-bottom) + #{$tabbar-h} + #{$sp-6});
   z-index: $z-toast;
   @include flex(row, center, center, $sp-2);
+  max-width: calc(100vw - #{$gutter * 2});
   padding: $sp-3 $sp-5;
   @include font-ui($fs-sm, $fw-semibold);
   white-space: nowrap;
@@ -20,8 +21,34 @@
     transform: translate(-50%, 0) scale(1);
   }
 
-  span {
+  .text {
     position: relative;
     z-index: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Toast con comando: resta aperto e si può toccare
+  &.has-action {
+    padding-right: $sp-2;
+    pointer-events: auto;
+  }
+
+  .action {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    height: 30px;
+    padding: 0 $sp-4;
+    border-radius: $r-pill;
+    background: var(--ember);
+    color: #FFF8F0;
+    @include font-ui($fs-xs, $fw-semibold);
+    @include pressable(.94);
+    @include focus-ring(2px);
+
+    @include dark {
+      color: #2A1710;
+    }
   }
 }

@@ -172,29 +172,8 @@
       }
 
       .bar {
-        display: flex;
-        gap: 3px;
-        height: 12px;
+        @include emo-bar;
         margin-top: $sp-4;
-        overflow: hidden;
-        border-radius: $r-pill;
-        background: var(--sand);
-
-        span {
-          flex: var(--n) 1 0;
-          min-width: 6px;
-          background: var(--emo);
-          transform-origin: left;
-          @include enter(rise, $dur-slow, 60ms, 100ms);
-
-          &:first-child {
-            border-radius: $r-pill 0 0 $r-pill;
-          }
-
-          &:last-child {
-            border-radius: 0 $r-pill $r-pill 0;
-          }
-        }
       }
 
       .cta {

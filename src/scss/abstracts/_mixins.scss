@@ -14,8 +14,28 @@
   }
 }
 
+// Tema scuro: quello di sistema, salvo scelta contraria, oppure forzato
 @mixin dark {
   @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) & {
+      @content;
+    }
+  }
+
+  :root[data-theme='dark'] & {
+    @content;
+  }
+}
+
+// Come sopra, ma da usare dentro :root, dove & è già la radice
+@mixin dark-root {
+  @media (prefers-color-scheme: dark) {
+    &:not([data-theme='light']) {
+      @content;
+    }
+  }
+
+  &[data-theme='dark'] {
     @content;
   }
 }
@@ -197,6 +217,32 @@
     stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+}
+
+// Barra delle prevalenze: una fetta per emozione, larga quanto --n
+@mixin emo-bar($h: 12px) {
+  display: flex;
+  gap: 3px;
+  height: $h;
+  overflow: hidden;
+  border-radius: $r-pill;
+  background: var(--sand);
+
+  span {
+    flex: var(--n) 1 0;
+    min-width: 6px;
+    background: var(--emo);
+    transform-origin: left;
+    @include enter(rise, $dur-slow, 60ms, 100ms);
+
+    &:first-child {
+      border-radius: $r-pill 0 0 $r-pill;
+    }
+
+    &:last-child {
+      border-radius: 0 $r-pill $r-pill 0;
+    }
   }
 }
 

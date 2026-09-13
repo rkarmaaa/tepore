@@ -3,3 +3,16 @@
 .sr-only {
   @include visually-hidden;
 }
+
+// Switch nativo fuori vista: su iOS è l'unica sorgente di aptica,
+// e per suonare deve essere davvero renderizzato (niente display: none).
+.haptic-rig {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  @include size(1px);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}

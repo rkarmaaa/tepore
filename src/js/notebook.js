@@ -1,6 +1,5 @@
 import { dominantOf, shapeSVG } from './emotions.js';
 import { dateOf, todayKey, daysBetween, monthName, cap } from './dates.js';
-import { haptic } from './haptics.js';
 
 const fmtDay = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric' });
 const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
@@ -90,8 +89,8 @@ export function createNotebook({ store, onPick, onWrite }) {
 
   root.addEventListener('click', (e) => {
     const entry = e.target.closest('[data-key]');
-    if (entry) { haptic(); onPick(entry.dataset.key); }
-    else if (e.target.closest('[data-write]')) { haptic(); onWrite(); }
+    if (entry) { onPick(entry.dataset.key); return; }
+    if (e.target.closest('[data-write]')) onWrite();
   });
 
   store.subscribe(() => render());

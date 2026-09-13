@@ -2,7 +2,8 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
   <title>Tepore — il diario delle emozioni</title>
   <meta name="description" content="Tepore è un piccolo diario delle emozioni: otto intensità, una nota, un calendario che si colora giorno dopo giorno.">
 
@@ -12,8 +13,19 @@
   <meta name="apple-mobile-web-app-title" content="Tepore">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-  <meta name="theme-color" content="#F5ECE0" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1F1713" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F5ECE0">
+
+  <!-- Tema scelto dall'utente, applicato prima di qualsiasi disegno -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('tepore:theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.querySelector('meta[name="theme-color"]').content = dark ? '#1F1713' : '#F5ECE0';
+      } catch (e) {}
+    })();
+  </script>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
@@ -56,10 +68,50 @@
   <link rel="preload" href="fonts/fraunces-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/figtree-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
 
+  <!-- Avvio: fondo e segno dipinti subito, prima che arrivi il foglio di stile -->
+  <style>
+    html { background: #F5ECE0; }
+    .splash {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(90% 55% at 85% -8%, rgba(242, 164, 110, .34), transparent 60%), radial-gradient(70% 45% at -10% 8%, rgba(238, 176, 47, .16), transparent 62%), #F5ECE0;
+      animation: splash-out .5s ease 2.6s forwards;
+    }
+    .splash svg { width: 92px; height: 92px; animation: splash-in .9s cubic-bezier(.22, 1, .36, 1) both; }
+    .splash.is-gone { opacity: 0; transition: opacity .42s ease; pointer-events: none; }
+    @keyframes splash-in { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: none; } }
+    @keyframes splash-out { to { opacity: 0; visibility: hidden; } }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) { background: #1F1713; }
+      html:not([data-theme="light"]) .splash { background: radial-gradient(90% 55% at 85% -8%, rgba(210, 96, 58, .26), transparent 60%), radial-gradient(70% 45% at -10% 8%, rgba(238, 176, 47, .08), transparent 62%), #1F1713; }
+    }
+    html[data-theme="dark"] { background: #1F1713; }
+    html[data-theme="dark"] .splash { background: radial-gradient(90% 55% at 85% -8%, rgba(210, 96, 58, .26), transparent 60%), radial-gradient(70% 45% at -10% 8%, rgba(238, 176, 47, .08), transparent 62%), #1F1713; }
+    @media (prefers-reduced-motion: reduce) {
+      .splash svg { animation: none; }
+    }
+  </style>
+
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
+  <!-- Schermata di avvio dell'app: copre il vuoto fra il lancio e il primo disegno -->
+  <div class="splash" data-splash aria-hidden="true">
+    <svg viewBox="0 0 1024 1024" fill="none" focusable="false">
+      <defs>
+        <linearGradient id="splash-ember" x1="512" y1="172" x2="512" y2="852" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#E98852"/>
+          <stop offset="1" stop-color="#A5412A"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#splash-ember)" d="M512.119 166C550.012 166 586.364 181.03 613.175 207.802C639.988 234.576 655.062 270.901 655.062 308.789L655.053 310.351C654.761 337.138 647.003 363.903 635.507 388.729C660.816 377.01 688.141 369.177 715.449 369.177C753.337 369.177 789.663 384.251 816.437 411.063C843.208 437.875 858.238 474.227 858.238 512.119C858.238 550.012 843.208 586.364 816.437 613.175C789.663 639.988 753.337 655.062 715.449 655.062C688.141 655.061 660.816 647.226 635.507 635.507C647.226 660.816 655.061 688.141 655.062 715.449C655.062 753.337 639.988 789.663 613.175 816.437C586.364 843.208 550.012 858.238 512.119 858.238C474.227 858.238 437.875 843.208 411.063 816.437C384.251 789.663 369.177 753.337 369.177 715.449L369.186 713.888C369.477 687.1 377.234 660.334 388.729 635.507C363.903 647.003 337.138 654.761 310.351 655.053L308.789 655.062C270.901 655.062 234.576 639.988 207.802 613.175C181.03 586.364 166 550.012 166 512.119L166.011 510.344C166.472 473.093 181.448 437.456 207.802 411.063C234.576 384.251 270.901 369.177 308.789 369.177C336.096 369.177 363.421 377.011 388.729 388.729C377.011 363.421 369.177 336.096 369.177 308.789C369.177 270.901 384.251 234.576 411.063 207.802C437.875 181.03 474.227 166 512.119 166ZM512.119 547.891C487.642 568.321 463.409 595.276 445.036 624.205C425.663 654.71 413.177 686.824 413.177 715.449C413.177 741.647 423.599 766.774 442.153 785.301C460.708 803.828 485.875 814.238 512.119 814.238C537.942 814.238 562.721 804.159 581.186 786.187L582.113 785.272C600.36 767.038 610.733 742.418 611.053 716.678L611.062 715.449C611.061 686.824 598.575 654.71 579.202 624.205C560.83 595.276 536.597 568.321 512.119 547.891ZM308.768 413.177C282.578 413.182 257.461 423.604 238.938 442.153L238.938 442.152L238.074 443.027L238.075 443.028C220.088 461.495 210 486.285 210 512.119L210.008 513.349C210.328 539.148 220.7 563.82 238.938 582.085C257.176 600.349 281.808 610.733 307.562 611.053H307.561L308.809 611.061C337.204 611.055 369.031 598.766 399.321 579.652C428.517 561.229 455.745 536.8 476.346 512.118C456.084 487.843 429.404 463.806 400.744 445.489C370.527 426.177 338.675 413.581 310.167 413.186V413.187L308.768 413.177ZM714.104 413.186C685.82 413.569 654.234 425.966 624.205 445.036C595.276 463.408 568.321 487.641 547.891 512.118C568.153 536.394 594.833 560.431 623.494 578.749C653.711 598.061 685.563 610.656 714.07 611.052H714.071L715.47 611.061C741.239 611.055 765.971 600.966 784.402 582.973L785.329 582.057C803.839 563.505 814.238 538.35 814.238 512.119L814.23 510.909C813.921 485.524 803.879 461.228 786.187 443.053L785.301 442.153C766.774 423.599 741.647 413.177 715.449 413.177L714.104 413.186ZM510.89 210.008C485.09 210.328 460.418 220.7 442.153 238.938L442.152 238.938L441.289 239.81L441.29 239.811C423.276 258.25 413.177 283.001 413.177 308.789L413.187 310.167C413.582 338.675 426.177 370.527 445.489 400.744C463.807 429.405 487.843 456.084 512.119 476.347C536.395 456.084 560.432 429.405 578.749 400.744C598.061 370.527 610.656 338.675 611.052 310.167L611.062 308.789C611.062 283.001 600.962 258.25 582.948 239.811V239.81L582.085 238.938V238.938C563.53 220.411 538.363 210 512.119 210L510.89 210.008Z"/>
+    </svg>
+  </div>
+
   <div class="app" id="app">
 
     <header class="navbar" data-navbar aria-hidden="true">
@@ -196,6 +248,59 @@
         </section>
       </section>
 
+      <!-- EMOZIONI -->
+      <section class="view report" id="view-report" data-view="report" aria-labelledby="report-title" hidden>
+        <header class="hero">
+          <div class="top">
+            <p class="date" data-report-range></p>
+          </div>
+          <h1 class="title" id="report-title" data-sentinel>Emozioni</h1>
+          <p class="lede">Come sono andate le tue giornate, viste da lontano.</p>
+        </header>
+
+        <section class="group lead" aria-labelledby="lead-title">
+          <div class="head">
+            <h2 class="title" id="lead-title">Ultimi 14 giorni</h2>
+            <span class="aside" data-lead-aside></span>
+          </div>
+          <div class="body">
+            <div class="portrait" data-lead></div>
+          </div>
+          <p class="foot" data-lead-foot></p>
+        </section>
+
+        <section class="group ranking" aria-labelledby="ranking-title">
+          <div class="head">
+            <h2 class="title" id="ranking-title">Tutte e otto</h2>
+          </div>
+          <div class="body">
+            <ul class="ranks" data-ranks></ul>
+          </div>
+          <p class="foot">Intensità media delle giornate segnate, da 0 a 5.</p>
+        </section>
+
+        <section class="group year" aria-labelledby="year-title">
+          <div class="head">
+            <h2 class="title" id="year-title">Vista anno</h2>
+            <span class="aside" data-year-aside></span>
+          </div>
+          <div class="body">
+            <div class="yearbar">
+              <button class="glass-btn" type="button" data-year-prev aria-label="Anno precedente">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+              </button>
+              <span class="label" data-year-label></span>
+              <button class="glass-btn" type="button" data-year-next aria-label="Anno successivo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
+              </button>
+            </div>
+            <div class="months" data-year-grid></div>
+            <div class="recap" data-year-recap></div>
+          </div>
+          <p class="foot">Ogni segno è una giornata, con la forma e il colore dell'emozione prevalente. Toccane uno per aprirlo.</p>
+        </section>
+      </section>
+
       <!-- IMPOSTAZIONI -->
       <section class="view settings" id="view-settings" data-view="settings" aria-labelledby="settings-title" hidden>
         <header class="hero">
@@ -253,9 +358,35 @@
           <p class="foot">Serve Tepore installata sulla schermata Home. La notifica parte dal telefono, senza passare da nessun server: quando non riesce, il promemoria ti aspetta alla prima apertura.</p>
         </section>
 
+        <section class="group theme" aria-labelledby="theme-title">
+          <div class="head">
+            <h2 class="title" id="theme-title">Tema</h2>
+          </div>
+          <div class="body">
+            <label class="toggle" for="theme-select">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path class="half" d="M12 3.6a8.4 8.4 0 0 1 0 16.8z"/></svg>
+              </span>
+              <span class="text">
+                <strong>Aspetto</strong>
+              </span>
+              <span class="select">
+                <select id="theme-select" data-theme-select>
+                  <option value="auto">Come sul dispositivo</option>
+                  <option value="light">Tema chiaro</option>
+                  <option value="dark">Tema scuro</option>
+                </select>
+                <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 10 4.5 4.5 4.5-4.5"/></svg>
+              </span>
+            </label>
+          </div>
+          <p class="foot">Con "come sul dispositivo" l'app segue Chiaro/Scuro di iPhone, anche quando cambia da solo la sera.</p>
+        </section>
+
         <section class="group options" aria-labelledby="options-title">
           <div class="head">
             <h2 class="title" id="options-title">Interazione</h2>
+            <span class="aside" data-haptics-state></span>
           </div>
           <div class="body">
             <label class="toggle" for="haptics-input">
@@ -272,7 +403,7 @@
               </span>
             </label>
           </div>
-          <p class="foot">Si sente negli slider, nei cambi di sezione e nelle conferme. Su alcuni dispositivi potrebbe non essere disponibile.</p>
+          <p class="foot">Si sente sotto ogni comando: scatti degli slider, interruttori, cambi di sezione, conferme. Su alcuni dispositivi il sistema non lo mette a disposizione.</p>
         </section>
 
         <section class="group backup" aria-labelledby="backup-title">
@@ -330,25 +461,36 @@
     <nav class="tabbar" aria-label="Sezioni">
       <div class="glass" role="tablist">
         <span class="indicator" data-tab-indicator aria-hidden="true"></span>
-        <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="view-today" data-tab="today">
+        <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="view-today" data-tab="today" data-haptic="soft">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle class="fill-on" cx="12" cy="12" r="4.2"/>
             <path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.5 5.5 17 7M7 17l-1.5 1.5M18.5 18.5 17 17M7 7 5.5 5.5"/>
           </svg>
-          <span>Oggi</span>
+          <span class="sr-only">Oggi</span>
         </button>
-        <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-calendar" data-tab="calendar">
+        <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-calendar" data-tab="calendar" data-haptic="soft">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect class="fill-on" x="3.5" y="5" width="17" height="15.5" rx="4"/>
             <path d="M3.5 10h17M8 3v4M16 3v4"/>
             <circle cx="8.5" cy="14.5" r=".6"/><circle cx="12" cy="14.5" r=".6"/><circle cx="15.5" cy="14.5" r=".6"/>
           </svg>
-          <span>Calendario</span>
+          <span class="sr-only">Calendario</span>
+        </button>
+        <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-report" data-tab="report" data-haptic="soft">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="fill-on" x="3.6" y="12.4" width="4.6" height="7.8" rx="2.3"/>
+            <rect class="fill-on" x="9.7" y="6.6" width="4.6" height="13.6" rx="2.3"/>
+            <rect class="fill-on" x="15.8" y="9.6" width="4.6" height="10.6" rx="2.3"/>
+          </svg>
+          <span class="sr-only">Emozioni</span>
         </button>
       </div>
     </nav>
 
-    <div class="toast" role="status" aria-live="polite" data-toast><span></span></div>
+    <div class="toast" role="status" aria-live="polite" data-toast>
+      <span class="text" data-toast-text></span>
+      <button class="action" type="button" data-toast-action hidden></button>
+    </div>
 
   </div>
 

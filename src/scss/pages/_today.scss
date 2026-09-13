@@ -113,11 +113,12 @@
     }
 
     .caption {
+      @include font-display($fs-lg, $fw-regular, 100);
       position: absolute;
-      inset: auto $gutter $sp-1;
+      inset: auto $gutter 0;
       z-index: 2;
       text-align: center;
-      @include font-display($fs-lg, $fw-regular, 100);
+      text-wrap: balance;
       font-style: italic;
       color: var(--ink-soft);
       line-height: 1.3;

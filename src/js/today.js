@@ -74,7 +74,6 @@ export function createToday({ store, onTitle }) {
   els.list.addEventListener('click', (e) => {
     const info = e.target.closest('[data-info]');
     if (!info) return;
-    haptic();
     openSheet(info.dataset.info);
   });
 
@@ -221,7 +220,7 @@ export function createToday({ store, onTitle }) {
 
   // Eventi
   els.apathy.addEventListener('change', () => {
-    haptic();
+    haptic('firm');
     setApathy(els.apathy.checked);
     store.update(key, { apatia: els.apathy.checked });
     paintBloom();
@@ -242,7 +241,7 @@ export function createToday({ store, onTitle }) {
   document.addEventListener('visibilitychange', () => { if (document.hidden) flushNote(); });
 
   els.actions.addEventListener('click', (e) => {
-    if (e.target.closest('[data-go-today]')) { haptic(); load(todayKey()); }
+    if (e.target.closest('[data-go-today]')) load(todayKey());
   });
 
   // Aggiornamenti esterni (import, altre schede)

@@ -22,6 +22,14 @@
 :root {
   color-scheme: light dark;
 
+  &[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  &[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
   --paper: #{$c-paper};
   --surface: #{$c-paper-raised};
   --sand: #{$c-sand};
@@ -56,7 +64,7 @@
     --emo-#{$name}: #{$color};
   }
 
-  @include dark {
+  @include dark-root {
     --paper: #{$c-night};
     --surface: #{$c-night-raised};
     --sand: #{$c-night-sand};

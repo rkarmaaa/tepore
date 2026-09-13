@@ -1,6 +1,7 @@
 import { todayKey } from './dates.js';
 import { VERSION } from './version.js';
-import { haptic, hapticsEnabled, setHaptics } from './haptics.js';
+import { haptic, hapticsEnabled, hapticsSupported, setHaptics } from './haptics.js';
+import { getTheme, setTheme } from './theme.js';
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const fmtTime = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit' });
@@ -26,7 +27,10 @@ export function createSettings({ store, toast, backup, reminder }) {
     exportBtn: $('[data-export]'),
     importBtn: $('[data-import]'),
     importInput: $('[data-import-input]'),
+    theme: $('[data-theme-select]'),
     haptics: $('[data-haptics]'),
+    hapticsState: $('[data-haptics-state]'),
+    hapticsGroup: $('.group.options'),
     reminder: $('[data-reminder]'),
     reminderState: $('[data-reminder-state]'),
     reminderGroup: $('.group.reminder'),
@@ -37,11 +41,24 @@ export function createSettings({ store, toast, backup, reminder }) {
     backupActions: $('[data-backup-actions]'),
   };
 
+  // Tema: la scelta è già applicata dallo script in testa a index.html
+  els.theme.value = getTheme();
+  els.theme.addEventListener('change', () => {
+    setTheme(els.theme.value);
+    haptic('firm');
+  });
+
   // Feedback aptico: attivo di default, la scelta resta salvata
-  els.haptics.checked = hapticsEnabled();
+  const canHaptic = hapticsSupported();
+  els.haptics.checked = hapticsEnabled() && canHaptic;
+  els.haptics.disabled = !canHaptic;
+  els.hapticsGroup.classList.toggle('is-off', !canHaptic);
+  els.hapticsState.textContent = !canHaptic ? 'Non disponibile' : els.haptics.checked ? 'Attivo' : 'Non attivo';
+
   els.haptics.addEventListener('change', () => {
     setHaptics(els.haptics.checked);
-    haptic();
+    els.hapticsState.textContent = els.haptics.checked ? 'Attivo' : 'Non attivo';
+    haptic('double');
   });
 
   // --- Promemoria serale ---
@@ -56,12 +73,12 @@ export function createSettings({ store, toast, backup, reminder }) {
 
   // Il permesso si puo chiedere solo qui dentro, nel tocco dell'utente
   els.reminder.addEventListener('change', async () => {
-    haptic();
+    haptic('firm');
     const outcome = await reminder.setEnabled(els.reminder.checked);
     paintReminder();
     if (outcome === 'on') toast('Promemoria attivo alle 22');
-    else if (outcome === 'blocked') toast('Le notifiche sono bloccate: riattivale per Tepore nelle impostazioni di iPhone');
-    else if (outcome === 'unsupported') toast('Serve Tepore installata sulla schermata Home');
+    else if (outcome === 'blocked') { haptic('warn'); toast('Le notifiche sono bloccate: riattivale per Tepore nelle impostazioni di iPhone'); }
+    else if (outcome === 'unsupported') { haptic('warn'); toast('Serve Tepore installata sulla schermata Home'); }
   });
 
   reminder.subscribe(paintReminder);
@@ -152,7 +169,6 @@ export function createSettings({ store, toast, backup, reminder }) {
 
   els.backup.addEventListener('click', async (e) => {
     if (e.target.closest('[data-link]')) {
-      haptic();
       if (authUrl) window.open(authUrl, '_blank', 'noopener');
       asking = true;
       paintBackup();
@@ -166,18 +182,18 @@ export function createSettings({ store, toast, backup, reminder }) {
     if (e.target.closest('[data-confirm]')) {
       const code = els.backupActions.querySelector('[data-code]')?.value || '';
       if (!code.trim()) return;
-      haptic();
       linking = true;
       paintBackup();
       const ok = await backup.link(code);
       linking = false;
       if (ok) asking = false;
+      haptic(ok ? 'double' : 'warn');
       paintBackup();
       prepare();
       return;
     }
-    if (e.target.closest('[data-now]')) { haptic(); backup.sync({ silent: false }); return; }
-    if (e.target.closest('[data-unlink]')) { haptic(); backup.unlink(); prepare(); }
+    if (e.target.closest('[data-now]')) { backup.sync({ silent: false }); return; }
+    if (e.target.closest('[data-unlink]')) { backup.unlink(); prepare(); }
   });
 
   backup.subscribe(paintBackup);
@@ -186,7 +202,6 @@ export function createSettings({ store, toast, backup, reminder }) {
 
   // --- Backup manuale ---
   els.exportBtn.addEventListener('click', async () => {
-    haptic();
     const name = `tepore-backup-${todayKey()}.json`;
     const blob = new Blob([store.exportJSON()], { type: 'application/json' });
     const file = new File([blob], name, { type: 'application/json' });
@@ -207,16 +222,17 @@ export function createSettings({ store, toast, backup, reminder }) {
     toast('Backup esportato');
   });
 
-  els.importBtn.addEventListener('click', () => { haptic(); els.importInput.click(); });
+  els.importBtn.addEventListener('click', () => els.importInput.click());
   els.importInput.addEventListener('change', async () => {
     const file = els.importInput.files?.[0];
     els.importInput.value = '';
     if (!file) return;
     try {
       const n = store.importJSON(await file.text());
-      haptic();
+      haptic(n ? 'double' : 'warn');
       toast(n ? `Backup importato: ${plural(n, 'giornata', 'giornate')}` : 'Il backup non contiene giornate');
     } catch {
+      haptic('warn');
       toast('File non valido: scegli un backup di Tepore (.json)');
     }
   });

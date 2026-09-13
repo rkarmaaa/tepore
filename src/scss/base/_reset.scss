@@ -15,9 +15,10 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
-  // Niente scorrimento laterale: si blocca su html, non solo su body
+  // Niente scorrimento laterale né zoom: si blocca su html, non solo su body
   overflow-x: clip;
   overscroll-behavior-x: none;
+  touch-action: pan-y;
   @include tap-reset;
 
   @include reduced-motion {
@@ -32,6 +33,7 @@ body {
   line-height: 1.5;
   overflow-x: clip;
   overscroll-behavior-x: none;
+  touch-action: pan-y;
 }
 
 img,

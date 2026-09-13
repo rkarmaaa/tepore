@@ -1,6 +1,7 @@
 import { store } from './store.js';
 import { createToday } from './today.js';
 import { createCalendar } from './calendar.js';
+import { createReport } from './report.js';
 import { createSettings } from './settings.js';
 import { createNotebook } from './notebook.js';
 import { createBackup } from './backup.js';
@@ -11,9 +12,9 @@ import { haptic } from './haptics.js';
 store.init();
 
 // Tab principali e pagine interne, ognuna con la sua tab di appartenenza
-const TABS = ['today', 'calendar'];
-const PARENT = { today: 'today', calendar: 'calendar', settings: 'today', notebook: 'calendar' };
-const HASH = { today: '', calendar: 'calendario', settings: 'impostazioni', notebook: 'quaderno' };
+const TABS = ['today', 'calendar', 'report'];
+const PARENT = { today: 'today', calendar: 'calendar', report: 'report', settings: 'today', notebook: 'calendar' };
+const HASH = { today: '', calendar: 'calendario', report: 'emozioni', settings: 'impostazioni', notebook: 'quaderno' };
 const BACK_LABEL = { settings: 'Oggi', notebook: 'Calendario' };
 
 const views = Object.fromEntries(Object.keys(PARENT).map((v) => [v, document.querySelector(`[data-view="${v}"]`)]));
@@ -24,20 +25,39 @@ const navTitle = navbar.querySelector('[data-navbar-title]');
 const navBack = navbar.querySelector('[data-back]');
 const navBackLabel = navbar.querySelector('[data-navbar-back]');
 const toastEl = document.querySelector('[data-toast]');
+const toastText = toastEl.querySelector('[data-toast-text]');
+const toastAction = toastEl.querySelector('[data-toast-action]');
 
 const isSub = (v) => PARENT[v] !== v;
-const titles = { today: 'Oggi', calendar: '', settings: 'Impostazioni', notebook: 'Quaderno' };
+const titles = { today: 'Oggi', calendar: '', report: 'Emozioni', settings: 'Impostazioni', notebook: 'Quaderno' };
 const scrollMemory = {};
 let active = 'today';
 
-// Toast
+// Toast: messaggio breve, con un comando facoltativo che lo tiene aperto
 let toastTimer;
-function toast(message) {
-  toastEl.querySelector('span').textContent = message;
+let toastDo = null;
+
+function hideToast() {
+  toastEl.classList.remove('is-visible');
+  toastDo = null;
+}
+
+function toast(message, { action = '', onAction = null, hold = false } = {}) {
+  toastText.textContent = message;
+  toastDo = onAction;
+  toastAction.hidden = !action;
+  if (action) toastAction.textContent = action;
+  toastEl.classList.toggle('has-action', Boolean(action));
   toastEl.classList.add('is-visible');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 2600);
+  if (!hold) toastTimer = setTimeout(hideToast, 2600);
 }
+
+toastAction.addEventListener('click', () => {
+  const run = toastDo;
+  hideToast();
+  run?.();
+});
 
 const setTitle = (view) => (t) => {
   titles[view] = t;
@@ -48,6 +68,7 @@ const openDay = (key) => { today.open(key); go('today'); };
 
 const today = createToday({ store, onTitle: setTitle('today') });
 const calendar = createCalendar({ store, toast, onTitle: setTitle('calendar'), onPick: openDay });
+const report = createReport({ store, onPick: openDay });
 const backup = createBackup({ store, toast });
 const reminder = createReminder({ store });
 const settings = createSettings({ store, toast, backup, reminder });
@@ -104,13 +125,14 @@ function show(name, { instant = false } = {}) {
     active = name;
 
     if (name === 'calendar') calendar.refresh();
+    if (name === 'report') report.refresh();
     if (name === 'settings') settings.refresh();
     if (name === 'notebook') notebook.refresh();
 
     // Il quaderno si apre sulla nota più recente, in fondo
     const back = PARENT[prev] === name;
     const top = name === 'notebook' ? document.documentElement.scrollHeight
-      : (name === 'calendar' || back) ? (scrollMemory[name] || 0) : 0;
+      : (name === 'calendar' || name === 'report' || back) ? (scrollMemory[name] || 0) : 0;
     window.scrollTo({ top, behavior: 'instant' });
   }
 
@@ -154,7 +176,6 @@ window.addEventListener('popstate', () => show(fromHash()));
 
 tabs.forEach((t) => t.addEventListener('click', () => {
   const name = t.dataset.tab;
-  haptic();
   // Tab attiva: da una pagina interna torna alla radice, altrimenti in cima
   if (name === PARENT[active] && isSub(active)) back();
   else if (name === active) window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -163,8 +184,24 @@ tabs.forEach((t) => t.addEventListener('click', () => {
 
 document.addEventListener('click', (e) => {
   const target = e.target.closest('[data-go]');
-  if (target) { haptic(); push(target.dataset.go); return; }
-  if (e.target.closest('[data-back]')) { haptic(); back(); }
+  if (target) { push(target.dataset.go); return; }
+  if (e.target.closest('[data-back]')) back();
+});
+
+// Un tocco sotto ogni comando, sul pointerdown come nelle app native.
+// I controlli che hanno un loro tocco (slider, interruttori) si escludono con data-haptic="off".
+document.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const btn = e.target.closest('button:not([disabled])');
+  if (!btn) return;
+  const kind = btn.dataset.haptic;
+  if (kind === 'off') return;
+  haptic(kind || 'tick');
+}, { passive: true });
+
+// Niente zoom: l'app deve comportarsi come nativa, non come una pagina
+['gesturestart', 'gesturechange', 'gestureend'].forEach((type) => {
+  document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
 });
 
 // Barra compatta quando il titolo grande esce dallo schermo.
@@ -208,6 +245,7 @@ function checkDay() {
   if (now === lastToday) return;
   today.refreshDay(lastToday);
   calendar.refresh();
+  report.refresh();
   lastToday = now;
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDay(); });
@@ -217,6 +255,17 @@ setInterval(checkDay, 60_000);
 show(fromHash(), { instant: true });
 if (!store.persistent) toast('Il browser non permette di salvare: i dati spariranno alla chiusura');
 
+// Schermata di avvio: sparisce appena i caratteri sono pronti, senza aspettare all'infinito
+const splash = document.querySelector('[data-splash]');
+function hideSplash() {
+  if (!splash || splash.classList.contains('is-gone')) return;
+  splash.classList.add('is-gone');
+  setTimeout(() => splash.remove(), 600);
+}
+const fontsReady = document.fonts?.ready ?? Promise.resolve();
+Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1200))])
+  .then(() => requestAnimationFrame(hideSplash));
+
 // Sera inoltrata e giornata ancora vuota: il promemoria aspetta qui
 const invite = reminder.greet();
 if (invite) setTimeout(() => toast(invite), 900);
@@ -224,5 +273,35 @@ if (invite) setTimeout(() => toast(invite), 900);
 // Service worker (offline). In sviluppo locale resta spento.
 const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname) || location.hostname.startsWith('192.168.');
 if ('serviceWorker' in navigator && location.protocol === 'https:' && !isLocal) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  window.addEventListener('load', async () => {
+    let reloading = false;
+    try {
+      const reg = await navigator.serviceWorker.register('sw.js');
+
+      // Versione nuova pronta ad attivarsi: si offre di ricaricare subito
+      const announce = (worker) => toast('Nuova versione di Tepore', {
+        action: 'Ricarica',
+        hold: true,
+        onAction: () => { reloading = true; worker.postMessage({ type: 'skip-waiting' }); },
+      });
+      const watch = (worker) => {
+        if (!worker || !navigator.serviceWorker.controller) return;
+        if (worker.state === 'installed') { announce(worker); return; }
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed') announce(worker);
+        });
+      };
+
+      watch(reg.waiting);
+      reg.addEventListener('updatefound', () => watch(reg.installing));
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) location.reload();
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) reg.update().catch(() => {});
+      });
+    } catch {
+      /* niente offline: l'app funziona comunque */
+    }
+  });
 }

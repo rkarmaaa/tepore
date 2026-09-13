@@ -35,10 +35,17 @@ Principi da non tradire:
 - Legenda delle forme.
 - Card **Quaderno** in fondo: numero di note e anteprima dell'ultima.
 
+**Emozioni** (tab 3) — il resoconto, in `report.js`
+- **Ultimi 14 giorni**: l'emozione con la somma di intensità più alta, con la sua forma su un alone del proprio colore, una frase che ne racconta il peso e tre misure (presente in N giornate, intensità media, prevale in N). Sotto, la direzione rispetto alle due settimane precedenti: solo "più" e "meno", mai percentuali.
+- **Tutte e otto**: classifica con barra e intensità media; le emozioni mai sentite restano in elenco, in punta di piedi.
+- **Vista anno**: dodici mini-mesi, ogni giornata un quadratino con la forma e il colore dell'emozione prevalente. Frecce e scorrimento orizzontale per cambiare anno (mai oltre l'anno in corso o prima della prima giornata registrata); il tocco su un giorno lo apre in Oggi. In fondo il riepilogo dell'anno con la barra delle prevalenze.
+- Le finestre si calcolano con `windowStats(store, end, span, back)`: `felt` = giornate segnate meno quelle in apatia, ed è il denominatore di tutte le medie.
+
 **Impostazioni** (pagina interna di Oggi) — nell'ordine:
 - I tuoi dati: conteggio, esporta/importa backup JSON (share sheet su iOS).
 - **Promemoria**: interruttore **Promemoria serale** (`reminder.js`). Alle 22 una notifica locale gentile, solo se la giornata è ancora vuota e una sola volta al giorno (`tepore:reminder`, `tepore:reminder:seen`). Il permesso si chiede dentro il tocco sull'interruttore. Quando la notifica non può partire — iOS sospende la pagina — `reminder.greet()` mostra l'invito come toast alla prima apertura.
-- Interazione: interruttore **Feedback aptico**, attivo di default, salvato in `localStorage['tepore:haptics']`.
+- **Tema** (`theme.js`): tendina Aspetto con "Come sul dispositivo" (predefinito), "Tema chiaro", "Tema scuro". La scelta sta in `localStorage['tepore:theme']` e mette `data-theme` sulla radice; uno script in testa a `index.html` la applica **prima del primo disegno**, aggiornando anche `<meta name="theme-color">` (una sola, senza `media`).
+- Interazione: interruttore **Feedback aptico**, attivo di default, salvato in `localStorage['tepore:haptics']`. Dove il sistema non offre aptica (`hapticsSupported()` falso) il gruppo si spegne da solo e l'etichetta dice "Non disponibile".
 - **Backup automatico** su Dropbox, per ultimo: collegamento PKCE con codice da incollare, poi salvataggio da sé a ogni modifica (`backup.js`, `dropbox.js`, chiave in `config.js`). Mentre verifica il codice il box mostra uno `.spinner`; `setActions(mode, html)` ridisegna i comandi solo al cambio di stato, altrimenti il codice appena incollato sparirebbe. Serve perché iOS cancella il contenitore dati della web app quando la si rimuove dalla Home.
 - Firma dell'app con icona e versione.
 
@@ -47,7 +54,7 @@ Principi da non tradire:
 - Etichetta del mese sticky in vetro, nodo con la forma dell'emozione prevalente; tocco su una nota: apre il giorno in Oggi.
 
 **Navigazione** (`app.js`)
-- `PARENT` lega ogni pagina alla sua tab; le pagine interne entrano con `pushState` (funziona "indietro"). Hash: `#calendario`, `#impostazioni`, `#quaderno`.
+- Tre tab (`TABS`: `today`, `calendar`, `report`) e due pagine interne. `PARENT` lega ogni pagina alla sua tab; le pagine interne entrano con `pushState` (funziona "indietro"). Hash: `#calendario`, `#emozioni`, `#impostazioni`, `#quaderno`.
 - Link con `data-go="pagina"`, ritorno con `data-back`; la tab attiva, da una pagina interna, riporta alla radice.
 
 **Regole di calcolo** (`emotions.js`)
@@ -68,7 +75,7 @@ tepore/
 ├─ scripts/fonts.mjs       # scarica i font in src/fonts/ (gira prima di dev e build)
 ├─ .github/workflows/deploy.yml  # push su main → build → GitHub Pages
 └─ src/                    # ← cartella pubblicata
-   ├─ index.html           # markup di entrambe le viste, tab bar, toast
+   ├─ index.html           # markup di tutte le viste, tab bar, toast, schermata di avvio in linea
    ├─ manifest.webmanifest # start_url e scope RELATIVI (./)
    ├─ sw.js                # cache offline dell'app shell + font
    ├─ icons/               # icon.svg (sorgente 1024) + png generati: favicon-16/32/48,
@@ -83,14 +90,16 @@ tepore/
    │  ├─ emotions.js       # dati delle emozioni, forme SVG, regole di dominanza
    │  ├─ dates.js          # chiavi data locali, formattazione it-IT
    │  ├─ haptics.js        # aptica (vibrate / trucco switch iOS 18+)
+   │  ├─ theme.js          # chiaro / scuro / come il dispositivo
    │  ├─ slider.js         # classe MoodSlider
-   │  ├─ sheet.js          # foglio modale iOS + helper longPress
+   │  ├─ sheet.js          # foglio modale iOS (gesture di chiusura, aptica)
    │  ├─ config.js         # chiave dell'app Dropbox (da compilare a mano)
    │  ├─ dropbox.js        # OAuth PKCE, download e upload del backup
    │  ├─ backup.js         # sincronizzazione automatica con debounce
    │  ├─ reminder.js       # promemoria serale (notifica locale alle 22)
    │  ├─ today.js          # vista Oggi (bloom, aura, slider, apatia, nota)
    │  ├─ calendar.js       # vista Calendario
+   │  ├─ report.js         # vista Emozioni (14 giorni, classifica, vista anno)
    │  ├─ settings.js       # pagina Impostazioni (backup, versione)
    │  ├─ notebook.js       # pagina Quaderno + card nel calendario
    │  └─ version.js        # GENERATO dalla build
@@ -100,7 +109,7 @@ tepore/
       ├─ base/             # _fonts (@font-face locali), _root (custom property), _reset, _typography, _animations, _utilities
       ├─ layout/           # _app, _navbar, _tabbar
       ├─ components/       # _group, _slider, _switch, _toggle, _shape, _hero, _button, _spinner, _toast, _sheet
-      └─ pages/            # _today, _calendar, _settings, _notebook
+      └─ pages/            # _today, _calendar, _report, _settings, _notebook
 ```
 
 Ogni partial SCSS inizia con `@use '../abstracts' as *;`. Un nuovo partial va aggiunto al `_index.scss` della sua cartella.
@@ -132,7 +141,7 @@ Ogni partial SCSS inizia con `@use '../abstracts' as *;`. Un nuovo partial va ag
 
 ## 5. Design system
 
-I token vivono in `scss/abstracts/_variables.scss`; i colori a runtime sono custom property in `base/_root.scss`, con override automatico per `prefers-color-scheme: dark`. **Nei componenti usa sempre le custom property** (`var(--ink)`, `var(--emo)`…), non i colori `$c-*` diretti, così il tema scuro funziona da solo.
+I token vivono in `scss/abstracts/_variables.scss`; i colori a runtime sono custom property in `base/_root.scss`. Il tema scuro arriva da `prefers-color-scheme` **salvo scelta contraria dell'utente**: `@include dark` genera sia `prefers-color-scheme: dark` con `:root:not([data-theme='light']) &`, sia `:root[data-theme='dark'] &`. Dentro `:root` (dove `&` è già la radice) si usa `@include dark-root`. **Nei componenti usa sempre le custom property** (`var(--ink)`, `var(--emo)`…), non i colori `$c-*` diretti, così il tema scuro funziona da solo.
 
 ### Palette
 
@@ -177,7 +186,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 
 - Spaziatura base 4: `$sp-1` 4 · 2 8 · 3 12 · 4 16 · 5 20 · 6 24 · 7 28 · 8 32 · 10 40 · 12 48 · 16 64px.
 - Raggi: `$r-xs` 8 · `sm` 12 · `md` 18 · `lg` 26 (card) · `xl` 34 · `pill` 999.
-- Layout: colonna max `$app-max` 540px centrata, `$gutter` 20px, navbar 48px, tab bar 62px flottante a 10px dal bordo + safe area.
+- Layout: colonna max `$app-max` 540px centrata, `$gutter` 20px, navbar 48px, tab bar 58px flottante (sole icone) + safe area.
 - Breakpoint (`mq`/`mq-down`): xs 360 · sm 400 · md 640 · lg 960. Mobile first.
 - z-index solo tramite variabili: `$z-bloom` 1 · `$z-navbar` 40 · `$z-tabbar` 50 · `$z-toast` 60 · `$z-sheet` 70.
 
@@ -193,16 +202,17 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 ### Componenti firma
 
 - **Liquid glass** (`@include liquid-glass($radius, $blur)`): vetro caldo con blur + saturazione, bordo a gradiente luminoso (`::before` mascherato) e riflesso speculare (`::after`). Usato per tab bar, chip e controlli flottanti. Occupa entrambi gli pseudo-elementi: non aggiungerne altri sullo stesso elemento.
-- **Tab bar**: capsula di vetro flottante in basso, icona + etichetta, aptica al cambio. La pillola si muove come una goccia animando `left`/`right`: il bordo d'attacco parte subito, quello di coda insegue (`is-going-left/right`), con lieve sollevamento (`pill-lift`); l'icona attiva fa `tab-bounce`. Non animarla con transform e `var()` nei keyframe.
+- **Tab bar**: capsula di vetro flottante in basso, **solo icone** (il nome resta in `.sr-only` per VoiceOver), tre destinazioni, aptica al cambio. Le posizioni della pillola si generano con un `@for` su `$tab-count`: cambiando il numero di tab non serve toccare altro. La pillola si muove come una goccia animando `left`/`right`: il bordo d'attacco parte subito, quello di coda insegue (`is-going-left/right`), con lieve sollevamento (`pill-lift`); l'icona attiva fa `tab-bounce`. Non animarla con transform e `var()` nei keyframe.
 - **Navbar**: invisibile in cima, compare in vetro con il titolo quando il large title esce dallo schermo.
 - **Group** (`.group` con `.head`, `.title`, `.aside`, `.body`, `.foot` annidati): sezione stile Impostazioni iOS; il body è una card `@include surface`. Con `.collapsible` si richiude: il JS misura l'altezza e commuta `is-collapsed`.
 - **Slider**: traccia sabbia alta `$slider-h` 34px, riempimento `var(--emo)` di larghezza `calc(var(--h) + (100% - var(--h)) * var(--p))`, pomello bianco con vetro, tacche per ogni livello.
 - **Switch**: stile iOS, tinta brace.
 - **Toggle** (`.toggle` con `.icon`, `.text` e uno `.switch`): riga completa usata dall'apatia e dalle opzioni.
 - **Shape** (`.shape` con `data-emo="{id}"`): SVG con `fill: var(--emo)`; l'apatia è un anello vuoto.
-- **Sheet** (`.sheet` con `.scrim` e `.card`): foglio modale iOS, vive fuori da `.app`, con maniglia, tinta dell'emozione e gesture di chiusura. Si apre con `openSheet(id)`; il tocco prolungato si aggancia con `longPress(nodo, cb)` su elementi che espongono `data-press`.
+- **Sheet** (`.sheet` con `.scrim` e `.card`): foglio modale iOS, vive fuori da `.app`, con maniglia, tinta dell'emozione e gesture di chiusura. Si apre con `openSheet(id)`, che dà anche il tocco aptico; trascinandolo oltre la soglia si sente uno scatto, come nei fogli di iOS.
 - **Spinner** (`.spinner`): anello brace che gira, per le attese brevi (verifica del codice Dropbox, salvataggio in corso).
-- **Toast**: pillola in vetro sopra la tab bar per le conferme (export, import, promemoria serale).
+- **Toast**: pillola in vetro sopra la tab bar per le conferme (export, import, promemoria serale). `toast(msg, { action, onAction, hold })`: con `action` compare un pulsante brace, il toast resta aperto e diventa toccabile (`has-action`). Lo usa l'avviso di nuova versione.
+- **Barra delle prevalenze** (`@include emo-bar($h)`): una fetta per emozione larga quanto `--n`, condivisa fra il riepilogo del mese e quello dell'anno.
 - **Ember tile** (`@include ember-tile($size, $radius)`): tessera a gradiente brace stile icona iOS (card Quaderno, stati vuoti).
 
 ## 6. Convenzioni SCSS (obbligatorie)
@@ -233,8 +243,13 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Selettori `data-*`; stato visivo con classi `is-*` o custom property (`--p`, `--bloom-c`).
 - Testi UI in italiano, tono gentile e mai giudicante. Etichette dei livelli in `LEVELS`.
 - Accessibilità: ruoli ARIA corretti (slider, tablist, status), focus visibile (`focus-ring`), tutto usabile da tastiera.
-- Aptica con `haptic()` solo su azioni significative (scatto slider, cambio tab, toggle, tocco prolungato, export/import, apertura di una nota), mai in raffica. `haptics.js` espone anche `hapticsEnabled()` e `setHaptics(on)`: se l'utente la spegne, `haptic()` non fa nulla.
+- **Aptica**: `haptic(kind)` con cinque intensità — `tick` (scatto), `soft` (estremi, gesture, cambio tab), `firm` (interruttori), `double` (conferma riuscita), `warn` (qualcosa non è andato). Un guardiano interno scarta due tocchi a meno di 18 ms l'uno dall'altro.
+  - **Un solo aggancio per i pulsanti**: `app.js` ascolta `pointerdown` in delega su `button:not([disabled])` e produce il tocco subito, come nelle app native. Si regola con `data-haptic="soft|firm|double|warn"` e si esclude con `data-haptic="off"`. **Non aggiungere `haptic()` dentro il click di un pulsante**: sarebbe doppio.
+  - Restano espliciti solo i gesti che non passano da un pulsante: scatti e presa dello slider, `change` degli interruttori, apertura/soglia/chiusura del foglio, swipe di calendario e vista anno, e gli esiti (import, collegamento Dropbox).
+  - Su iOS non esiste `navigator.vibrate`: l'unica sorgente è uno `<input switch>` nativo, che per suonare deve essere **davvero renderizzato**. `haptics.js` ne tiene uno solo, `.haptic-rig`, fuori vista ma dipinto (mai `display: none`, mai dentro `<head>`).
+  - `hapticsEnabled()`, `setHaptics(on)`, `hapticsSupported()`: se l'utente la spegne o il sistema non la offre, `haptic()` non fa nulla.
 - `sheet.js` espone `openSheet(id)` e `closeSheet()`. La scheda si apre dal pulsante `[data-info]` della riga, con delega dell'evento su `.mood-list`.
+- `report.js` è una factory come le altre: riceve `store` e `onPick(key)`, e non conosce la navigazione.
 - `reminder.js` non tocca la vista: espone `state`, `subscribe`, `setEnabled(on)` (che restituisce `on` / `off` / `blocked` / `unsupported`) e `greet()`. Il timer si riarma a ogni ritorno in primo piano, perché iOS sospende i `setTimeout` lunghi.
 
 ## 8. Requisiti Apple / PWA
@@ -243,15 +258,19 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - `apple-mobile-web-app-capable`, status bar `black-translucent`, `theme-color` distinto per chiaro e scuro, `apple-touch-icon` 180px senza trasparenza.
 - Percorsi sempre relativi (`./`): l'app vive in una sottocartella su GitHub Pages.
 - Service worker: cache dell'app shell (lista `SHELL` in `sw.js`), font locali compresi. **Ogni nuovo file JS/CSS/font/icona va aggiunto a `SHELL`**, altrimenti offline non funziona. Unica eccezione voluta: le schermate di avvio in `icons/splash/`, che carica iOS all'installazione e che appesantirebbero inutilmente l'install del SW. L'install usa `Promise.allSettled`: un file mancante non fa saltare tutta la cache.
-- **Schermate di avvio**: `<link rel="apple-touch-startup-image">` per 12 formati iPhone, in chiaro e in scuro (`prefers-color-scheme` dentro il `media`). Sono il segno brace sul fondo `--paper`/`--night` con la stessa aura dell'app: l'apertura non lampeggia più.
+- **Schermate di avvio, due livelli**:
+  1. `<link rel="apple-touch-startup-image">` per 12 formati iPhone, in chiaro e in scuro (`prefers-color-scheme` dentro il `media`). **iOS le scarica e le mette da parte quando l'app viene aggiunta alla schermata Home, non agli aggiornamenti successivi**: chi ha installato l'app prima che esistessero continua a vedere il nero finché non la reinstalla (e reinstallare cancella i dati: prima il backup).
+  2. Una **schermata di avvio dipinta dall'app** (`.splash` in `index.html`): CSS in linea nel `<head>` e segno brace in SVG in linea, così è già a video al primo frame, prima che arrivino `main.css` e i moduli. La toglie `app.js` quando i caratteri sono pronti (al massimo dopo 1,2 s); se il JS non parte, un'animazione CSS la fa sparire comunque dopo 2,6 s. Insieme a `<meta name="color-scheme">` e a `html { background }` in linea, fra il lancio e il primo disegno non resta nessuna finestra nera.
 - **Notifiche**: `Notification` esiste solo nell'app installata (iOS 16.4+), mai nella scheda di Safari. Il tocco sulla notifica è gestito da `notificationclick` nel service worker, che riporta alla finestra già aperta.
+- **Niente zoom**: viewport con `maximum-scale=1, user-scalable=no`, `touch-action: pan-y` su `html`, `body` e `.app` (esclude pinch e doppio tocco), e `gesturestart/change/end` annullati in `app.js`. Conseguenza da tenere a mente: il testo non si può più ingrandire con le dita, quindi le dimensioni devono reggere da sole.
 - `-webkit-backdrop-filter` insieme a `backdrop-filter`; `touch-action` corretto sugli elementi trascinabili; niente evidenziazione al tap.
 - Supporto minimo: iOS 16.4+ (color-mix, `@property`). Testare sempre sia tema chiaro che scuro.
 
 ## 9. Deploy e aggiornamenti
 
 - Il push su `main` avvia la GitHub Action: `npm install` → `npm run build` (SCSS compresso + nuova versione del SW) → pubblicazione di `src/` su Pages.
-- Sull'iPhone l'app si aggiorna da sola: il nuovo SW si installa alla prima apertura e la nuova versione appare alla riapertura.
+- Sull'iPhone l'app si aggiorna da sola: il nuovo SW si installa alla prima apertura e prende il posto del vecchio alla riapertura successiva. `sw.js` **non** chiama più `skipWaiting()` da solo: resta in attesa e lo fa solo su `postMessage({ type: 'skip-waiting' })`.
+- Quando il nuovo SW è pronto (`installed` con un controller già attivo), `app.js` mostra il toast **"Nuova versione di Tepore" · Ricarica**: il tocco manda il messaggio, `controllerchange` fa il `location.reload()`. Ignorandolo non si perde niente. A ogni ritorno in primo piano parte un `registration.update()`.
 - `npm run fonts` scarica i font in `src/fonts/`; gira da solo prima di `dev` e di `build` e non fa nulla se i file ci sono già.
 - In locale: `npm run dev` avvia sass in watch e il server live (browser-sync). Nel terminale compaiono i link Local ed External: il secondo si apre dall'iPhone sulla stessa Wi-Fi.
 - Versione `1.<numero di commit>`: la scrive `scripts/stamp.mjs` in `src/js/version.js` durante la build (la Action usa `fetch-depth: 0`). In dev si vede `dev`.
@@ -274,5 +293,6 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Percorsi assoluti (`/`), `localStorage` con chiavi nuove senza prefisso `tepore:`.
 - Media query separate dal selettore, commenti lunghi, valori "magici" ripetuti.
 - Classi con `--` o `__`: la nomenclatura è semplice e il significato lo dà il nesting.
-- Scorrimento orizzontale: `html`, `body` e `.app` stanno in `overflow-x: clip` con `touch-action: pan-y pinch-zoom`. Non introdurre elementi più larghi della colonna.
+- Scorrimento orizzontale: `html`, `body` e `.app` stanno in `overflow-x: clip` con `touch-action: pan-y`. Non introdurre elementi più larghi della colonna: nelle griglie usa `minmax(0, 1fr)`, altrimenti la dimensione naturale delle forme SVG le allarga.
 - Rimuovere le forme delle emozioni o l'etichetta testuale del livello.
+- Aggiungere `haptic()` dentro il click di un pulsante: ci pensa già la delega in `app.js`.

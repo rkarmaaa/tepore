@@ -1,6 +1,6 @@
 // Service worker di Tepore: app disponibile anche offline.
 // La versione viene aggiornata da npm run build (scripts/stamp.mjs).
-const VERSION = 'tepore-202609111307';
+const VERSION = 'tepore-1.4-202609131700';
 
 const SHELL = [
   './',
@@ -11,9 +11,11 @@ const SHELL = [
   './js/emotions.js',
   './js/dates.js',
   './js/haptics.js',
+  './js/theme.js',
   './js/slider.js',
   './js/today.js',
   './js/calendar.js',
+  './js/report.js',
   './js/settings.js',
   './js/notebook.js',
   './js/sheet.js',
@@ -39,8 +41,13 @@ self.addEventListener('install', (event) => {
     const cache = await caches.open(VERSION);
     // allSettled: se un file manca, il resto della shell resta comunque offline
     await Promise.allSettled(SHELL.map((url) => cache.add(url)));
-    await self.skipWaiting();
   })());
+});
+
+// Niente skipWaiting automatico: la nuova versione entra alla prossima
+// apertura, oppure subito se l'utente tocca "Ricarica" nel toast.
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'skip-waiting') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

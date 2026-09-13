@@ -1,0 +1,341 @@
+@use '../abstracts' as *;
+
+.view.report {
+  .hero {
+    .top {
+      .date {
+        font-variant-numeric: tabular-nums;
+      }
+    }
+  }
+
+  // L'emozione che ha tenuto banco nelle ultime due settimane
+  .group.lead {
+    .portrait {
+      @include idle-pause;
+
+      .crown {
+        position: relative;
+        display: grid;
+        justify-items: center;
+        padding: $sp-8 $sp-5 $sp-6;
+        text-align: center;
+
+        // Alone dell'emozione: resta dentro la card, l'overflow lo taglia
+        .halo {
+          position: absolute;
+          top: -34%;
+          left: 50%;
+          @include size(260px);
+          translate: -50% 0;
+          border-radius: 50%;
+          background: radial-gradient(circle, color-mix(in oklab, var(--emo) 40%, transparent), transparent 66%);
+          filter: blur(28px);
+          animation: aura-breathe 8s $ease-in-out infinite;
+
+          @include reduced-motion {
+            animation: none;
+          }
+        }
+
+        .mark {
+          position: relative;
+          display: block;
+
+          .shape {
+            @include size(58px);
+            animation: pop $dur-slow $ease-spring backwards;
+
+            @include mq(sm) {
+              @include size(66px);
+            }
+          }
+        }
+
+        .name {
+          position: relative;
+          margin-top: $sp-4;
+          @include font-display($fs-2xl, $fw-medium, 100);
+          font-weight: 400;
+          color: var(--ink);
+          @include enter(rise, $dur-slow, 0ms, 80ms);
+        }
+
+        .text {
+          position: relative;
+          margin-top: $sp-2;
+          max-width: 30ch;
+          @include font-ui($fs-sm, $fw-regular);
+          color: var(--ink-soft);
+          line-height: 1.45;
+          @include enter(rise, $dur-slow, 0ms, 160ms);
+        }
+      }
+
+      // Tre misure in fila, separate da capelli
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border-top: .5px solid var(--line);
+
+        .cell {
+          @include flex(column-reverse, center, center, 2px);
+          padding: $sp-4 $sp-2;
+          text-align: center;
+
+          & + .cell {
+            border-left: .5px solid var(--line);
+          }
+
+          dt {
+            @include font-ui($fs-2xs, $fw-medium);
+            color: var(--ink-faint);
+            line-height: 1.25;
+          }
+
+          dd {
+            @include font-display($fs-xl, $fw-medium, 100);
+            font-weight: 400;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+
+            small {
+              @include font-ui($fs-xs, $fw-medium);
+              color: var(--ink-faint);
+            }
+          }
+        }
+      }
+
+      // Direzione rispetto alle due settimane prima
+      .trend {
+        padding: $sp-3 $sp-4;
+        border-top: .5px solid var(--line);
+        background: color-mix(in oklab, var(--sand) 42%, transparent);
+        @include font-display($fs-md, $fw-regular, 100);
+        font-style: italic;
+        line-height: 1.4;
+        color: var(--ink-soft);
+        text-align: center;
+      }
+
+      // Nessun dato nella finestra: invito gentile
+      .blank {
+        display: grid;
+        justify-items: center;
+        padding: $sp-8 $sp-5;
+        text-align: center;
+
+        .icon {
+          .shape {
+            @include size(40px);
+          }
+        }
+
+        .title {
+          margin-top: $sp-4;
+          @include font-display($fs-xl, $fw-medium, 100);
+          font-weight: 400;
+        }
+
+        .text {
+          margin-top: $sp-2;
+          max-width: 30ch;
+          @include font-ui($fs-sm, $fw-regular);
+          color: var(--ink-soft);
+          line-height: 1.45;
+        }
+
+        .pill-btn {
+          margin-top: $sp-5;
+        }
+      }
+    }
+  }
+
+  // Classifica delle otto, con la loro intensità media
+  .group.ranking {
+    .ranks {
+      padding: $sp-3 0;
+
+      .rank {
+        display: grid;
+        grid-template-columns: 20px 9.5ch minmax(0, 1fr) 3ch;
+        align-items: center;
+        gap: $sp-3;
+        padding: $sp-2 $sp-4;
+        @include enter(rise, $dur-base, 36ms, 40ms);
+
+        @include mq-down(xs) {
+          grid-template-columns: 20px 8ch minmax(0, 1fr) 3ch;
+          gap: $sp-2;
+        }
+
+        .icon {
+          @include grid-center;
+
+          .shape {
+            @include size(18px);
+          }
+        }
+
+        .name {
+          @include font-ui($fs-sm, $fw-medium);
+          color: var(--ink);
+          white-space: nowrap;
+        }
+
+        .meter {
+          height: 8px;
+          overflow: hidden;
+          border-radius: $r-pill;
+          background: color-mix(in oklab, var(--sand) 70%, transparent);
+
+          .fill {
+            display: block;
+            width: calc(var(--p, 0) * 100%);
+            height: 100%;
+            border-radius: inherit;
+            background: var(--emo);
+            transition: width $dur-slow $ease-out;
+          }
+        }
+
+        .value {
+          @include font-ui($fs-sm, $fw-semibold);
+          font-variant-numeric: tabular-nums;
+          color: var(--ink-soft);
+          text-align: right;
+        }
+
+        // Mai sentita in queste due settimane: resta, ma in punta di piedi
+        &.off {
+          .name,
+          .value {
+            color: var(--ink-faint);
+          }
+
+          .icon {
+            opacity: .45;
+          }
+        }
+      }
+    }
+  }
+
+  // Dodici mini-mesi: l'anno intero in una schermata
+  .group.year {
+    .body {
+      padding: $sp-4 $sp-3 $sp-5;
+    }
+
+    .yearbar {
+      @include flex(row, center, space-between, $sp-3);
+      padding: 0 $sp-1 $sp-4;
+
+      .label {
+        @include font-display($fs-xl, $fw-medium, 100);
+        font-weight: 400;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+      }
+
+      .glass-btn {
+        @include size(36px);
+
+        svg {
+          @include size(18px);
+        }
+      }
+    }
+
+    .months {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: $sp-4 $sp-2;
+
+      @include mq-down(xs) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      @include mq(md) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: $sp-5 $sp-3;
+      }
+
+      &.is-in-right {
+        animation: month-in-right .44s $ease-out both;
+      }
+
+      &.is-in-left {
+        animation: month-in-left .44s $ease-out both;
+      }
+
+      .mini {
+        min-width: 0;
+        @include enter(rise, $dur-base, 24ms, 30ms);
+
+        .label {
+          display: block;
+          margin-bottom: $sp-1;
+          padding-left: 1px;
+          @include font-ui($fs-2xs, $fw-semibold);
+          color: var(--ink-faint);
+          letter-spacing: .02em;
+        }
+
+        .cells {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: 2px;
+
+          .cell {
+            min-width: 0;
+            aspect-ratio: 1;
+            border-radius: 3px;
+
+            &.void {
+              background: color-mix(in oklab, var(--sand) 48%, transparent);
+            }
+
+            // Giorni che devono ancora arrivare: appena accennati
+            &.future {
+              background: color-mix(in oklab, var(--sand) 16%, transparent);
+            }
+
+            &.pad {
+              visibility: hidden;
+            }
+
+            &.filled {
+              @include grid-center;
+              @include emo-tint(24%);
+              @include pressable(.82);
+              @include focus-ring(1px);
+
+              .shape {
+                @include size(82%);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .recap {
+      margin-top: $sp-5;
+      padding: $sp-4 $sp-1 0;
+      border-top: .5px solid var(--line);
+
+      .text {
+        @include font-ui($fs-sm, $fw-regular);
+        color: var(--ink-soft);
+      }
+
+      .bar {
+        @include emo-bar(10px);
+        margin-top: $sp-3;
+      }
+    }
+  }
+}

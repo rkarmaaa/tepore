@@ -22,8 +22,60 @@
     }
   }
 
-  // Promemoria serale: si spegne da solo dove le notifiche non esistono
-  .group.reminder {
+  // Tema: menu a tendina nativo, vestito da pillola sabbia
+  .group.theme {
+    .toggle {
+      .icon {
+        svg {
+          .half {
+            fill: var(--ember);
+            stroke: none;
+          }
+        }
+      }
+
+      .select {
+        position: relative;
+        flex: none;
+        @include grid-center;
+        color: var(--ink);
+
+        select {
+          appearance: none;
+          max-width: 62vw;
+          padding: 9px $sp-7 9px $sp-3;
+          border: 0;
+          border-radius: $r-pill;
+          background: var(--sand);
+          @include font-ui($fs-sm, $fw-semibold);
+          text-overflow: ellipsis;
+          @include pressable(0.96);
+          @include focus-ring;
+
+          @include mq-down(xs) {
+            @include font-ui($fs-xs, $fw-semibold);
+            padding-inline: $sp-3 $sp-6;
+          }
+        }
+
+        .chevron {
+          position: absolute;
+          right: 11px;
+          @include size(15px);
+          fill: none;
+          stroke: var(--ink-faint);
+          stroke-width: 2.2;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          pointer-events: none;
+        }
+      }
+    }
+  }
+
+  // Promemoria e aptica si spengono da soli dove il sistema non li offre
+  .group.reminder,
+  .group.options {
     &.is-off {
       .body {
         opacity: 0.5;
