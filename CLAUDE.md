@@ -49,6 +49,11 @@ Principi da non tradire:
 - **Backup automatico** su Dropbox, per ultimo: collegamento PKCE con codice da incollare, poi salvataggio da sé a ogni modifica (`backup.js`, `dropbox.js`, chiave in `config.js`). Mentre verifica il codice il box mostra uno `.spinner`; `setActions(mode, html)` ridisegna i comandi solo al cambio di stato, altrimenti il codice appena incollato sparirebbe. Serve perché iOS cancella il contenitore dati della web app quando la si rimuove dalla Home.
 - Firma dell'app con icona e versione.
 
+**Sviluppatore** (pagina interna di Oggi, `dev.js`) — si apre con **cinque tocchi sulla riga della versione** in fondo a Impostazioni. Non è raggiungibile in altro modo e non tocca i dati.
+- **Ambiente**: versione, iOS, app installata, `navigator.vibrate`, `switch` in IDL, permesso Notification, service worker.
+- **Feedback aptico**: sette prove, ognuna con una tecnica diversa e un esito Sì/No da segnare. La 2 è l'unica che su iOS 26 funziona davvero (switch nativo invisibile toccato dal dito); la 7 è una traccia identica a quella degli slider, per capire se lo switch sovrapposto ruba il trascinamento.
+- **Notifiche**: stato completo (permesso, promemoria acceso, giornata vuota, passate le 22, invito già mostrato) e quattro comandi: chiedi permesso, notifica adesso, notifica fra 10 secondi, azzera il segno «già vista».
+
 **Quaderno** (pagina interna di Calendario)
 - Timeline verticale di tutte le note: la più vecchia in alto, la più recente in fondo; si apre già in fondo.
 - Etichetta del mese sticky in vetro, nodo con la forma dell'emozione prevalente; tocco su una nota: apre il giorno in Oggi.
@@ -101,6 +106,7 @@ tepore/
    │  ├─ calendar.js       # vista Calendario
    │  ├─ report.js         # vista Emozioni (14 giorni, classifica, vista anno)
    │  ├─ settings.js       # pagina Impostazioni (backup, versione)
+   │  ├─ dev.js            # pagina Sviluppatore (prove aptica e notifiche)
    │  ├─ notebook.js       # pagina Quaderno + card nel calendario
    │  └─ version.js        # GENERATO dalla build
    └─ scss/
@@ -109,7 +115,7 @@ tepore/
       ├─ base/             # _fonts (@font-face locali), _root (custom property), _reset, _typography, _animations, _utilities
       ├─ layout/           # _app, _navbar, _tabbar
       ├─ components/       # _group, _slider, _switch, _toggle, _shape, _hero, _button, _spinner, _toast, _sheet
-      └─ pages/            # _today, _calendar, _report, _settings, _notebook
+      └─ pages/            # _today, _calendar, _report, _settings, _dev, _notebook
 ```
 
 Ogni partial SCSS inizia con `@use '../abstracts' as *;`. Un nuovo partial va aggiunto al `_index.scss` della sua cartella.
@@ -250,7 +256,9 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
   - `hapticsEnabled()`, `setHaptics(on)`, `hapticsSupported()`: se l'utente la spegne o il sistema non la offre, `haptic()` non fa nulla.
 - `sheet.js` espone `openSheet(id)` e `closeSheet()`. La scheda si apre dal pulsante `[data-info]` della riga, con delega dell'evento su `.mood-list`.
 - `report.js` è una factory come le altre: riceve `store` e `onPick(key)`, e non conosce la navigazione.
-- `reminder.js` non tocca la vista: espone `state`, `subscribe`, `setEnabled(on)` (che restituisce `on` / `off` / `blocked` / `unsupported`) e `greet()`. Il timer si riarma a ogni ritorno in primo piano, perché iOS sospende i `setTimeout` lunghi.
+- `reminder.js` non tocca la vista: espone `state`, `subscribe`, `setEnabled(on)` (`on` / `off` / `blocked` / `unsupported`), `greet()` e, per la pagina Sviluppatore, `debug()`, `ask()`, `fire(body)`, `clearSeen()`. Riceve `onInvite(testo)`: quando la sera arriva con l'app aperta, l'invito passa di lì e diventa un toast, perché una notifica di sistema in primo piano non comparirebbe comunque. Il timer si riarma a ogni ritorno in primo piano, perché iOS sospende i `setTimeout` lunghi.
+- **Limite vero delle notifiche su iOS**: una PWA chiusa ha il JavaScript sospeso, quindi un `setTimeout` fino alle 22 non scatta mai. Senza Web Push (che vorrebbe un server, escluso dai principi) il promemoria può essere solo: notifica se l'app è viva in quel momento, altrimenti invito dentro l'app alla prima apertura. Non promettere altro nei testi dell'interfaccia.
+- **Nomi di classe**: prima di riusare un nome già speso da un componente (`.slider`, `.track`, `.switch`) controlla che non collida. `.trial.slider` nella pagina Sviluppatore prendeva l'altezza del componente `.slider` e tagliava la card: ora si chiama `.trial.drag`.
 
 ## 8. Requisiti Apple / PWA
 

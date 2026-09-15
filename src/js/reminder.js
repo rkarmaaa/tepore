@@ -46,7 +46,7 @@ const pastEvening = () => new Date().getHours() >= HOUR;
 const line = () => LINES[Math.floor(Math.random() * LINES.length)];
 
 // Promemoria serale: una notifica locale alle 22, solo se la giornata è vuota
-export function createReminder({ store }) {
+export function createReminder({ store, onInvite }) {
   const listeners = new Set();
   let timer = null;
 
@@ -66,9 +66,12 @@ export function createReminder({ store }) {
   const empty = () => !store.get(todayKey());
   const done = () => read(SEEN) === todayKey();
 
-  async function notify() {
+  // Restituisce sempre un esito leggibile: la pagina Sviluppatore lo mostra
+  async function notify(body = line(), mark = true) {
+    if (!supported()) return 'Notification non esiste (app non installata?)';
+    if (Notification.permission !== 'granted') return `permesso ${Notification.permission}`;
     const options = {
-      body: line(),
+      body,
       tag: 'tepore-sera',
       icon: 'icons/icon-192.png',
       badge: 'icons/favicon-48.png',
@@ -77,19 +80,27 @@ export function createReminder({ store }) {
     };
     try {
       const reg = await navigator.serviceWorker?.getRegistration();
+      // Su iOS il costruttore Notification non mostra nulla: serve il service worker
       if (reg?.showNotification) await reg.showNotification('Tepore', options);
-      else new Notification('Tepore', options);
-      write(SEEN, todayKey());
-    } catch {
-      /* notifica rifiutata dal sistema: riproverà domani */
+      else if (typeof Notification === 'function') new Notification('Tepore', options);
+      else return 'nessun service worker registrato';
+      if (mark) write(SEEN, todayKey());
+      return 'ok';
+    } catch (err) {
+      return String(err?.message || err);
     }
   }
 
-  // Niente notifica se sei già nell'app o se la giornata è già segnata
+  // Sera arrivata. Con l'app aperta la notifica di sistema non comparirebbe
+  // comunque: l'invito lo diamo dentro l'app, e vale come promemoria del giorno.
   function maybe() {
     if (!on() || done() || !pastEvening()) return;
     if (!empty()) { write(SEEN, todayKey()); return; }
-    if (document.visibilityState === 'visible') return;
+    if (document.visibilityState === 'visible') {
+      write(SEEN, todayKey());
+      onInvite?.(line());
+      return;
+    }
     notify();
   }
 
@@ -140,6 +151,30 @@ export function createReminder({ store }) {
       emit();
       return 'on';
     },
+
+    // --- Strumenti della pagina Sviluppatore ---
+    debug() {
+      return {
+        enabled: read(KEY) === 'on',
+        permission: supported() ? Notification.permission : 'assente',
+        seen: read(SEEN) || 'mai',
+        empty: empty(),
+        past: pastEvening(),
+      };
+    },
+
+    async ask() {
+      if (!supported()) return 'unsupported';
+      try {
+        return await Notification.requestPermission();
+      } catch {
+        return 'denied';
+      }
+    },
+
+    fire(body) { return notify(body, false); },
+
+    clearSeen() { write(SEEN, null); },
 
     // Quando la notifica non è potuta partire, il promemoria aspetta all'apertura
     greet() {

@@ -1,0 +1,179 @@
+@use "../abstracts" as *;
+
+.view.dev {
+  // Elenco di rilevamenti: etichetta a sinistra, valore a destra
+  .facts {
+    padding: 0 $sp-4;
+
+    .fact {
+      @include flex(row, baseline, space-between, $sp-4);
+      padding: $sp-3 0;
+
+      & + .fact {
+        border-top: 0.5px solid var(--line);
+      }
+
+      dt {
+        @include font-ui($fs-sm, $fw-regular);
+        color: var(--ink-soft);
+      }
+
+      dd {
+        @include font-ui($fs-sm, $fw-semibold);
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+    }
+  }
+
+  // Prove dell'aptica: una per riga, con esito da segnare
+  .group.trials {
+    .body {
+      padding: $sp-2 0;
+    }
+
+    .trial {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      gap: $sp-1 $sp-3;
+      padding: $sp-4;
+      @include enter(rise, $dur-base, 34ms, 30ms);
+
+      & + .trial {
+        border-top: 0.5px solid var(--line);
+      }
+
+      .n {
+        @include grid-center;
+        @include size(26px);
+        border-radius: 50%;
+        background: var(--sand);
+        @include font-ui($fs-xs, $fw-bold);
+        font-variant-numeric: tabular-nums;
+        color: var(--ink-soft);
+      }
+
+      .text {
+        display: grid;
+        gap: 2px;
+
+        strong {
+          @include font-ui($fs-md, $fw-semibold);
+          line-height: 1.25;
+        }
+
+        span {
+          @include font-ui($fs-xs, $fw-regular);
+          color: var(--ink-soft);
+          line-height: 1.4;
+        }
+      }
+
+      .acts {
+        grid-column: 1 / -1;
+        @include flex(row, center, flex-start, $sp-2);
+        margin-top: $sp-3;
+
+        .hint {
+          @include font-ui($fs-xs, $fw-medium);
+          font-variant-numeric: tabular-nums;
+          color: var(--ink-faint);
+          margin-right: auto;
+        }
+      }
+
+      // Il pulsante della prova 2 ospita lo switch invisibile
+      .pill-btn.go {
+        position: relative;
+        flex: 1;
+        overflow: hidden;
+
+        input[switch] {
+          @include cover;
+          @include size(100%);
+          margin: 0;
+          opacity: 0;
+          touch-action: manipulation;
+        }
+      }
+
+      .verdict {
+        @include flex(row, center, flex-end, 6px);
+        flex: none;
+
+        .pill-btn {
+          min-width: 52px;
+          padding-inline: $sp-3;
+
+          &.is-on {
+            background: var(--ember);
+            color: #fff8f0;
+
+            @include dark {
+              color: #2a1710;
+            }
+          }
+        }
+      }
+    }
+
+    // Prova 7: traccia identica a quella degli slider, con lo switch sopra
+    .trial.drag {
+      .track {
+        position: relative;
+        grid-column: 1 / -1;
+        margin-top: $sp-3;
+        height: $slider-h;
+        overflow: hidden;
+        border-radius: $r-pill;
+        background: var(--sand);
+        touch-action: pan-y;
+
+        .fill {
+          position: absolute;
+          inset: 0 auto 0 0;
+          width: 0;
+          border-radius: inherit;
+          background: var(--ember);
+          transition: width $dur-fast $ease-out;
+        }
+
+        .level {
+          @include cover;
+          @include grid-center;
+          @include font-ui($fs-sm, $fw-bold);
+          font-variant-numeric: tabular-nums;
+          color: var(--ink);
+          pointer-events: none;
+        }
+
+        input[switch] {
+          @include cover;
+          @include size(100%);
+          margin: 0;
+          opacity: 0;
+        }
+      }
+    }
+  }
+
+  // Comandi delle notifiche, a capo quando non ci stanno
+  .group.notif {
+    .acts {
+      // @include flex(row, center, flex-start, $sp-2);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: $sp-2;
+
+      flex-wrap: wrap;
+      padding: $sp-4;
+      border-top: 0.5px solid var(--line);
+
+      .pill-btn {
+        flex: 1 1 auto;
+      }
+    }
+  }
+}

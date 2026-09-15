@@ -4,15 +4,14 @@
   @include visually-hidden;
 }
 
-// Switch nativo fuori vista: su iOS è l'unica sorgente di aptica,
-// e per suonare deve essere davvero renderizzato (niente display: none).
+// Switch nativo invisibile: su iOS è l'unica sorgente di aptica. Deve essere
+// davvero disegnato e a misura reale, altrimenti WebKit non lo fa suonare.
 .haptic-rig {
   position: fixed;
-  top: 0;
   left: 0;
-  z-index: -1;
-  @include size(1px);
-  overflow: hidden;
+  bottom: 0;
+  @include size(52px, 32px);
+  margin: 0;
   opacity: 0;
   pointer-events: none;
 }

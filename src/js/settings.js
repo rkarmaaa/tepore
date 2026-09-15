@@ -18,7 +18,7 @@ function when(ms) {
 }
 
 // Impostazioni: backup manuale, promemoria, aptica, backup automatico
-export function createSettings({ store, toast, backup, reminder }) {
+export function createSettings({ store, toast, backup, reminder, go }) {
   const root = document.getElementById('view-settings');
   const $ = (sel) => root.querySelector(sel);
 
@@ -237,7 +237,22 @@ export function createSettings({ store, toast, backup, reminder }) {
     }
   });
 
-  $('[data-version]').textContent = `Versione ${VERSION}`;
+  // Cinque tocchi sulla versione: si apre la pagina Sviluppatore
+  const version = $('[data-version]');
+  version.textContent = `Versione ${VERSION}`;
+  let taps = 0;
+  let tapTimer = null;
+  version.addEventListener('click', () => {
+    clearTimeout(tapTimer);
+    taps += 1;
+    if (taps >= 5) {
+      taps = 0;
+      haptic('double');
+      go?.('dev');
+      return;
+    }
+    tapTimer = setTimeout(() => { taps = 0; }, 1200);
+  });
   store.subscribe(render);
   render();
 

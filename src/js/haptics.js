@@ -31,23 +31,22 @@ export function setHaptics(on) {
 // Su iOS non esiste navigator.vibrate: l'unico tocco disponibile arriva
 // dallo switch nativo di WebKit, che però deve essere davvero renderizzato.
 const hasVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
-const hasSwitch = typeof HTMLInputElement !== 'undefined' && 'switch' in HTMLInputElement.prototype;
 
-export const hapticsSupported = () => hasVibrate || hasSwitch;
+// Niente rilevamento del supporto: WebKit non riflette sempre l'attributo
+// `switch` in IDL, e un controllo sbagliato spegnerebbe tutta l'aptica.
+export const hapticsSupported = () => true;
 
 let rig = null;
 function switchRig() {
   if (rig || !document.body) return rig;
-  const label = document.createElement('label');
-  label.className = 'haptic-rig';
-  label.setAttribute('aria-hidden', 'true');
   const input = document.createElement('input');
   input.type = 'checkbox';
+  input.className = 'haptic-rig';
   input.setAttribute('switch', '');
+  input.setAttribute('aria-hidden', 'true');
   input.tabIndex = -1;
-  label.append(input);
-  document.body.append(label);
-  rig = label;
+  document.body.append(input);
+  rig = input;
   return rig;
 }
 

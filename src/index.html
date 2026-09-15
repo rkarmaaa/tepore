@@ -436,6 +436,76 @@
         </footer>
       </section>
 
+      <!-- SVILUPPATORE -->
+      <section class="view dev" id="view-dev" data-view="dev" aria-labelledby="dev-title" hidden>
+        <header class="hero">
+          <div class="top">
+            <button class="chip" type="button" data-back>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+              Impostazioni
+            </button>
+          </div>
+          <h1 class="title" id="dev-title" data-sentinel>Sviluppatore</h1>
+          <p class="lede">Prove sul dispositivo vero. Niente qui dentro tocca le tue giornate.</p>
+        </header>
+
+        <section class="group env" aria-labelledby="env-title">
+          <div class="head">
+            <h2 class="title" id="env-title">Ambiente</h2>
+          </div>
+          <div class="body">
+            <dl class="facts" data-env></dl>
+          </div>
+        </section>
+
+        <section class="group trials" aria-labelledby="trials-title">
+          <div class="head">
+            <h2 class="title" id="trials-title">Feedback aptico</h2>
+            <span class="aside" data-trials-aside></span>
+          </div>
+          <div class="body">
+            <ul class="trial-list" data-trials></ul>
+            <div class="trial drag">
+              <span class="n">7</span>
+              <span class="text">
+                <strong>Slider con switch sulla traccia</strong>
+                <span>Come quelli di Oggi. Trascina <em>e</em> tocca un punto: dimmi se vibra e se il contatore sale.</span>
+              </span>
+              <div class="track" data-dev-track>
+                <span class="fill" data-dev-fill></span>
+                <span class="level" data-dev-level>0</span>
+                <input type="checkbox" switch aria-hidden="true" tabindex="-1">
+              </div>
+              <div class="acts">
+                <span class="hint" data-dev-drags>0 scatti trascinando</span>
+                <span class="verdict" role="group" aria-label="Hai sentito gli scatti dello slider?">
+                  <button class="pill-btn" type="button" data-felt="si" data-n="7" data-haptic="off">Sì</button>
+                  <button class="pill-btn" type="button" data-felt="no" data-n="7" data-haptic="off">No</button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <p class="foot" data-trials-out></p>
+        </section>
+
+        <section class="group notif" aria-labelledby="notif-title">
+          <div class="head">
+            <h2 class="title" id="notif-title">Notifiche</h2>
+            <span class="aside" data-notif-state></span>
+          </div>
+          <div class="body">
+            <dl class="facts" data-notif-facts></dl>
+            <div class="acts">
+              <button class="pill-btn" type="button" data-notif="ask">Chiedi permesso</button>
+              <button class="pill-btn ember" type="button" data-notif="now">Notifica adesso</button>
+              <button class="pill-btn" type="button" data-notif="later">Fra 10 secondi</button>
+              <button class="pill-btn" type="button" data-notif="clear">Azzera «già vista»</button>
+            </div>
+          </div>
+          <p class="foot">«Fra 10 secondi» serve a capire se iOS lascia vivere un timer con l'app chiusa: toccalo e torna subito alla schermata Home.</p>
+        </section>
+      </section>
+
       <!-- QUADERNO -->
       <section class="view notebook" id="view-notebook" data-view="notebook" aria-labelledby="notebook-title" hidden>
         <header class="hero">

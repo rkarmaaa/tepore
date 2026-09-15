@@ -3,6 +3,7 @@ import { createToday } from './today.js';
 import { createCalendar } from './calendar.js';
 import { createReport } from './report.js';
 import { createSettings } from './settings.js';
+import { createDev } from './dev.js';
 import { createNotebook } from './notebook.js';
 import { createBackup } from './backup.js';
 import { createReminder } from './reminder.js';
@@ -13,9 +14,9 @@ store.init();
 
 // Tab principali e pagine interne, ognuna con la sua tab di appartenenza
 const TABS = ['today', 'calendar', 'report'];
-const PARENT = { today: 'today', calendar: 'calendar', report: 'report', settings: 'today', notebook: 'calendar' };
-const HASH = { today: '', calendar: 'calendario', report: 'emozioni', settings: 'impostazioni', notebook: 'quaderno' };
-const BACK_LABEL = { settings: 'Oggi', notebook: 'Calendario' };
+const PARENT = { today: 'today', calendar: 'calendar', report: 'report', settings: 'today', dev: 'today', notebook: 'calendar' };
+const HASH = { today: '', calendar: 'calendario', report: 'emozioni', settings: 'impostazioni', dev: 'sviluppatore', notebook: 'quaderno' };
+const BACK_LABEL = { settings: 'Oggi', dev: 'Impostazioni', notebook: 'Calendario' };
 
 const views = Object.fromEntries(Object.keys(PARENT).map((v) => [v, document.querySelector(`[data-view="${v}"]`)]));
 const tabs = [...document.querySelectorAll('[data-tab]')];
@@ -29,7 +30,7 @@ const toastText = toastEl.querySelector('[data-toast-text]');
 const toastAction = toastEl.querySelector('[data-toast-action]');
 
 const isSub = (v) => PARENT[v] !== v;
-const titles = { today: 'Oggi', calendar: '', report: 'Emozioni', settings: 'Impostazioni', notebook: 'Quaderno' };
+const titles = { today: 'Oggi', calendar: '', report: 'Emozioni', settings: 'Impostazioni', dev: 'Sviluppatore', notebook: 'Quaderno' };
 const scrollMemory = {};
 let active = 'today';
 
@@ -70,8 +71,9 @@ const today = createToday({ store, onTitle: setTitle('today') });
 const calendar = createCalendar({ store, toast, onTitle: setTitle('calendar'), onPick: openDay });
 const report = createReport({ store, onPick: openDay });
 const backup = createBackup({ store, toast });
-const reminder = createReminder({ store });
-const settings = createSettings({ store, toast, backup, reminder });
+const reminder = createReminder({ store, onInvite: (text) => toast(text) });
+const settings = createSettings({ store, toast, backup, reminder, go: (name) => push(name) });
+const dev = createDev({ toast, reminder });
 const notebook = createNotebook({
   store,
   onPick: openDay,
@@ -127,6 +129,7 @@ function show(name, { instant = false } = {}) {
     if (name === 'calendar') calendar.refresh();
     if (name === 'report') report.refresh();
     if (name === 'settings') settings.refresh();
+    if (name === 'dev') dev.refresh();
     if (name === 'notebook') notebook.refresh();
 
     // Il quaderno si apre sulla nota più recente, in fondo

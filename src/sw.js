@@ -1,6 +1,6 @@
 // Service worker di Tepore: app disponibile anche offline.
 // La versione viene aggiornata da npm run build (scripts/stamp.mjs).
-const VERSION = 'tepore-1.4-202609131700';
+const VERSION = 'tepore-202609111307';
 
 const SHELL = [
   './',
@@ -23,6 +23,7 @@ const SHELL = [
   './js/dropbox.js',
   './js/backup.js',
   './js/reminder.js',
+  './js/dev.js',
   './js/version.js',
   './fonts/fraunces-normal-latin.woff2',
   './fonts/fraunces-italic-latin.woff2',

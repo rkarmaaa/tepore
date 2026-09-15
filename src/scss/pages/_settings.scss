@@ -205,7 +205,11 @@
       color: var(--ink-faint);
     }
 
+    // Cinque tocchi qui aprono la pagina Sviluppatore
     .version {
+      cursor: pointer;
+      @include tap-reset;
+      @include pressable(0.92);
       margin-top: $sp-3;
       padding: 3px 10px;
       border-radius: $r-pill;
