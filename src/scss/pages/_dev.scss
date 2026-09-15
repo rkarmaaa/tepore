@@ -1,4 +1,4 @@
-@use "../abstracts" as *;
+@use '../abstracts' as *;
 
 .view.dev {
   // Elenco di rilevamenti: etichetta a sinistra, valore a destra
@@ -10,7 +10,7 @@
       padding: $sp-3 0;
 
       & + .fact {
-        border-top: 0.5px solid var(--line);
+        border-top: .5px solid var(--line);
       }
 
       dt {
@@ -42,7 +42,7 @@
       @include enter(rise, $dur-base, 34ms, 30ms);
 
       & + .trial {
-        border-top: 0.5px solid var(--line);
+        border-top: .5px solid var(--line);
       }
 
       .n {
@@ -109,10 +109,10 @@
 
           &.is-on {
             background: var(--ember);
-            color: #fff8f0;
+            color: #FFF8F0;
 
             @include dark {
-              color: #2a1710;
+              color: #2A1710;
             }
           }
         }
@@ -149,9 +149,12 @@
           pointer-events: none;
         }
 
-        input[switch] {
-          @include cover;
-          @include size(100%);
+        // Gli switch nativi della prova: invisibili, stesi sulla traccia
+        .sw {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          height: 100%;
           margin: 0;
           opacity: 0;
         }
@@ -162,14 +165,10 @@
   // Comandi delle notifiche, a capo quando non ci stanno
   .group.notif {
     .acts {
-      // @include flex(row, center, flex-start, $sp-2);
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: $sp-2;
-
+      @include flex(row, center, flex-start, $sp-2);
       flex-wrap: wrap;
       padding: $sp-4;
-      border-top: 0.5px solid var(--line);
+      border-top: .5px solid var(--line);
 
       .pill-btn {
         flex: 1 1 auto;

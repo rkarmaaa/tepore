@@ -28,49 +28,46 @@ export function setHaptics(on) {
   }
 }
 
-// Su iOS non esiste navigator.vibrate: l'unico tocco disponibile arriva
-// dallo switch nativo di WebKit, che però deve essere davvero renderizzato.
+// Android e desktop hanno navigator.vibrate. iOS no, e da iOS 26 nessun
+// click da codice produce più un tocco: resta solo lo switch nativo toccato dal dito.
 const hasVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 
-// Niente rilevamento del supporto: WebKit non riflette sempre l'attributo
-// `switch` in IDL, e un controllo sbagliato spegnerebbe tutta l'aptica.
 export const hapticsSupported = () => true;
-
-let rig = null;
-function switchRig() {
-  if (rig || !document.body) return rig;
-  const input = document.createElement('input');
-  input.type = 'checkbox';
-  input.className = 'haptic-rig';
-  input.setAttribute('switch', '');
-  input.setAttribute('aria-hidden', 'true');
-  input.tabIndex = -1;
-  document.body.append(input);
-  rig = input;
-  return rig;
-}
 
 // Niente raffiche: due tocchi troppo vicini si sentono come uno sporco
 let last = 0;
 
 export function haptic(kind = 'tick') {
-  if (!enabled) return;
+  if (!enabled || !hasVibrate) return;
   const now = performance.now();
   if (now - last < 18) return;
   last = now;
-
-  const pattern = PATTERNS[kind] || PATTERNS.tick;
   try {
-    if (hasVibrate) {
-      navigator.vibrate(pattern);
-      return;
-    }
-    const el = switchRig();
-    if (!el) return;
-    el.click();
-    // I pattern a due colpi si ripetono a mano: lo switch ha una sola voce
-    if (Array.isArray(pattern)) setTimeout(() => el.click(), pattern[1] || 60);
+    navigator.vibrate(PATTERNS[kind] || PATTERNS.tick);
   } catch {
     /* nessuna aptica disponibile */
   }
+}
+
+// --- La via di iOS: uno switch nativo invisibile sopra il comando ---
+// Il tocco arriva a lui e WebKit suona; il click prosegue comunque
+// verso il pulsante, quindi niente si rompe.
+export function hapticTap(el) {
+  if (!el || el.querySelector(':scope > .haptic-tap')) return;
+  if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.className = 'haptic-tap';
+  input.setAttribute('switch', '');
+  input.setAttribute('aria-hidden', 'true');
+  input.tabIndex = -1;
+  el.append(input);
+}
+
+// Arma tutti i pulsanti di un sottoalbero. Si esclude con data-haptic="off"
+export function armHaptics(root = document) {
+  if (!enabled || hasVibrate) return;
+  const scope = root.nodeType === 1 || root.nodeType === 9 ? root : document;
+  scope.querySelectorAll?.('button:not([data-haptic="off"])').forEach(hapticTap);
+  if (scope.matches?.('button:not([data-haptic="off"])')) hapticTap(scope);
 }

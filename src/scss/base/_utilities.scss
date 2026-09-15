@@ -4,8 +4,23 @@
   @include visually-hidden;
 }
 
-// Switch nativo invisibile: su iOS è l'unica sorgente di aptica. Deve essere
-// davvero disegnato e a misura reale, altrimenti WebKit non lo fa suonare.
+// Switch nativo steso sopra un comando: il dito tocca lui, WebKit suona,
+// e il click prosegue verso il pulsante sotto.
+.haptic-tap {
+  @include cover;
+  @include size(100%);
+  margin: 0;
+  border-radius: inherit;
+  opacity: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled .haptic-tap {
+  pointer-events: none;
+}
+
+// Switch fuori vista usato dalle prove della pagina Sviluppatore
 .haptic-rig {
   position: fixed;
   left: 0;

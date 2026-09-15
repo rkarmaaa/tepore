@@ -167,7 +167,7 @@
                 <span>Oggi non ho sentito nulla</span>
               </span>
               <span class="switch">
-                <input class="input" id="apathy-input" type="checkbox" role="switch" data-apathy>
+                <input class="input" id="apathy-input" type="checkbox" switch role="switch" data-apathy>
                 <span class="track" aria-hidden="true"></span>
               </span>
             </label>
@@ -350,7 +350,7 @@
                 <span>Un invito alle 22, se la giornata è ancora vuota</span>
               </span>
               <span class="switch">
-                <input class="input" id="reminder-input" type="checkbox" role="switch" data-reminder>
+                <input class="input" id="reminder-input" type="checkbox" switch role="switch" data-reminder>
                 <span class="track" aria-hidden="true"></span>
               </span>
             </label>
@@ -398,7 +398,7 @@
                 <span>Un piccolo tocco a ogni gesto</span>
               </span>
               <span class="switch">
-                <input class="input" id="haptics-input" type="checkbox" role="switch" data-haptics checked>
+                <input class="input" id="haptics-input" type="checkbox" switch role="switch" data-haptics checked>
                 <span class="track" aria-hidden="true"></span>
               </span>
             </label>
@@ -465,25 +465,7 @@
           </div>
           <div class="body">
             <ul class="trial-list" data-trials></ul>
-            <div class="trial drag">
-              <span class="n">7</span>
-              <span class="text">
-                <strong>Slider con switch sulla traccia</strong>
-                <span>Come quelli di Oggi. Trascina <em>e</em> tocca un punto: dimmi se vibra e se il contatore sale.</span>
-              </span>
-              <div class="track" data-dev-track>
-                <span class="fill" data-dev-fill></span>
-                <span class="level" data-dev-level>0</span>
-                <input type="checkbox" switch aria-hidden="true" tabindex="-1">
-              </div>
-              <div class="acts">
-                <span class="hint" data-dev-drags>0 scatti trascinando</span>
-                <span class="verdict" role="group" aria-label="Hai sentito gli scatti dello slider?">
-                  <button class="pill-btn" type="button" data-felt="si" data-n="7" data-haptic="off">Sì</button>
-                  <button class="pill-btn" type="button" data-felt="no" data-n="7" data-haptic="off">No</button>
-                </span>
-              </div>
-            </div>
+            <div data-drags></div>
           </div>
           <p class="foot" data-trials-out></p>
         </section>

@@ -8,7 +8,7 @@ import { createNotebook } from './notebook.js';
 import { createBackup } from './backup.js';
 import { createReminder } from './reminder.js';
 import { todayKey } from './dates.js';
-import { haptic } from './haptics.js';
+import { haptic, armHaptics } from './haptics.js';
 
 store.init();
 
@@ -201,6 +201,17 @@ document.addEventListener('pointerdown', (e) => {
   if (kind === 'off') return;
   haptic(kind || 'tick');
 }, { passive: true });
+
+// Su iOS il tocco arriva da uno switch invisibile sopra ogni pulsante:
+// va rimesso anche sui pulsanti che le viste creano dopo.
+armHaptics();
+if ('MutationObserver' in window) {
+  let armTimer = null;
+  new MutationObserver(() => {
+    clearTimeout(armTimer);
+    armTimer = setTimeout(() => armHaptics(), 60);
+  }).observe(document.getElementById('app'), { childList: true, subtree: true });
+}
 
 // Niente zoom: l'app deve comportarsi come nativa, non come una pagina
 ['gesturestart', 'gesturechange', 'gestureend'].forEach((type) => {

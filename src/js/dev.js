@@ -76,10 +76,6 @@ export function createDev({ toast, reminder }) {
     trials: $('[data-trials]'),
     trialsAside: $('[data-trials-aside]'),
     out: $('[data-trials-out]'),
-    track: $('[data-dev-track]'),
-    fill: $('[data-dev-fill]'),
-    level: $('[data-dev-level]'),
-    drags: $('[data-dev-drags]'),
     notifFacts: $('[data-notif-facts]'),
     notifState: $('[data-notif-state]'),
   };
@@ -136,7 +132,7 @@ export function createDev({ toast, reminder }) {
     [...verdicts.keys()].sort((a, b) => a - b).forEach((n) => {
       (verdicts.get(n) === 'si' ? si : no).push(n);
     });
-    els.trialsAside.textContent = verdicts.size ? `${verdicts.size}/${TRIALS.length + 1}` : '';
+    els.trialsAside.textContent = verdicts.size ? `${verdicts.size}/${TRIALS.length + VARIANTS.length}` : '';
     els.out.textContent = verdicts.size
       ? `Sentite: ${si.length ? si.join(', ') : 'nessuna'}${no.length ? ` · non sentite: ${no.join(', ')}` : ''}`
       : 'Tocca ogni prova e segna se l\'hai sentita.';
@@ -161,38 +157,124 @@ export function createDev({ toast, reminder }) {
     }
   });
 
-  // --- Prova 7: slider identico a quelli di Oggi, con lo switch sulla traccia ---
-  let value = 0;
-  let drags = 0;
-  let dragging = false;
+  // --- Prove 7-9: tre modi di far suonare uno switch mentre il dito trascina ---
+  // Uno switch nativo suona quando il dito ne attraversa la soglia interna:
+  // qui si prova a farla attraversare una volta per scatto.
+  const VARIANTS = [
+    {
+      id: 'full',
+      name: 'Switch unico su tutta la traccia',
+      desc: 'Quello di prima: una sola soglia, a metà corsa.',
+    },
+    {
+      id: 'steps',
+      name: 'Uno switch per livello',
+      desc: 'Sei switch affiancati: il dito passa da uno all\'altro a ogni scatto.',
+    },
+    {
+      id: 'chase',
+      name: 'Switch stretto che insegue il dito',
+      desc: 'Uno switch di 44px ricentrato sotto il dito a ogni scatto: la soglia gli ritorna davanti ogni volta.',
+    },
+  ];
 
-  const paint = (v) => {
-    value = v;
-    els.fill.style.width = `${(v / 5) * 100}%`;
-    els.level.textContent = v;
-  };
+  const CHASE_W = 44;
 
-  const levelAt = (x) => {
-    const r = els.track.getBoundingClientRect();
-    return Math.round(Math.max(0, Math.min(1, (x - r.left) / r.width)) * 5);
-  };
+  function buildDrag(v, i) {
+    const n = TRIALS.length + 1 + i;
+    const row = document.createElement('div');
+    row.className = 'trial drag';
+    row.innerHTML = `
+      <span class="n">${n}</span>
+      <span class="text">
+        <strong>${v.name}</strong>
+        <span>${v.desc}</span>
+      </span>
+      <div class="track" data-mode="${v.id}">
+        <span class="fill"></span>
+        <span class="level">0</span>
+      </div>
+      <div class="acts">
+        <span class="hint">0 scatti</span>
+        <span class="verdict" role="group" aria-label="Hai sentito gli scatti?">
+          <button class="pill-btn" type="button" data-felt="si" data-n="${n}" data-haptic="off">Sì</button>
+          <button class="pill-btn" type="button" data-felt="no" data-n="${n}" data-haptic="off">No</button>
+        </span>
+      </div>`;
 
-  els.track.addEventListener('pointerdown', (e) => {
-    dragging = true;
-    els.track.setPointerCapture?.(e.pointerId);
-    paint(levelAt(e.clientX));
-  });
-  els.track.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const v = levelAt(e.clientX);
-    if (v === value) return;
-    paint(v);
-    drags++;
-    els.drags.textContent = `${drags} ${drags === 1 ? 'scatto' : 'scatti'} trascinando`;
-  });
-  const stop = () => { dragging = false; };
-  els.track.addEventListener('pointerup', stop);
-  els.track.addEventListener('pointercancel', stop);
+    const track = row.querySelector('.track');
+    const fill = row.querySelector('.fill');
+    const level = row.querySelector('.level');
+    const hint = row.querySelector('.hint');
+
+    const makeSwitch = (css) => {
+      const sw = document.createElement('input');
+      sw.type = 'checkbox';
+      sw.setAttribute('switch', '');
+      sw.setAttribute('aria-hidden', 'true');
+      sw.tabIndex = -1;
+      sw.className = 'sw';
+      sw.style.cssText = css;
+      track.append(sw);
+      return sw;
+    };
+
+    let chase = null;
+    if (v.id === 'full') makeSwitch('left:0;right:0');
+    else if (v.id === 'steps') {
+      for (let k = 0; k < 6; k++) makeSwitch(`left:${(k * 100) / 6}%;width:${100 / 6}%`);
+    } else {
+      chase = makeSwitch(`left:0;width:${CHASE_W}px`);
+    }
+
+    let value = 0;
+    let steps = 0;
+    let dragging = false;
+
+    const levelAt = (x) => {
+      const r = track.getBoundingClientRect();
+      return Math.round(Math.max(0, Math.min(1, (x - r.left) / r.width)) * 5);
+    };
+
+    const paint = (val) => {
+      value = val;
+      fill.style.width = `${(val / 5) * 100}%`;
+      level.textContent = val;
+    };
+
+    // Il cuore della prova "chase": la soglia torna sotto il dito
+    const recentre = (x) => {
+      if (!chase) return;
+      const r = track.getBoundingClientRect();
+      chase.style.left = `${Math.max(0, Math.min(r.width - CHASE_W, x - r.left - CHASE_W / 2))}px`;
+    };
+
+    track.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      track.setPointerCapture?.(e.pointerId);
+      paint(levelAt(e.clientX));
+      recentre(e.clientX);
+    });
+
+    track.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const val = levelAt(e.clientX);
+      if (val === value) return;
+      paint(val);
+      recentre(e.clientX);
+      steps += 1;
+      hint.textContent = `${steps} ${steps === 1 ? 'scatto' : 'scatti'}`;
+    });
+
+    const stop = () => { dragging = false; };
+    track.addEventListener('pointerup', stop);
+    track.addEventListener('pointercancel', stop);
+
+    return row;
+  }
+
+  const drags = $('[data-drags]');
+  VARIANTS.forEach((v, i) => drags.append(buildDrag(v, i)));
 
   // --- Notifiche ---
   function renderNotif() {

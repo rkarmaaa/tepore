@@ -205,7 +205,7 @@ export function createReport({ store, onPick }) {
         if (!dom) { cells += '<span class="cell void"></span>'; continue; }
         logged++;
         counts.set(dom.id, (counts.get(dom.id) || 0) + 1);
-        cells += `<button class="cell filled" type="button" data-emo="${dom.id}" data-date="${key}"
+        cells += `<button class="cell filled" type="button" data-haptic="off" data-emo="${dom.id}" data-date="${key}"
           aria-label="${d} ${monthName(year, m).toLowerCase()}, ${dom.name.toLowerCase()}">${shapeSVG(dom.id)}</button>`;
       }
 

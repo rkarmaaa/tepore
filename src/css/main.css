@@ -462,6 +462,22 @@ p {
   border: 0;
 }
 
+.haptic-tap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: inherit;
+  opacity: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled .haptic-tap {
+  pointer-events: none;
+}
+
 .haptic-rig {
   position: fixed;
   left: 0;
@@ -1705,6 +1721,10 @@ p {
   animation: float 7s ease-in-out infinite, breathe 3.4s ease-in-out infinite;
 }
 .view.today .bloom .caption {
+  position: absolute;
+  inset: auto 20px 4px;
+  z-index: 2;
+  text-align: center;
   font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
   font-size: 1.25rem;
   font-weight: 400;
@@ -1712,11 +1732,6 @@ p {
   font-variation-settings: "SOFT" 100, "WONK" 1;
   letter-spacing: -0.022em;
   line-height: 1.04;
-  position: absolute;
-  inset: auto 20px 0;
-  z-index: 2;
-  text-align: center;
-  text-wrap: balance;
   font-style: italic;
   color: var(--ink-soft);
   line-height: 1.3;
@@ -3000,15 +3015,15 @@ p {
 }
 .view.dev .group.trials .trial .verdict .pill-btn.is-on {
   background: var(--ember);
-  color: #fff8f0;
+  color: #FFF8F0;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme=light]) .view.dev .group.trials .trial .verdict .pill-btn.is-on {
-    color: #2a1710;
+    color: #2A1710;
   }
 }
 :root[data-theme=dark] .view.dev .group.trials .trial .verdict .pill-btn.is-on {
-  color: #2a1710;
+  color: #2A1710;
 }
 .view.dev .group.trials .trial.drag .track {
   position: relative;
@@ -3041,17 +3056,19 @@ p {
   color: var(--ink);
   pointer-events: none;
 }
-.view.dev .group.trials .trial.drag .track input[switch] {
+.view.dev .group.trials .trial.drag .track .sw {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  bottom: 0;
   height: 100%;
   margin: 0;
   opacity: 0;
 }
 .view.dev .group.notif .acts {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
   padding: 16px;
