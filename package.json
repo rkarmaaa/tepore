@@ -7,13 +7,13 @@
     "fonts": "node scripts/fonts.mjs",
     "predev": "node scripts/fonts.mjs",
     "prebuild": "node scripts/fonts.mjs",
-    "dev": "concurrently -k -n sass,web -c yellow,cyan \"sass --watch --no-source-map src/scss/main.scss src/css/main.css\" \"browser-sync start --server src --files src/css/*.css src/js/*.js src/index.html --no-notify --no-open\"",
+    "dev": "node scripts/dev.mjs",
     "build": "sass --style=compressed --no-source-map src/scss/main.scss src/css/main.css && node scripts/stamp.mjs",
     "serve": "npx serve src"
   },
   "devDependencies": {
     "browser-sync": "^3.0.3",
-    "concurrently": "^9.1.0",
+    "qrcode-terminal": "^0.12.0",
     "sass": "^1.80.0"
   }
 }

@@ -66,7 +66,7 @@ export function createNotebook({ store, onPick, onWrite }) {
       const i = Math.min(all.length - 1 - idx, 10);
       html += `
         <li class="entry${dom ? '' : ' plain'}"${dom ? ` data-emo="${dom.id}"` : ''} style="--i:${i}">
-          <button class="btn" type="button" data-key="${key}">
+          <button class="btn" type="button" data-key="${key}" data-haptic="off">
             <span class="node" aria-hidden="true">${dom ? shapeSVG(dom.id) : ''}</span>
             <span class="paper">
               <span class="head">

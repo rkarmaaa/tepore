@@ -15,6 +15,8 @@ export class MoodSlider {
     this.slider = this.el.querySelector('.slider');
     this.track = this.slider.querySelector('.track');
     this.level = this.el.querySelector('[data-level]');
+    this.thumb = this.el.querySelector('.thumb');
+    this.tap = this.el.querySelector('.haptic-tap');
     this.stops = [...this.slider.querySelectorAll('.stops i')];
     this.#bind();
     this.set(0, { silent: true });
@@ -47,6 +49,7 @@ export class MoodSlider {
           <span class="stops" aria-hidden="true">${'<i></i>'.repeat(MAX_LEVEL + 1)}</span>
           <span class="fill"><span class="thumb"></span></span>
         </div>
+        <input class="haptic-tap" type="checkbox" switch aria-hidden="true" tabindex="-1">
       </div>`;
     return li;
   }
@@ -56,6 +59,13 @@ export class MoodSlider {
     let start = null;
     let dragging = false;
     let grab = 0;
+
+    // Lo switch invisibile copre la traccia: il pomello si riconosce dalla
+    // posizione del dito, non da e.target, che sarebbe sempre lo switch.
+    const onThumb = (x, y) => {
+      const r = this.thumb.getBoundingClientRect();
+      return x >= r.left - 10 && x <= r.right + 10 && y >= r.top - 10 && y <= r.bottom + 10;
+    };
 
     // Distanza dito-centro del pomello: niente salti alla presa
     const pFromX = (x) => {
@@ -67,8 +77,8 @@ export class MoodSlider {
     let touch = null;
     s.addEventListener('touchstart', (e) => {
       const t = e.touches[0];
-      const onThumb = !!e.target.closest('.thumb');
-      touch = { x: t.clientX, y: t.clientY, decided: onThumb, lock: onThumb };
+      const grabbing = onThumb(t.clientX, t.clientY);
+      touch = { x: t.clientX, y: t.clientY, decided: grabbing, lock: grabbing };
     }, { passive: true });
 
     s.addEventListener('touchmove', (e) => {
@@ -103,6 +113,7 @@ export class MoodSlider {
         s.classList.remove('is-dragging');
         this.el.classList.remove('is-dragging');
       }
+      this.tap.hidden = false;
       if (commit) {
         this.el.style.setProperty('--p', this.value / MAX_LEVEL);
         this.onInput?.(this.value, this.value / MAX_LEVEL);
@@ -114,7 +125,7 @@ export class MoodSlider {
 
     s.addEventListener('pointerdown', (e) => {
       if (this.disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      const thumb = e.target.closest('.thumb');
+      const thumb = onThumb(e.clientX, e.clientY) ? this.thumb : null;
       grab = 0;
       if (thumb) {
         const r = thumb.getBoundingClientRect();
@@ -178,9 +189,11 @@ export class MoodSlider {
     });
   }
 
-  // Presa del pomello: un tocco come quando si solleva un oggetto
+  // Presa del pomello: lo switch si toglie di mezzo, altrimenti a metà corsa
+  // darebbe un tocco che non corrisponde a nessuno scatto.
   #startDrag(e, done) {
     haptic('tick');
+    this.tap.hidden = true;
     this.slider.setPointerCapture?.(e.pointerId);
     this.slider.classList.add('is-dragging');
     this.el.classList.add('is-dragging');

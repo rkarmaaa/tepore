@@ -51,12 +51,12 @@ Principi da non tradire:
 
 **Sviluppatore** (pagina interna di Oggi, `dev.js`) — si apre con **cinque tocchi sulla riga della versione** in fondo a Impostazioni. Non è raggiungibile in altro modo e non tocca i dati.
 - **Ambiente**: versione, iOS, app installata, `navigator.vibrate`, `switch` in IDL, permesso Notification, service worker.
-- **Feedback aptico**: sette prove, ognuna con una tecnica diversa e un esito Sì/No da segnare. La 2 è l'unica che su iOS 26 funziona davvero (switch nativo invisibile toccato dal dito); la 7 è una traccia identica a quella degli slider, per capire se lo switch sovrapposto ruba il trascinamento.
 - **Notifiche**: stato completo (permesso, promemoria acceso, giornata vuota, passate le 22, invito già mostrato) e quattro comandi: chiedi permesso, notifica adesso, notifica fra 10 secondi, azzera il segno «già vista».
 
 **Quaderno** (pagina interna di Calendario)
 - Timeline verticale di tutte le note: la più vecchia in alto, la più recente in fondo; si apre già in fondo.
 - Etichetta del mese sticky in vetro, nodo con la forma dell'emozione prevalente; tocco su una nota: apre il giorno in Oggi.
+- Ogni bottone nota ha `data-haptic="off"`: sono card grandi in una lista che si scorre col dito, e lo switch invisibile dell'aptica (vedi sezione 8) intercettava il trascinamento e bloccava lo scroll.
 
 **Navigazione** (`app.js`)
 - Tre tab (`TABS`: `today`, `calendar`, `report`) e due pagine interne. `PARENT` lega ogni pagina alla sua tab; le pagine interne entrano con `pushState` (funziona "indietro"). Hash: `#calendario`, `#emozioni`, `#impostazioni`, `#quaderno`.
@@ -106,7 +106,7 @@ tepore/
    │  ├─ calendar.js       # vista Calendario
    │  ├─ report.js         # vista Emozioni (14 giorni, classifica, vista anno)
    │  ├─ settings.js       # pagina Impostazioni (backup, versione)
-   │  ├─ dev.js            # pagina Sviluppatore (prove aptica e notifiche)
+   │  ├─ dev.js            # pagina Sviluppatore (ambiente e notifiche)
    │  ├─ notebook.js       # pagina Quaderno + card nel calendario
    │  └─ version.js        # GENERATO dalla build
    └─ scss/
@@ -252,14 +252,14 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - **Aptica**. Su iOS non esiste `navigator.vibrate` e **da iOS 26 nessun click da codice produce più un tocco**: verificato sul dispositivo, tutte le vie programmatiche (click sull'input, `checked = !checked`, switch usa e getta) sono mute. Resta una sola strada.
   - **Switch sovrapposto**: `hapticTap(el)` stende dentro il comando un `<input type="checkbox" switch>` invisibile (`.haptic-tap`, `inset: 0`, `opacity: 0`). Il dito tocca lui, WebKit suona, e il click prosegue verso il pulsante sotto: verificato, niente si rompe. `armHaptics(root)` lo mette su ogni `button:not([data-haptic="off"])`; `app.js` lo chiama all'avvio e riarma con un `MutationObserver` su `#app` per i pulsanti creati dalle viste.
   - Gli **interruttori veri** portano l'attributo `switch` nel markup: suonano da soli, senza sovrapposizioni.
-  - Le **celle della vista anno** sono escluse con `data-haptic="off"`: sarebbero 365 controlli nativi in pagina.
+  - Le **celle della vista anno** sono escluse con `data-haptic="off"`: sarebbero 365 controlli nativi in pagina. Stesso motivo per i **bottoni nota del Quaderno**: coprire card grandi e scorrevoli con uno switch nativo blocca il trascinamento.
   - `haptic(kind)` resta per Android e desktop, dove `navigator.vibrate` esiste: cinque intensità (`tick`, `soft`, `firm`, `double`, `warn`) e un guardiano che scarta due tocchi a meno di 18 ms. Su iOS non fa nulla — non aggiungerlo aspettandoti un effetto lì.
-  - **Uno scatto per livello durante il trascinamento di uno slider non è ancora risolto**: uno switch nativo suona quando il dito ne attraversa la soglia interna, quindi uno switch steso su tutta la traccia dà un solo tocco a metà corsa. Le tre varianti in prova nella pagina Sviluppatore (switch unico, uno per livello, switch stretto ricentrato a ogni scatto) servono a stabilire se se ne può avere uno per scatto.
+  - **Slider**: uno scatto per livello *durante il trascinamento* è impossibile, verificato con nove tecniche sul dispositivo. Uno switch nativo suona solo quando il dito attraversa la sua unica soglia interna, e mid-drag non c'è modo di rimettergliela davanti: né sei switch affiancati (il tocco resta agganciato al primo), né uno switch stretto ricentrato a ogni scatto (WebKit misura lo spostamento dall'inizio del gesto, non la geometria). Quello che si ottiene è il **tocco quando si tocca un livello sulla traccia**: `MoodSlider` stende uno `.haptic-tap` sopra la traccia, sotto il pomello (che resta afferrabile), e lo nasconde con `hidden` appena parte un trascinamento — altrimenti la sua soglia darebbe un tocco a metà corsa che non corrisponde a nessuno scatto. Siccome lo switch copre la traccia, il pomello si riconosce dalla **geometria** (`onThumb(x, y)`), non da `e.target`.
 - `sheet.js` espone `openSheet(id)` e `closeSheet()`. La scheda si apre dal pulsante `[data-info]` della riga, con delega dell'evento su `.mood-list`.
 - `report.js` è una factory come le altre: riceve `store` e `onPick(key)`, e non conosce la navigazione.
 - `reminder.js` non tocca la vista: espone `state`, `subscribe`, `setEnabled(on)` (`on` / `off` / `blocked` / `unsupported`), `greet()` e, per la pagina Sviluppatore, `debug()`, `ask()`, `fire(body)`, `clearSeen()`. Riceve `onInvite(testo)`: quando la sera arriva con l'app aperta, l'invito passa di lì e diventa un toast, perché una notifica di sistema in primo piano non comparirebbe comunque. Il timer si riarma a ogni ritorno in primo piano, perché iOS sospende i `setTimeout` lunghi.
 - **Limite vero delle notifiche su iOS**: una PWA chiusa ha il JavaScript sospeso, quindi un `setTimeout` fino alle 22 non scatta mai. Senza Web Push (che vorrebbe un server, escluso dai principi) il promemoria può essere solo: notifica se l'app è viva in quel momento, altrimenti invito dentro l'app alla prima apertura. Non promettere altro nei testi dell'interfaccia.
-- **Nomi di classe**: prima di riusare un nome già speso da un componente (`.slider`, `.track`, `.switch`) controlla che non collida. `.trial.slider` nella pagina Sviluppatore prendeva l'altezza del componente `.slider` e tagliava la card: ora si chiama `.trial.drag`.
+- **Nomi di classe**: prima di riusare un nome già speso da un componente (`.slider`, `.track`, `.switch`) controlla che non collida.
 
 ## 8. Requisiti Apple / PWA
 
@@ -281,7 +281,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Sull'iPhone l'app si aggiorna da sola: il nuovo SW si installa alla prima apertura e prende il posto del vecchio alla riapertura successiva. `sw.js` **non** chiama più `skipWaiting()` da solo: resta in attesa e lo fa solo su `postMessage({ type: 'skip-waiting' })`.
 - Quando il nuovo SW è pronto (`installed` con un controller già attivo), `app.js` mostra il toast **"Nuova versione di Tepore" · Ricarica**: il tocco manda il messaggio, `controllerchange` fa il `location.reload()`. Ignorandolo non si perde niente. A ogni ritorno in primo piano parte un `registration.update()`.
 - `npm run fonts` scarica i font in `src/fonts/`; gira da solo prima di `dev` e di `build` e non fa nulla se i file ci sono già.
-- In locale: `npm run dev` avvia sass in watch e il server live (browser-sync). Nel terminale compaiono i link Local ed External: il secondo si apre dall'iPhone sulla stessa Wi-Fi.
+- In locale: `npm run dev` esegue `scripts/dev.mjs`, che avvia sass in watch, il server live (browser-sync, porta 3000 fissa) e stampa il QR del link di rete (`scripts/qr.mjs`): si inquadra con la fotocamera e si apre su qualsiasi dispositivo sulla stessa Wi-Fi, iPhone compreso. Niente `concurrently`: su Windows il comando combinato perdeva le virgolette dei glob di `--files` e browser-sync falliva; spawnando con argomenti ad array la shell non li tocca.
 - Versione `1.<numero di commit>`: la scrive `scripts/stamp.mjs` in `src/js/version.js` durante la build (la Action usa `fetch-depth: 0`). In dev si vede `dev`.
 
 ## 10. Checklist per ogni modifica

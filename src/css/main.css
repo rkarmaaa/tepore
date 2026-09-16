@@ -959,6 +959,10 @@ button:disabled .haptic-tap {
   outline: 2px solid var(--ember);
   outline-offset: 4px;
 }
+.slider .haptic-tap {
+  z-index: 1;
+  touch-action: pan-y;
+}
 .slider .track {
   position: absolute;
   inset: 0;
@@ -1721,10 +1725,6 @@ button:disabled .haptic-tap {
   animation: float 7s ease-in-out infinite, breathe 3.4s ease-in-out infinite;
 }
 .view.today .bloom .caption {
-  position: absolute;
-  inset: auto 20px 4px;
-  z-index: 2;
-  text-align: center;
   font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
   font-size: 1.25rem;
   font-weight: 400;
@@ -1732,6 +1732,11 @@ button:disabled .haptic-tap {
   font-variation-settings: "SOFT" 100, "WONK" 1;
   letter-spacing: -0.022em;
   line-height: 1.04;
+  position: absolute;
+  inset: auto 20px 0;
+  z-index: 2;
+  text-align: center;
+  text-wrap: balance;
   font-style: italic;
   color: var(--ink-soft);
   line-height: 1.3;
@@ -2921,148 +2926,6 @@ button:disabled .haptic-tap {
   color: var(--ink);
   text-align: right;
   overflow-wrap: anywhere;
-}
-.view.dev .group.trials .body {
-  padding: 8px 0;
-}
-.view.dev .group.trials .trial {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 4px 12px;
-  padding: 16px;
-  animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  animation-delay: calc(30ms + var(--i, 0) * 34ms);
-}
-.view.dev .group.trials .trial + .trial {
-  border-top: 0.5px solid var(--line);
-}
-.view.dev .group.trials .trial .n {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--sand);
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
-}
-.view.dev .group.trials .trial .text {
-  display: grid;
-  gap: 2px;
-}
-.view.dev .group.trials .trial .text strong {
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.25;
-}
-.view.dev .group.trials .trial .text span {
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: -0.005em;
-  color: var(--ink-soft);
-  line-height: 1.4;
-}
-.view.dev .group.trials .trial .acts {
-  grid-column: 1/-1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  margin-top: 12px;
-}
-.view.dev .group.trials .trial .acts .hint {
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-faint);
-  margin-right: auto;
-}
-.view.dev .group.trials .trial .pill-btn.go {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-}
-.view.dev .group.trials .trial .pill-btn.go input[switch] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  touch-action: manipulation;
-}
-.view.dev .group.trials .trial .verdict {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  flex: none;
-}
-.view.dev .group.trials .trial .verdict .pill-btn {
-  min-width: 52px;
-  padding-inline: 12px;
-}
-.view.dev .group.trials .trial .verdict .pill-btn.is-on {
-  background: var(--ember);
-  color: #FFF8F0;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme=light]) .view.dev .group.trials .trial .verdict .pill-btn.is-on {
-    color: #2A1710;
-  }
-}
-:root[data-theme=dark] .view.dev .group.trials .trial .verdict .pill-btn.is-on {
-  color: #2A1710;
-}
-.view.dev .group.trials .trial.drag .track {
-  position: relative;
-  grid-column: 1/-1;
-  margin-top: 12px;
-  height: 34px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--sand);
-  touch-action: pan-y;
-}
-.view.dev .group.trials .trial.drag .track .fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 0;
-  border-radius: inherit;
-  background: var(--ember);
-  transition: width 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.view.dev .group.trials .trial.drag .track .level {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-  pointer-events: none;
-}
-.view.dev .group.trials .trial.drag .track .sw {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
 }
 .view.dev .group.notif .acts {
   display: flex;
