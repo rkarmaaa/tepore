@@ -667,26 +667,30 @@ button:disabled .haptic-tap {
 }
 .tabbar .glass {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  width: min(100%, 240px);
+  grid-template-columns: repeat(4, 1fr);
+  width: min(100%, 288px);
   height: 58px;
   padding: 5px;
   pointer-events: auto;
+  transform: translateZ(0);
 }
 @media (min-width: 640px) {
   .tabbar .glass {
-    width: 276px;
+    width: 320px;
   }
 }
 .tabbar .glass .indicator {
   position: absolute;
   top: 5px;
   bottom: 5px;
+  left: 5px;
   z-index: 0;
+  width: calc((100% - 10px) / 4);
   border-radius: 999px;
   background: var(--pill);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 0 rgba(120, 70, 40, 0.06), 0 3px 10px -2px rgba(88, 44, 20, 0.18);
-  transition: left 0.5s cubic-bezier(0.3, 1.14, 0.5, 1), right 0.5s cubic-bezier(0.3, 1.14, 0.5, 1);
+  translate: calc(100% * var(--pos, 0)) 0;
+  transition: translate 0.46s cubic-bezier(0.3, 1.14, 0.5, 1);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme=light]) .tabbar .glass .indicator {
@@ -696,32 +700,16 @@ button:disabled .haptic-tap {
 :root[data-theme=dark] .tabbar .glass .indicator {
   box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 }
-.tabbar .glass .indicator[data-pos="0"] {
-  left: calc(5px + (100% - 10px) / 3 * 0);
-  right: calc(5px + (100% - 10px) / 3 * 2);
-}
-.tabbar .glass .indicator[data-pos="1"] {
-  left: calc(5px + (100% - 10px) / 3 * 1);
-  right: calc(5px + (100% - 10px) / 3 * 1);
-}
-.tabbar .glass .indicator[data-pos="2"] {
-  left: calc(5px + (100% - 10px) / 3 * 2);
-  right: calc(5px + (100% - 10px) / 3 * 0);
-}
-.tabbar .glass .indicator.is-going-right {
-  transition: right 0.34s cubic-bezier(0.3, 1.14, 0.5, 1), left 0.52s cubic-bezier(0.3, 1.14, 0.5, 1) 0.07s;
-}
-.tabbar .glass .indicator.is-going-left {
-  transition: left 0.34s cubic-bezier(0.3, 1.14, 0.5, 1), right 0.52s cubic-bezier(0.3, 1.14, 0.5, 1) 0.07s;
-}
 .tabbar .glass .indicator.is-moving {
-  will-change: left, right;
-  animation: pill-lift 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: translate, scale;
+  animation: pill-lift 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tabbar .glass .indicator.is-instant {
+  transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .tabbar .glass .indicator {
     transition-duration: 0.01s;
-    transition-delay: 0s;
     animation: none;
   }
 }
@@ -739,33 +727,29 @@ button:disabled .haptic-tap {
   outline-offset: -2px;
 }
 .tabbar .glass .tab svg {
-  width: 26px;
-  height: 26px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 25px;
+  height: 25px;
+  fill: currentColor;
+  stroke: none;
+  opacity: 0.58;
+  scale: 1;
+  transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), scale 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .tabbar .glass .tab:active svg {
-  transform: scale(0.86);
+  scale: 0.86;
 }
 .tabbar .glass .tab.is-active {
   color: var(--ember);
 }
 .tabbar .glass .tab.is-active svg {
-  transform: scale(1.04);
+  opacity: 1;
+  scale: 1.04;
   animation: tab-bounce 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (prefers-reduced-motion: reduce) {
   .tabbar .glass .tab.is-active svg {
     animation: none;
   }
-}
-.tabbar .glass .tab.is-active svg .fill-on {
-  fill: currentColor;
-  fill-opacity: 0.18;
 }
 
 :root {
@@ -778,6 +762,155 @@ button:disabled .haptic-tap {
 }
 :root[data-theme=dark] {
   --pill: rgba(255, 236, 214, .12);
+}
+
+.subbar {
+  position: fixed;
+  inset: auto 0 calc(max(env(safe-area-inset-bottom) - 12px, 16px) + 58px + 8px);
+  z-index: 50;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding-inline: 20px;
+  pointer-events: none;
+  contain: layout style;
+  opacity: 0;
+  translate: 0 12px;
+  scale: 0.96;
+  transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), translate 0.34s cubic-bezier(0.3, 1.14, 0.5, 1), scale 0.34s cubic-bezier(0.3, 1.14, 0.5, 1);
+}
+.subbar .glass {
+  position: relative;
+  border-radius: 999px;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: blur(20px) saturate(190%) brightness(1.04);
+  backdrop-filter: blur(20px) saturate(190%) brightness(1.04);
+  box-shadow: var(--glass-shadow);
+  isolation: isolate;
+}
+.subbar .glass::before, .subbar .glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.subbar .glass::before {
+  padding: 1px;
+  background: var(--glass-rim);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.subbar .glass::after {
+  background: var(--glass-sheen);
+}
+.subbar .glass {
+  width: fit-content;
+  max-width: 100%;
+  height: 38px;
+  padding: 4px;
+  transform: translateZ(0);
+}
+.subbar .glass .rail {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  height: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.subbar .glass .rail::-webkit-scrollbar {
+  display: none;
+}
+.subbar .glass .rail .ink {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: 0;
+  border-radius: 999px;
+  background: var(--pill);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 8px -3px rgba(88, 44, 20, 0.22);
+  transition: translate 0.4s cubic-bezier(0.3, 1.14, 0.5, 1), width 0.4s cubic-bezier(0.3, 1.14, 0.5, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme=light]) .subbar .glass .rail .ink {
+    box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 3px 10px -3px rgba(0, 0, 0, 0.45);
+  }
+}
+:root[data-theme=dark] .subbar .glass .rail .ink {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 3px 10px -3px rgba(0, 0, 0, 0.45);
+}
+@media (prefers-reduced-motion: reduce) {
+  .subbar .glass .rail .ink {
+    transition-duration: 0.01s;
+  }
+}
+.subbar .glass .rail .item {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding-inline: 12px;
+}
+@media (max-width: 360px) {
+  .subbar .glass .rail .item {
+    padding-inline: 10px;
+  }
+}
+.subbar .glass .rail .item {
+  border-radius: 999px;
+  scroll-snap-align: center;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  transition: color 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.subbar .glass .rail .item:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: -2px;
+}
+.subbar .glass .rail .item:active {
+  opacity: 0.6;
+}
+.subbar .glass .rail .item.is-active {
+  color: var(--ember);
+}
+.subbar.is-visible {
+  pointer-events: auto;
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
 }
 
 [data-emo=gioia] {
@@ -1035,7 +1168,7 @@ button:disabled .haptic-tap {
   border-radius: 50%;
   background: #FFFBF6;
   box-shadow: 0 1px 2px rgba(60, 26, 8, 0.22), 0 4px 10px -3px rgba(60, 26, 8, 0.28);
-  touch-action: none;
+  touch-action: pan-y;
   transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.34s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .slider .track .fill .thumb::after {
@@ -1232,6 +1365,87 @@ button:disabled .haptic-tap {
   .group.collapsible {
     transition: none;
   }
+}
+
+.group.note .body,
+.group.today-note .body {
+  margin-top: 4px;
+  transition: box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group.note .body:focus-within,
+.group.today-note .body:focus-within {
+  box-shadow: var(--shadow-soft), 0 0 0 2px color-mix(in oklab, var(--ember) 40%, transparent);
+}
+.group.note .body .editor,
+.group.today-note .body .editor {
+  padding: 16px 20px 12px;
+}
+.group.note .body .editor .field,
+.group.today-note .body .editor .field {
+  display: block;
+  width: 100%;
+  min-height: 128px;
+  font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 50, "WONK" 1;
+  letter-spacing: -0.022em;
+  line-height: 1.04;
+  font-size: max(16px, 1.0625rem);
+  line-height: 1.62;
+  letter-spacing: 0;
+  color: var(--ink);
+  caret-color: var(--ember);
+}
+.group.note .body .editor .field::placeholder,
+.group.today-note .body .editor .field::placeholder {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+.group.note .body .editor .meta,
+.group.today-note .body .editor .meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--line);
+  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.group.note .body .editor .meta .status,
+.group.today-note .body .editor .meta .status {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), color 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group.note .body .editor .meta .status svg,
+.group.today-note .body .editor .meta .status svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.group.note .body .editor .meta .status.is-saved,
+.group.today-note .body .editor .meta .status.is-saved {
+  color: var(--ink-soft);
+}
+.group.note .body .editor .meta .status.is-saved svg,
+.group.today-note .body .editor .meta .status.is-saved svg {
+  animation: pop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .glass-btn {
@@ -1573,9 +1787,6 @@ button:disabled .haptic-tap {
   width: 100%;
   margin-top: 24px;
 }
-.sheet .card > * {
-  opacity: 0;
-}
 .sheet .card.is-dragging {
   transition: none;
 }
@@ -1585,37 +1796,10 @@ button:disabled .haptic-tap {
 .sheet.is-open .card {
   translate: 0 0;
 }
-.sheet.is-open .card > * {
-  animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  animation-delay: calc(180ms + var(--i, 0) * 40ms);
-  animation-fill-mode: both;
-}
-.sheet.is-open .card > *:nth-child(1) {
-  --i: 0;
-}
-.sheet.is-open .card > *:nth-child(2) {
-  --i: 1;
-}
-.sheet.is-open .card > *:nth-child(3) {
-  --i: 2;
-}
-.sheet.is-open .card > *:nth-child(4) {
-  --i: 3;
-}
-.sheet.is-open .card > *:nth-child(5) {
-  --i: 4;
-}
-.sheet.is-open .card > *:nth-child(6) {
-  --i: 5;
-}
 @media (prefers-reduced-motion: reduce) {
   .sheet .scrim,
   .sheet .card {
     transition: none;
-  }
-  .sheet .card > * {
-    opacity: 1;
-    animation: none;
   }
 }
 
@@ -1623,7 +1807,7 @@ button:disabled .haptic-tap {
   --bloom-c: transparent;
   position: relative;
   height: 232px;
-  margin: 4px calc(-1 * 20px) 0;
+  margin: 24px calc(-1 * 20px) 40px;
   contain: layout style;
   transition: --bloom-c 1.1s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -1784,7 +1968,7 @@ button:disabled .haptic-tap {
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
@@ -1891,76 +2075,6 @@ button:disabled .haptic-tap {
 }
 .view.today .group.apathy .toggle .icon {
   background: color-mix(in oklab, var(--emo-apatia) 20%, transparent);
-}
-.view.today .group.note .body {
-  margin-top: 4px;
-  transition: box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.view.today .group.note .body:focus-within {
-  box-shadow: var(--shadow-soft), 0 0 0 2px color-mix(in oklab, var(--ember) 40%, transparent);
-}
-.view.today .group.note .body .editor {
-  padding: 16px 20px 12px;
-}
-.view.today .group.note .body .editor .field {
-  display: block;
-  width: 100%;
-  min-height: 128px;
-  font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
-  font-size: 1.0625rem;
-  font-weight: 400;
-  font-optical-sizing: auto;
-  font-variation-settings: "SOFT" 50, "WONK" 1;
-  letter-spacing: -0.022em;
-  line-height: 1.04;
-  font-size: max(16px, 1.0625rem);
-  line-height: 1.62;
-  letter-spacing: 0;
-  color: var(--ink);
-  caret-color: var(--ember);
-}
-.view.today .group.note .body .editor .field::placeholder {
-  color: var(--ink-faint);
-  font-style: italic;
-}
-.view.today .group.note .body .editor .meta {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 0.5px solid var(--line);
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-}
-.view.today .group.note .body .editor .meta .status {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), color 0.34s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.view.today .group.note .body .editor .meta .status svg {
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.view.today .group.note .body .editor .meta .status.is-saved {
-  color: var(--ink-soft);
-}
-.view.today .group.note .body .editor .meta .status.is-saved svg {
-  animation: pop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .view.calendar .month {
@@ -2090,6 +2204,9 @@ button:disabled .haptic-tap {
 .view.calendar .month .grid .day.is-today .num {
   color: var(--ember);
 }
+.view.calendar .group.legend {
+  display: none;
+}
 .view.calendar .group.legend .shapes {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2168,53 +2285,18 @@ button:disabled .haptic-tap {
 .view.calendar .group.summary .recap .cta {
   margin-top: 16px;
 }
-.view.calendar .group.book .notebook-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  column-gap: 16px;
-  width: 100%;
-  padding: 16px;
-  border-radius: inherit;
-  text-align: left;
-  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+.view.calendar .group.year .body {
+  padding: 16px 12px 20px;
 }
-.view.calendar .group.book .notebook-card:active {
-  transform: scale(0.98);
-}
-.view.calendar .group.book .notebook-card:focus-visible {
-  outline: 2px solid var(--ember);
-  outline-offset: 3px;
-}
-.view.calendar .group.book .notebook-card .icon {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 14px;
-  background: linear-gradient(160deg, var(--ember-glow), var(--ember) 55%, var(--ember-deep));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  color: #FFF8F0;
-}
-.view.calendar .group.book .notebook-card .icon svg {
-  width: 52%;
-  height: 52%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.view.calendar .group.book .notebook-card .text {
+.view.calendar .group.year .yearbar {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 3px;
-  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 16px;
 }
-.view.calendar .group.book .notebook-card .text strong {
+.view.calendar .group.year .yearbar .label {
   font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
   font-size: 1.625rem;
   font-weight: 500;
@@ -2222,62 +2304,141 @@ button:disabled .haptic-tap {
   font-variation-settings: "SOFT" 100, "WONK" 1;
   letter-spacing: -0.022em;
   line-height: 1.04;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
-.view.calendar .group.book .notebook-card .text span {
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: var(--ink-soft);
+.view.calendar .group.year .yearbar .glass-btn {
+  width: 36px;
+  height: 36px;
 }
-.view.calendar .group.book .notebook-card .chevron {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: var(--ink-faint);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: translate 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+.view.calendar .group.year .yearbar .glass-btn svg {
+  width: 18px;
+  height: 18px;
 }
-.view.calendar .group.book .notebook-card .quote {
-  grid-column: 1/-1;
-  display: -webkit-box;
-  margin-top: 16px;
-  overflow: hidden;
-  border: 12px solid transparent;
-  border-inline-width: 16px;
-  border-radius: 12px;
-  background: color-mix(in oklab, var(--sand) 60%, transparent);
-  font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
-  font-size: 1.0625rem;
-  font-weight: 400;
-  font-optical-sizing: auto;
-  font-variation-settings: "SOFT" 100, "WONK" 1;
-  letter-spacing: -0.022em;
-  line-height: 1.04;
-  font-style: italic;
-  line-height: 1.45;
-  letter-spacing: -0.005em;
-  color: var(--ink-soft);
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.view.calendar .group.year .months {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 8px;
 }
-.view.calendar .group.book .notebook-card .quote[hidden] {
-  display: none;
-}
-@media (hover: hover) and (pointer: fine) {
-  .view.calendar .group.book .notebook-card:hover .chevron {
-    translate: 3px 0;
+@media (max-width: 360px) {
+  .view.calendar .group.year .months {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+@media (min-width: 640px) {
+  .view.calendar .group.year .months {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+}
+.view.calendar .group.year .months.is-in-right {
+  animation: month-in-right 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.view.calendar .group.year .months.is-in-left {
+  animation: month-in-left 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.view.calendar .group.year .months .mini {
+  min-width: 0;
+  animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(30ms + var(--i, 0) * 24ms);
+}
+.view.calendar .group.year .months .mini .label {
+  display: block;
+  margin-bottom: 4px;
+  padding-left: 1px;
+  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+.view.calendar .group.year .months .mini .cells {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.view.calendar .group.year .months .mini .cells .cell {
+  min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 3px;
+}
+.view.calendar .group.year .months .mini .cells .cell.void {
+  background: color-mix(in oklab, var(--sand) 48%, transparent);
+}
+.view.calendar .group.year .months .mini .cells .cell.future {
+  background: color-mix(in oklab, var(--sand) 16%, transparent);
+}
+.view.calendar .group.year .months .mini .cells .cell.pad {
+  visibility: hidden;
+}
+.view.calendar .group.year .months .mini .cells .cell.filled {
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--emo) 24%, transparent);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.view.calendar .group.year .months .mini .cells .cell.filled:active {
+  transform: scale(0.82);
+}
+.view.calendar .group.year .months .mini .cells .cell.filled:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 1px;
+}
+.view.calendar .group.year .months .mini .cells .cell.filled .shape {
+  width: 82%;
+  height: 82%;
+}
+.view.calendar .group.year .recap {
+  margin-top: 20px;
+  padding: 16px 4px 0;
+  border-top: 0.5px solid var(--line);
+}
+.view.calendar .group.year .recap .text {
+  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--ink-soft);
+}
+.view.calendar .group.year .recap .bar {
+  display: flex;
+  gap: 3px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--sand);
+}
+.view.calendar .group.year .recap .bar span {
+  flex: var(--n) 1 0;
+  min-width: 6px;
+  background: var(--emo);
+  transform-origin: left;
+  animation: rise 0.62s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(100ms + var(--i, 0) * 60ms);
+}
+.view.calendar .group.year .recap .bar span:first-child {
+  border-radius: 999px 0 0 999px;
+}
+.view.calendar .group.year .recap .bar span:last-child {
+  border-radius: 0 999px 999px 0;
+}
+.view.calendar .group.year .recap .bar {
+  margin-top: 12px;
+}
 
+.view.report {
+  padding-bottom: calc(38px + 16px);
+}
 .view.report .hero .top .date {
   font-variant-numeric: tabular-nums;
 }
 .view.report .group.lead .portrait.is-idle *, .view.report .group.lead .portrait.is-idle::before, .view.report .group.lead .portrait.is-idle::after {
   animation-play-state: paused;
+}
+.view.report .group.lead .portrait.is-swapping {
+  animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .view.report .group.lead .portrait .crown {
   position: relative;
@@ -2504,148 +2665,6 @@ button:disabled .haptic-tap {
 .view.report .group.ranking .ranks .rank.off .icon {
   opacity: 0.45;
 }
-.view.report .group.year .body {
-  padding: 16px 12px 20px;
-}
-.view.report .group.year .yearbar {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 4px 16px;
-}
-.view.report .group.year .yearbar .label {
-  font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
-  font-size: 1.625rem;
-  font-weight: 500;
-  font-optical-sizing: auto;
-  font-variation-settings: "SOFT" 100, "WONK" 1;
-  letter-spacing: -0.022em;
-  line-height: 1.04;
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-.view.report .group.year .yearbar .glass-btn {
-  width: 36px;
-  height: 36px;
-}
-.view.report .group.year .yearbar .glass-btn svg {
-  width: 18px;
-  height: 18px;
-}
-.view.report .group.year .months {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px 8px;
-}
-@media (max-width: 360px) {
-  .view.report .group.year .months {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (min-width: 640px) {
-  .view.report .group.year .months {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 20px 12px;
-  }
-}
-.view.report .group.year .months.is-in-right {
-  animation: month-in-right 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.view.report .group.year .months.is-in-left {
-  animation: month-in-left 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.view.report .group.year .months .mini {
-  min-width: 0;
-  animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  animation-delay: calc(30ms + var(--i, 0) * 24ms);
-}
-.view.report .group.year .months .mini .label {
-  display: block;
-  margin-bottom: 4px;
-  padding-left: 1px;
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  color: var(--ink-faint);
-  letter-spacing: 0.02em;
-}
-.view.report .group.year .months .mini .cells {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 2px;
-}
-.view.report .group.year .months .mini .cells .cell {
-  min-width: 0;
-  aspect-ratio: 1;
-  border-radius: 3px;
-}
-.view.report .group.year .months .mini .cells .cell.void {
-  background: color-mix(in oklab, var(--sand) 48%, transparent);
-}
-.view.report .group.year .months .mini .cells .cell.future {
-  background: color-mix(in oklab, var(--sand) 16%, transparent);
-}
-.view.report .group.year .months .mini .cells .cell.pad {
-  visibility: hidden;
-}
-.view.report .group.year .months .mini .cells .cell.filled {
-  display: grid;
-  place-items: center;
-  background: color-mix(in oklab, var(--emo) 24%, transparent);
-  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.view.report .group.year .months .mini .cells .cell.filled:active {
-  transform: scale(0.82);
-}
-.view.report .group.year .months .mini .cells .cell.filled:focus-visible {
-  outline: 2px solid var(--ember);
-  outline-offset: 1px;
-}
-.view.report .group.year .months .mini .cells .cell.filled .shape {
-  width: 82%;
-  height: 82%;
-}
-.view.report .group.year .recap {
-  margin-top: 20px;
-  padding: 16px 4px 0;
-  border-top: 0.5px solid var(--line);
-}
-.view.report .group.year .recap .text {
-  font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 400;
-  letter-spacing: -0.005em;
-  color: var(--ink-soft);
-}
-.view.report .group.year .recap .bar {
-  display: flex;
-  gap: 3px;
-  height: 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--sand);
-}
-.view.report .group.year .recap .bar span {
-  flex: var(--n) 1 0;
-  min-width: 6px;
-  background: var(--emo);
-  transform-origin: left;
-  animation: rise 0.62s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  animation-delay: calc(100ms + var(--i, 0) * 60ms);
-}
-.view.report .group.year .recap .bar span:first-child {
-  border-radius: 999px 0 0 999px;
-}
-.view.report .group.year .recap .bar span:last-child {
-  border-radius: 0 999px 999px 0;
-}
-.view.report .group.year .recap .bar {
-  margin-top: 12px;
-}
 
 .view.settings .group.data .body {
   overflow: visible;
@@ -2717,11 +2736,9 @@ button:disabled .haptic-tap {
   stroke-linejoin: round;
   pointer-events: none;
 }
-.view.settings .group.reminder.is-off .body,
 .view.settings .group.options.is-off .body {
   opacity: 0.5;
 }
-.view.settings .group.reminder.is-off .body .toggle,
 .view.settings .group.options.is-off .body .toggle {
   cursor: default;
 }
@@ -2942,7 +2959,7 @@ button:disabled .haptic-tap {
 }
 
 .view.notebook .timeline {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 .view.notebook .timeline .period + .period {
   margin-top: 32px;
@@ -3164,22 +3181,10 @@ button:disabled .haptic-tap {
 .view.notebook .timeline .empty .pill-btn {
   margin-top: 12px;
 }
-.view.notebook .end {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+.view.notebook .group.today-note {
   margin-top: 40px;
+  scroll-margin-bottom: 40px;
 }
-.view.notebook .end p {
-  font-family: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
-  font-size: 0.875rem;
-  font-weight: 400;
-  font-optical-sizing: auto;
-  font-variation-settings: "SOFT" 100, "WONK" 1;
-  letter-spacing: -0.022em;
-  line-height: 1.04;
-  font-style: italic;
-  color: var(--ink-faint);
+.view.notebook .group.today-note .head .title {
+  color: var(--ember);
 }

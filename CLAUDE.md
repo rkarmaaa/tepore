@@ -21,7 +21,7 @@ Principi da non tradire:
 **Oggi** (tab 1)
 - Hero con data, titolo grande "Oggi" e sottotitolo. Scorrendo, il titolo passa nella navbar compatta in alto (pattern iOS large title, via `data-sentinel`).
 - **Ritratto del giorno** (`.bloom`): le 8 forme disposte in cerchio (coordinate `x/y` in `emotions.js`) crescono e si illuminano con l'intensità. Sotto, l'**aura**: una macchia sfocata per emozione, grande quanto l'intensità, fuse in un unico bagliore che respira (`plus-lighter` nel tema scuro). L'emozione dominante unica "respira" con glow. Una didascalia in corsivo commenta la giornata ("Prevale la gioia.").
-- **8 slider** (`MoodSlider`), ispirati al selettore modello dell'app ChatGPT: 6 livelli 0–5 (`LEVELS`: Per niente → Moltissimo), riempimento del colore dell'emozione, tacche, tick aptico a ogni scatto, drag col dito, frecce da tastiera, `role="slider"` con `aria-valuenow`. Il pomello ha `touch-action: none` e area di presa allargata; sulla traccia un gesto orizzontale blocca lo scroll (touchmove non passivo).
+- **8 slider** (`MoodSlider`), ispirati al selettore modello dell'app ChatGPT: 6 livelli 0–5 (`LEVELS`: Per niente → Moltissimo), riempimento del colore dell'emozione, tacche, tick aptico a ogni scatto, drag col dito, frecce da tastiera, `role="slider"` con `aria-valuenow`. **Il gesto vale per uno solo**: o scorre la pagina o muove lo slider, e lo decide il primo movimento oltre i 6px (`AXIS_SLOP`), per direzione prevalente — pomello compreso. Finché non ha deciso non succede nulla; se vince la verticale `abort()` molla la presa e lascia scorrere il browser, se vince l'orizzontale `touchmove` (non passivo) chiama `preventDefault`. Traccia e pomello stanno entrambi in `touch-action: pan-y`.
 - **Scheda dell'emozione**: pulsante `.info` (cerchietto "i") in fondo a destra della riga `.head` di uno slider. Si apre un foglio in stile iOS con forma, nome, emozione opposta e la descrizione (`desc` in `emotions.js`). Si chiude trascinandolo verso il basso, toccando lo sfondo, dal pulsante o con Esc. Tutto in `sheet.js`. Niente tocco prolungato: su iOS entrava in conflitto con selezione e menu di sistema.
 - **Apatia**: switch "Oggi non ho sentito nulla". Richiude l'intera sezione degli slider (`.group.moods.collapsible`, altezza misurata da JS), spegne l'aura e mostra un alone grigio caldo. **I valori restano nello store e tornano al primo sblocco**: l'apatia non cancella mai nulla.
 - **Nota della giornata**: textarea con salvataggio automatico (debounce), ora dell'ultimo salvataggio e conteggio caratteri.
@@ -33,17 +33,17 @@ Principi da non tradire:
 - Ogni giorno mostra la forma + colore dell'emozione prevalente; casella vuota se nessun dato; anello grigio per l'apatia; oggi evidenziato con bordo brace.
 - Card riassuntiva del mese ("Settembre ha il colore della tristezza") con barra.
 - Legenda delle forme.
-- Card **Quaderno** in fondo: numero di note e anteprima dell'ultima.
+- **Vista anno** in fondo (`year.js`): dodici mini-mesi, ogni giornata un quadratino con la forma e il colore dell'emozione prevalente. Frecce e scorrimento orizzontale per cambiare anno (mai oltre l'anno in corso o prima della prima giornata registrata); il tocco su un giorno lo apre in Oggi. Sotto, il riepilogo dell'anno con la barra delle prevalenze.
 
-**Emozioni** (tab 3) — il resoconto, in `report.js`
-- **Ultimi 14 giorni**: l'emozione con la somma di intensità più alta, con la sua forma su un alone del proprio colore, una frase che ne racconta il peso e tre misure (presente in N giornate, intensità media, prevale in N). Sotto, la direzione rispetto alle due settimane precedenti: solo "più" e "meno", mai percentuali.
+**Emozioni** (tab 4) — il resoconto, in `report.js`
+- **Sottobarra del periodo** (`.subbar`, vedi sezione 7): Settimana / Mese / Trimestre / Anno, cioè 7 / 30 / 90 / 365 giorni. La finestra scelta governa tutta la pagina — `.lede` dell'intestazione, intervallo di date, misure e classifica. Le finestre sono definite in `PERIODS` dentro `report.js`: una sola tabella da toccare per aggiungerne o rinominarne una.
+- **In primo piano**: l'emozione con la somma di intensità più alta nella finestra, con la sua forma su un alone del proprio colore, una frase che ne racconta il peso e tre misure (presente in N giornate, intensità media, prevale in N). Sotto, la direzione rispetto alla finestra precedente della stessa ampiezza: solo "più" e "meno", mai percentuali.
 - **Tutte e otto**: classifica con barra e intensità media; le emozioni mai sentite restano in elenco, in punta di piedi.
-- **Vista anno**: dodici mini-mesi, ogni giornata un quadratino con la forma e il colore dell'emozione prevalente. Frecce e scorrimento orizzontale per cambiare anno (mai oltre l'anno in corso o prima della prima giornata registrata); il tocco su un giorno lo apre in Oggi. In fondo il riepilogo dell'anno con la barra delle prevalenze.
 - Le finestre si calcolano con `windowStats(store, end, span, back)`: `felt` = giornate segnate meno quelle in apatia, ed è il denominatore di tutte le medie.
 
 **Impostazioni** (pagina interna di Oggi) — nell'ordine:
 - I tuoi dati: conteggio, esporta/importa backup JSON (share sheet su iOS).
-- **Promemoria**: interruttore **Promemoria serale** (`reminder.js`). Alle 22 una notifica locale gentile, solo se la giornata è ancora vuota e una sola volta al giorno (`tepore:reminder`, `tepore:reminder:seen`). Il permesso si chiede dentro il tocco sull'interruttore. Quando la notifica non può partire — iOS sospende la pagina — `reminder.greet()` mostra l'invito come toast alla prima apertura.
+- ~~Promemoria~~: **il gruppo è stato tolto dalle Impostazioni** (21 settembre 2026). `reminder.js` resta vivo e agganciato in `app.js`: l'invito serale compare come toast quando si apre l'app dopo le 22 con la giornata ancora vuota (`reminder.greet()`, chiavi `tepore:reminder` e `tepore:reminder:seen`), e i comandi per provarlo stanno nella pagina Sviluppatore. La notifica di sistema ad app chiusa **non può funzionare** (vedi sezione notifiche): finché non c'è il Web Push, un interruttore che la promette mentirebbe.
 - **Tema** (`theme.js`): tendina Aspetto con "Come sul dispositivo" (predefinito), "Tema chiaro", "Tema scuro". La scelta sta in `localStorage['tepore:theme']` e mette `data-theme` sulla radice; uno script in testa a `index.html` la applica **prima del primo disegno**, aggiornando anche `<meta name="theme-color">` (una sola, senza `media`).
 - Interazione: interruttore **Feedback aptico**, attivo di default, salvato in `localStorage['tepore:haptics']`. Dove il sistema non offre aptica (`hapticsSupported()` falso) il gruppo si spegne da solo e l'etichetta dice "Non disponibile".
 - **Backup automatico** su Dropbox, per ultimo: collegamento PKCE con codice da incollare, poi salvataggio da sé a ogni modifica (`backup.js`, `dropbox.js`, chiave in `config.js`). Mentre verifica il codice il box mostra uno `.spinner`; `setActions(mode, html)` ridisegna i comandi solo al cambio di stato, altrimenti il codice appena incollato sparirebbe. Serve perché iOS cancella il contenitore dati della web app quando la si rimuove dalla Home.
@@ -53,13 +53,14 @@ Principi da non tradire:
 - **Ambiente**: versione, iOS, app installata, `navigator.vibrate`, `switch` in IDL, permesso Notification, service worker.
 - **Notifiche**: stato completo (permesso, promemoria acceso, giornata vuota, passate le 22, invito già mostrato) e quattro comandi: chiedi permesso, notifica adesso, notifica fra 10 secondi, azzera il segno «già vista».
 
-**Quaderno** (pagina interna di Calendario)
+**Quaderno** (tab 3)
 - Timeline verticale di tutte le note: la più vecchia in alto, la più recente in fondo; si apre già in fondo.
+- **In fondo, l'editor della nota di oggi**: è la prima cosa che si vede aprendo la pagina. È lo stesso componente di Oggi (`note.js`, montato su `[data-notebook-note]`); le due copie si riallineano da sole — `note.sync()` quando si torna su Oggi, `note.load(todayKey())` quando si entra nel Quaderno — e mai mentre si sta scrivendo.
 - Etichetta del mese sticky in vetro, nodo con la forma dell'emozione prevalente; tocco su una nota: apre il giorno in Oggi.
 - Ogni bottone nota ha `data-haptic="off"`: sono card grandi in una lista che si scorre col dito, e lo switch invisibile dell'aptica (vedi sezione 8) intercettava il trascinamento e bloccava lo scroll.
 
 **Navigazione** (`app.js`)
-- Tre tab (`TABS`: `today`, `calendar`, `report`) e due pagine interne. `PARENT` lega ogni pagina alla sua tab; le pagine interne entrano con `pushState` (funziona "indietro"). Hash: `#calendario`, `#emozioni`, `#impostazioni`, `#quaderno`.
+- Quattro tab (`TABS`: `today`, `calendar`, `notebook`, `report`) e due pagine interne. `PARENT` lega ogni pagina alla sua tab; le pagine interne entrano con `pushState` (funziona "indietro"). Hash: `#calendario`, `#quaderno`, `#emozioni`, `#impostazioni`.
 - Link con `data-go="pagina"`, ritorno con `data-back`; la tab attiva, da una pagina interna, riporta alla radice.
 
 **Regole di calcolo** (`emotions.js`)
@@ -104,17 +105,19 @@ tepore/
    │  ├─ reminder.js       # promemoria serale (notifica locale alle 22)
    │  ├─ today.js          # vista Oggi (bloom, aura, slider, apatia, nota)
    │  ├─ calendar.js       # vista Calendario
-   │  ├─ report.js         # vista Emozioni (14 giorni, classifica, vista anno)
+   │  ├─ report.js         # vista Emozioni (finestra scelta, classifica)
+   │  ├─ year.js           # vista anno, in fondo al Calendario
+   │  ├─ note.js           # editor della nota del giorno (Oggi e Quaderno)
    │  ├─ settings.js       # pagina Impostazioni (backup, versione)
    │  ├─ dev.js            # pagina Sviluppatore (ambiente e notifiche)
-   │  ├─ notebook.js       # pagina Quaderno + card nel calendario
+   │  ├─ notebook.js       # tab Quaderno (timeline + nota di oggi in fondo)
    │  └─ version.js        # GENERATO dalla build
    └─ scss/
       ├─ main.scss         # @use base, layout, components, pages
       ├─ abstracts/        # _variables, _mixins (forward da _index)
       ├─ base/             # _fonts (@font-face locali), _root (custom property), _reset, _typography, _animations, _utilities
-      ├─ layout/           # _app, _navbar, _tabbar
-      ├─ components/       # _group, _slider, _switch, _toggle, _shape, _hero, _button, _spinner, _toast, _sheet
+      ├─ layout/           # _app, _navbar, _tabbar, _subbar
+      ├─ components/       # _group, _note, _slider, _switch, _toggle, _shape, _hero, _button, _spinner, _toast, _sheet
       └─ pages/            # _today, _calendar, _report, _settings, _dev, _notebook
 ```
 
@@ -208,7 +211,9 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 ### Componenti firma
 
 - **Liquid glass** (`@include liquid-glass($radius, $blur)`): vetro caldo con blur + saturazione, bordo a gradiente luminoso (`::before` mascherato) e riflesso speculare (`::after`). Usato per tab bar, chip e controlli flottanti. Occupa entrambi gli pseudo-elementi: non aggiungerne altri sullo stesso elemento.
-- **Tab bar**: capsula di vetro flottante in basso, **solo icone** (il nome resta in `.sr-only` per VoiceOver), tre destinazioni, aptica al cambio. Le posizioni della pillola si generano con un `@for` su `$tab-count`: cambiando il numero di tab non serve toccare altro. La pillola si muove come una goccia animando `left`/`right`: il bordo d'attacco parte subito, quello di coda insegue (`is-going-left/right`), con lieve sollevamento (`pill-lift`); l'icona attiva fa `tab-bounce`. Non animarla con transform e `var()` nei keyframe.
+- **Tab bar**: capsula di vetro flottante in basso, **solo icone** (il nome resta in `.sr-only` per VoiceOver), quattro destinazioni, aptica al cambio. Le icone sono **Phosphor, peso `fill`** (`viewBox="0 0 256 256"`, `fill: currentColor`, niente stroke), incollate in linea: nessuna libreria, nessun pacchetto. Lo stato di riposo è `opacity: .58`, l'attivo pieno in brace. Per aggiungerne una si prende l'SVG da `@phosphor-icons/core/assets/fill/` e si incolla il solo `<path>`.
+- **Pillola della tab bar**: larghezza fissa `(100% - padding) / $tab-count` e spostamento su `translate: calc(100% * var(--pos))`, impostata da `moveIndicator()`. Si anima solo `translate` — composita, zero layout per frame — mentre `pill-lift` resta libero di animare `scale`; `is-instant` la posiziona senza scivolare al primo disegno. **Non tornare a `left`/`right`**: rifanno il layout a ogni frame ed è da lì che veniva lo scatto della barra.
+- **Sottobarra** (`.subbar`, `_subbar.scss`): capsula di vetro appoggiata sopra la tab bar, visibile solo nella vista Emozioni (`is-visible`, gestita da `setSubbar()` in `app.js`). Il binario scorre di lato quando le voci non ci stanno; la pastiglia `.ink` segue la voce attiva con `translate` + `width` misurati in JS (`moveInk()`, richiamata anche sullo scroll del binario e al `resize`). La vista sotto si allarga di `$subbar-h` in `padding-bottom` per non finirci sotto.
 - **Navbar**: invisibile in cima, compare in vetro con il titolo quando il large title esce dallo schermo.
 - **Group** (`.group` con `.head`, `.title`, `.aside`, `.body`, `.foot` annidati): sezione stile Impostazioni iOS; il body è una card `@include surface`. Con `.collapsible` si richiude: il JS misura l'altezza e commuta `is-collapsed`.
 - **Slider**: traccia sabbia alta `$slider-h` 34px, riempimento `var(--emo)` di larghezza `calc(var(--h) + (100% - var(--h)) * var(--p))`, pomello bianco con vetro, tacche per ogni livello.
@@ -219,7 +224,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - **Spinner** (`.spinner`): anello brace che gira, per le attese brevi (verifica del codice Dropbox, salvataggio in corso).
 - **Toast**: pillola in vetro sopra la tab bar per le conferme (export, import, promemoria serale). `toast(msg, { action, onAction, hold })`: con `action` compare un pulsante brace, il toast resta aperto e diventa toccabile (`has-action`). Lo usa l'avviso di nuova versione.
 - **Barra delle prevalenze** (`@include emo-bar($h)`): una fetta per emozione larga quanto `--n`, condivisa fra il riepilogo del mese e quello dell'anno.
-- **Ember tile** (`@include ember-tile($size, $radius)`): tessera a gradiente brace stile icona iOS (card Quaderno, stati vuoti).
+- **Ember tile** (`@include ember-tile($size, $radius)`): tessera a gradiente brace stile icona iOS (stati vuoti).
 
 ## 6. Convenzioni SCSS (obbligatorie)
 
@@ -254,7 +259,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
   - Gli **interruttori veri** portano l'attributo `switch` nel markup: suonano da soli, senza sovrapposizioni.
   - Le **celle della vista anno** sono escluse con `data-haptic="off"`: sarebbero 365 controlli nativi in pagina. Stesso motivo per i **bottoni nota del Quaderno**: coprire card grandi e scorrevoli con uno switch nativo blocca il trascinamento.
   - `haptic(kind)` resta per Android e desktop, dove `navigator.vibrate` esiste: cinque intensità (`tick`, `soft`, `firm`, `double`, `warn`) e un guardiano che scarta due tocchi a meno di 18 ms. Su iOS non fa nulla — non aggiungerlo aspettandoti un effetto lì.
-  - **Slider**: uno scatto per livello *durante il trascinamento* è impossibile, verificato con nove tecniche sul dispositivo. Uno switch nativo suona solo quando il dito attraversa la sua unica soglia interna, e mid-drag non c'è modo di rimettergliela davanti: né sei switch affiancati (il tocco resta agganciato al primo), né uno switch stretto ricentrato a ogni scatto (WebKit misura lo spostamento dall'inizio del gesto, non la geometria). Quello che si ottiene è il **tocco quando si tocca un livello sulla traccia**: `MoodSlider` stende uno `.haptic-tap` sopra la traccia, sotto il pomello (che resta afferrabile), e lo nasconde con `hidden` appena parte un trascinamento — altrimenti la sua soglia darebbe un tocco a metà corsa che non corrisponde a nessuno scatto. Siccome lo switch copre la traccia, il pomello si riconosce dalla **geometria** (`onThumb(x, y)`), non da `e.target`.
+  - **Slider**: uno scatto per livello *durante il trascinamento* è impossibile, verificato con nove tecniche sul dispositivo. Uno switch nativo suona solo quando il dito attraversa la sua unica soglia interna, e mid-drag non c'è modo di rimettergliela davanti: né sei switch affiancati (il tocco resta agganciato al primo), né uno switch stretto ricentrato a ogni scatto (WebKit misura lo spostamento dall'inizio del gesto, non la geometria). Quello che si ottiene è il **tocco quando si tocca un livello sulla traccia**: `MoodSlider` stende uno `.haptic-tap` sopra la traccia, sotto il pomello (che resta afferrabile), e lo nasconde con `hidden` appena parte un trascinamento — altrimenti la sua soglia darebbe un tocco a metà corsa che non corrisponde a nessuno scatto. Siccome lo switch copre la traccia, il pomello si riconosce dalla **geometria** (`onThumb(x, y)`), non da `e.target`. Due trappole imparate a spese nostre: in `#startDrag` la cattura del puntatore va presa **prima** di nascondere lo switch, altrimenti il browser rilascia il puntatore insieme all'elemento che lo teneva; e il trascinamento non deve finire su `lostpointercapture`, perché quel rilascio-e-ripresa a metà corsa bloccava lo slider dopo tre dita di movimento. La fine del gesto la dicono `pointerup` e `pointercancel`.
 - `sheet.js` espone `openSheet(id)` e `closeSheet()`. La scheda si apre dal pulsante `[data-info]` della riga, con delega dell'evento su `.mood-list`.
 - `report.js` è una factory come le altre: riceve `store` e `onPick(key)`, e non conosce la navigazione.
 - `reminder.js` non tocca la vista: espone `state`, `subscribe`, `setEnabled(on)` (`on` / `off` / `blocked` / `unsupported`), `greet()` e, per la pagina Sviluppatore, `debug()`, `ask()`, `fire(body)`, `clearSeen()`. Riceve `onInvite(testo)`: quando la sera arriva con l'app aperta, l'invito passa di lì e diventa un toast, perché una notifica di sistema in primo piano non comparirebbe comunque. Il timer si riarma a ogni ritorno in primo piano, perché iOS sospende i `setTimeout` lunghi.

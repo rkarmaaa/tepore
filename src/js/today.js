@@ -1,10 +1,10 @@
 import { EMOTIONS, APATHY, MAX_LEVEL, shapeSVG, topEmotions } from './emotions.js';
-import { todayKey, longDate, dayMonth, daysBetween, timeNow, cap } from './dates.js';
+import { todayKey, longDate, dayMonth, daysBetween, cap } from './dates.js';
 import { MoodSlider } from './slider.js';
+import { createNote } from './note.js';
 import { openSheet } from './sheet.js';
 import { haptic } from './haptics.js';
 
-const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg>';
 const BACK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>';
 const COLLAPSE_MS = 700;
 
@@ -23,14 +23,13 @@ export function createToday({ store, onTitle }) {
     list: $('[data-mood-list]'),
     aside: $('[data-moods-aside]'),
     apathy: $('[data-apathy]'),
-    note: $('[data-note]'),
-    status: $('[data-note-status]'),
-    count: $('[data-note-count]'),
   };
 
   let key = todayKey();
-  let noteTimer = null;
   const live = {};
+
+  // La nota vive nel suo componente, lo stesso del Quaderno
+  const note = createNote({ store, mount: $('[data-note-mount]'), key });
 
   // Ritratto del giorno
   const bloomItems = new Map();
@@ -147,20 +146,6 @@ export function createToday({ store, onTitle }) {
     onTitle?.(title);
   }
 
-  function paintNoteMeta(state) {
-    const n = els.note.value.length;
-    els.count.textContent = n ? `${n} caratteri` : '';
-    els.status.classList.toggle('is-saved', state === 'saved');
-    if (state === 'saving') els.status.innerHTML = 'Salvataggio…';
-    else if (state === 'saved') els.status.innerHTML = `${CHECK}Salvata alle ${timeNow()}`;
-    else els.status.innerHTML = n ? `${CHECK}Salvata` : 'Si salva da sola, mentre scrivi.';
-  }
-
-  function autosize() {
-    els.note.style.height = 'auto';
-    els.note.style.height = `${els.note.scrollHeight}px`;
-  }
-
   // Apre e chiude la sezione misurandone l'altezza: i dati restano dove sono
   let collapseTimer = null;
   function collapse(el, on, instant) {
@@ -194,8 +179,8 @@ export function createToday({ store, onTitle }) {
   }
 
   function load(nextKey = key) {
-    flushNote();
     key = nextKey;
+    note.load(key);
     const day = store.get(key);
     sliders.forEach((s) => {
       const v = day?.values?.[s.emotion.id] || 0;
@@ -204,18 +189,8 @@ export function createToday({ store, onTitle }) {
     });
     els.apathy.checked = Boolean(day?.apatia);
     setApathy(els.apathy.checked, true);
-    els.note.value = day?.note || '';
-    autosize();
-    paintNoteMeta();
     paintHero();
     paintBloom();
-  }
-
-  function flushNote() {
-    if (!noteTimer) return;
-    clearTimeout(noteTimer);
-    noteTimer = null;
-    store.update(key, { note: els.note.value });
   }
 
   // Eventi
@@ -225,20 +200,6 @@ export function createToday({ store, onTitle }) {
     store.update(key, { apatia: els.apathy.checked });
     paintBloom();
   });
-
-  els.note.addEventListener('input', () => {
-    autosize();
-    paintNoteMeta('saving');
-    clearTimeout(noteTimer);
-    noteTimer = setTimeout(() => {
-      noteTimer = null;
-      store.update(key, { note: els.note.value });
-      paintNoteMeta('saved');
-    }, 600);
-  });
-  els.note.addEventListener('blur', flushNote);
-  window.addEventListener('pagehide', flushNote);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) flushNote(); });
 
   els.actions.addEventListener('click', (e) => {
     if (e.target.closest('[data-go-today]')) load(todayKey());
@@ -252,6 +213,8 @@ export function createToday({ store, onTitle }) {
   return {
     get key() { return key; },
     open(k) { load(k); },
+    // Tornando sulla vista: la nota può essere stata scritta nel Quaderno
+    syncNote() { note.sync(); },
     // Dopo la mezzanotte "Oggi" diventa il giorno nuovo
     refreshDay(prevToday) {
       if (key === prevToday) load(todayKey());

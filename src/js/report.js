@@ -1,13 +1,20 @@
 import { EMOTIONS, APATHY, MAX_LEVEL, shapeSVG, dominantOf } from './emotions.js';
-import { keyOf, todayKey, dateOf, monthName, cap } from './dates.js';
+import { keyOf, todayKey, dateOf, cap } from './dates.js';
 import { haptic } from './haptics.js';
 
-const WINDOW = 14;
 const MIN_TREND = .35;
 
+// Finestre di lettura: la prima è quella di partenza
+export const PERIODS = [
+  { id: 'settimana', label: 'Settimana', days: 7, lede: 'negli ultimi 7 giorni', span: 'gli ultimi 7 giorni', prev: 'ai 7 giorni prima' },
+  { id: 'mese', label: 'Mese', days: 30, lede: 'negli ultimi 30 giorni', span: 'gli ultimi 30 giorni', prev: 'ai 30 giorni prima' },
+  { id: 'trimestre', label: 'Trimestre', days: 90, lede: 'negli ultimi 3 mesi', span: 'gli ultimi 3 mesi', prev: 'ai 3 mesi prima' },
+  { id: 'anno', label: 'Anno', days: 365, lede: 'nell\'ultimo anno', span: 'l\'ultimo anno', prev: 'all\'anno prima' },
+];
+
 const one = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const fmtShortMonth = new Intl.DateTimeFormat('it-IT', { month: 'short' });
 const fmtDayMonth = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long' });
+const fmtDayMonthYear = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
 const giorni = (n) => `${n} ${n === 1 ? 'giornata' : 'giornate'}`;
 
 // Somme, presenze e giorni di prevalenza in una finestra che finisce a `end`
@@ -41,8 +48,8 @@ function windowStats(store, end, span, back = 0) {
   return { totals, present, leads, logged, apathy, felt, avg, span };
 }
 
-// Direzione rispetto alle due settimane precedenti: solo più o meno, nessun numero
-function trendLine(now, before) {
+// Direzione rispetto al periodo precedente: solo più o meno, nessun numero
+function trendLine(now, before, period) {
   if (!before.logged || !now.logged) return '';
   const deltas = EMOTIONS
     .map((e) => ({ e, d: now.avg(e.id) - before.avg(e.id) }))
@@ -52,8 +59,8 @@ function trendLine(now, before) {
   const parts = [];
   if (up && up.d >= MIN_TREND) parts.push(`più ${up.e.the.replace(/^(la |il |l')/, '')}`);
   if (down && down.d <= -MIN_TREND) parts.push(`meno ${down.e.the.replace(/^(la |il |l')/, '')}`);
-  if (!parts.length) return 'Rispetto alle due settimane prima, l\'equilibrio è rimasto lo stesso.';
-  return `Rispetto alle due settimane prima: ${parts.join(', ')}.`;
+  if (!parts.length) return `Rispetto ${period.prev}, l'equilibrio è rimasto lo stesso.`;
+  return `Rispetto ${period.prev}: ${parts.join(', ')}.`;
 }
 
 export function createReport({ store, onPick }) {
@@ -61,19 +68,14 @@ export function createReport({ store, onPick }) {
   const $ = (sel) => root.querySelector(sel);
   const els = {
     range: $('[data-report-range]'),
+    lede: $('[data-report-lede]'),
     lead: $('[data-lead]'),
     leadAside: $('[data-lead-aside]'),
     leadFoot: $('[data-lead-foot]'),
     ranks: $('[data-ranks]'),
-    yearLabel: $('[data-year-label]'),
-    yearAside: $('[data-year-aside]'),
-    yearPrev: $('[data-year-prev]'),
-    yearNext: $('[data-year-next]'),
-    months: $('[data-year-grid]'),
-    yearRecap: $('[data-year-recap]'),
   };
 
-  let year = new Date().getFullYear();
+  let period = PERIODS[0];
 
   // Fuori schermo l'alone si ferma: niente animazioni a vuoto
   if ('IntersectionObserver' in window) {
@@ -82,16 +84,20 @@ export function createReport({ store, onPick }) {
     }, { rootMargin: '80px' }).observe(els.lead);
   }
 
-  // --- Ultimi 14 giorni ---
+  // --- Emozione del periodo ---
   function renderLead() {
     const end = todayKey();
-    const now = windowStats(store, end, WINDOW);
-    const before = windowStats(store, end, WINDOW, WINDOW);
+    const days = period.days;
+    const now = windowStats(store, end, days);
+    const before = windowStats(store, end, days, days);
     const from = new Date(dateOf(end));
-    from.setDate(from.getDate() - (WINDOW - 1));
+    from.setDate(from.getDate() - (days - 1));
 
-    els.range.textContent = `${fmtDayMonth.format(from)} → oggi`;
-    els.leadAside.textContent = now.logged ? `${now.logged}/${WINDOW}` : '';
+    els.lede.textContent = `Come sono andate le tue giornate ${period.lede}.`;
+    // L'anno compare solo quando la finestra esce da quello corrente
+    const fmt = from.getFullYear() === new Date().getFullYear() ? fmtDayMonth : fmtDayMonthYear;
+    els.range.textContent = `${fmt.format(from)} → oggi`;
+    els.leadAside.textContent = now.logged ? `${now.logged}/${days}` : '';
 
     const ranked = EMOTIONS
       .map((e) => ({ e, total: now.totals.get(e.id) || 0 }))
@@ -102,13 +108,13 @@ export function createReport({ store, onPick }) {
       els.lead.innerHTML = `
         <div class="blank">
           <span class="icon">${shapeSVG(APATHY.id)}</span>
-          <p class="title">${now.logged ? 'Due settimane in pausa' : 'Ancora nessuna giornata'}</p>
+          <p class="title">${now.logged ? 'Un periodo in pausa' : 'Ancora nessuna giornata'}</p>
           <p class="text">${now.logged
             ? 'Hai segnato le giornate, ma nessuna emozione è emersa. Va bene anche così.'
             : 'Segna come ti senti: dopo qualche giorno qui comparirà il tuo resoconto.'}</p>
           <button class="pill-btn ember" type="button" data-go-today>Segna la giornata di oggi</button>
         </div>`;
-      els.leadFoot.textContent = 'Il resoconto guarda sempre le ultime due settimane.';
+      els.leadFoot.textContent = `Il resoconto guarda ${period.span}.`;
       renderRanks(ranked, now);
       return;
     }
@@ -121,9 +127,9 @@ export function createReport({ store, onPick }) {
     let text;
     if (leads >= Math.ceil(now.felt / 2)) text = 'Ha dato il tono a quasi tutte le tue giornate.';
     else if (present >= Math.ceil(now.felt * .7)) text = 'Torna quasi ogni giorno, anche quando non è la più forte.';
-    else text = 'È l\'emozione che è salita più in alto in queste due settimane.';
+    else text = `È l'emozione che è salita più in alto in ${period.span}.`;
 
-    const trend = trendLine(now, before);
+    const trend = trendLine(now, before, period);
     els.lead.innerHTML = `
       <div class="crown" data-emo="${e.id}">
         <span class="halo" aria-hidden="true"></span>
@@ -148,7 +154,7 @@ export function createReport({ store, onPick }) {
       ${trend ? `<p class="trend">${trend}</p>` : ''}`;
 
     const pause = now.apathy ? ` ${giorni(now.apathy)} in pausa.` : '';
-    els.leadFoot.textContent = `Hai segnato ${giorni(now.logged)} su ${WINDOW}.${pause}`;
+    els.leadFoot.textContent = `Hai segnato ${giorni(now.logged)} su ${days}.${pause}`;
     renderRanks(ranked, now);
   }
 
@@ -169,117 +175,29 @@ export function createReport({ store, onPick }) {
     }).join('');
   }
 
-  // --- Vista anno ---
-  const years = () => {
-    const keys = Object.keys(store.all());
-    const thisYear = new Date().getFullYear();
-    if (!keys.length) return { first: thisYear, last: thisYear };
-    const first = Number(keys.reduce((a, b) => (a < b ? a : b)).slice(0, 4));
-    return { first: Math.min(first, thisYear), last: thisYear };
-  };
-
-  function renderYear(direction) {
-    const today = todayKey();
-    const span = years();
-    year = Math.min(Math.max(year, span.first), span.last);
-    els.yearLabel.textContent = String(year);
-    els.yearPrev.disabled = year <= span.first;
-    els.yearNext.disabled = year >= span.last;
-
-    const counts = new Map();
-    let logged = 0;
-    let html = '';
-
-    for (let m = 0; m < 12; m++) {
-      const first = new Date(year, m, 1);
-      const offset = (first.getDay() + 6) % 7;
-      const total = new Date(year, m + 1, 0).getDate();
-      let cells = '';
-      for (let i = 0; i < offset; i++) cells += '<span class="cell pad"></span>';
-
-      for (let d = 1; d <= total; d++) {
-        const key = keyOf(new Date(year, m, d));
-        if (key > today) { cells += '<span class="cell future"></span>'; continue; }
-        const day = store.get(key);
-        const dom = dominantOf(day);
-        if (!dom) { cells += '<span class="cell void"></span>'; continue; }
-        logged++;
-        counts.set(dom.id, (counts.get(dom.id) || 0) + 1);
-        cells += `<button class="cell filled" type="button" data-haptic="off" data-emo="${dom.id}" data-date="${key}"
-          aria-label="${d} ${monthName(year, m).toLowerCase()}, ${dom.name.toLowerCase()}">${shapeSVG(dom.id)}</button>`;
-      }
-
-      html += `
-        <div class="mini" style="--i:${m}">
-          <span class="label">${cap(fmtShortMonth.format(first)).replace('.', '')}</span>
-          <div class="cells">${cells}</div>
-        </div>`;
-    }
-
-    els.months.innerHTML = html;
-    els.months.classList.remove('is-in-right', 'is-in-left');
-    if (direction) {
-      void els.months.offsetWidth;
-      els.months.classList.add(direction > 0 ? 'is-in-right' : 'is-in-left');
-    }
-
-    els.yearAside.textContent = logged ? `${logged} segnate` : '';
-
-    if (!logged) {
-      els.yearRecap.innerHTML = `<p class="text">Nessuna giornata registrata nel ${year}.</p>`;
-      return;
-    }
-    const order = [...EMOTIONS, APATHY].filter((e) => counts.has(e.id));
-    const top = [...order].sort((a, b) => counts.get(b.id) - counts.get(a.id))[0];
-    els.yearRecap.innerHTML = `
-      <p class="text">${giorni(logged)} nel ${year}. ${cap(top.the)} prevale in ${giorni(counts.get(top.id))}.</p>
-      <div class="bar" role="img" aria-label="Distribuzione delle emozioni prevalenti dell'anno">
-        ${order.map((e, i) => `<span data-emo="${e.id}" style="--n:${counts.get(e.id)};--i:${i}"></span>`).join('')}
-      </div>`;
-  }
-
-  function shiftYear(delta) {
-    const span = years();
-    const next = year + delta;
-    if (next < span.first || next > span.last) return;
-    year = next;
-    renderYear(delta);
-  }
-
-  els.yearPrev.addEventListener('click', () => shiftYear(-1));
-  els.yearNext.addEventListener('click', () => shiftYear(1));
-
-  // Scorrimento orizzontale sull'anno, come nel calendario
-  let sx = null;
-  let sy = null;
-  els.months.addEventListener('touchstart', (e) => {
-    sx = e.touches[0].clientX;
-    sy = e.touches[0].clientY;
-  }, { passive: true });
-  els.months.addEventListener('touchend', (e) => {
-    if (sx === null) return;
-    const dx = e.changedTouches[0].clientX - sx;
-    const dy = e.changedTouches[0].clientY - sy;
-    sx = null;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      haptic('soft');
-      shiftYear(dx < 0 ? 1 : -1);
-    }
-  }, { passive: true });
-
   root.addEventListener('click', (e) => {
     const cell = e.target.closest('[data-date]');
     if (cell) { onPick(cell.dataset.date); return; }
     if (e.target.closest('[data-go-today]')) onPick(todayKey());
   });
 
-  function render() {
-    renderLead();
-    renderYear();
-  }
+  store.subscribe(() => { if (!root.hidden) renderLead(); });
+  renderLead();
 
-  store.subscribe(() => { if (!root.hidden) render(); });
-  render();
+  return {
+    refresh: renderLead,
+    get period() { return period.id; },
 
-  return { refresh: render };
+    // Cambio di finestra dalla sottobarra
+    setPeriod(id) {
+      const next = PERIODS.find((p) => p.id === id);
+      if (!next || next === period) return;
+      period = next;
+      haptic('tick');
+      els.lead.classList.remove('is-swapping');
+      void els.lead.offsetWidth;
+      els.lead.classList.add('is-swapping');
+      renderLead();
+    },
+  };
 }

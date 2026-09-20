@@ -18,6 +18,8 @@ const SHELL = [
   './js/report.js',
   './js/settings.js',
   './js/notebook.js',
+  './js/note.js',
+  './js/year.js',
   './js/sheet.js',
   './js/config.js',
   './js/dropbox.js',

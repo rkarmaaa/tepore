@@ -1,11 +1,11 @@
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 // Quaderno: timeline verticale, dalla nota piu lontana alla piu recente
 .view.notebook {
   $node: 36px;
 
   .timeline {
-    margin-top: $sp-6;
+    margin-top: $sp-5;
 
     .period {
       & + .period {
@@ -22,7 +22,7 @@
         margin: 0 0 $sp-3;
         padding: 6px $sp-3;
         @include font-ui($fs-xs, $fw-semibold);
-        letter-spacing: .06em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--ink-soft);
       }
@@ -33,14 +33,20 @@
 
         // Filo che unisce le giornate
         &::before {
-          content: '';
+          content: "";
           position: absolute;
           top: $sp-4;
           bottom: $sp-4;
           left: calc(#{$node} / 2 - 1px);
           width: 2px;
           border-radius: 2px;
-          background: linear-gradient(to bottom, transparent, var(--sand-deep) $sp-8, var(--sand-deep) calc(100% - #{$sp-8}), transparent);
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            var(--sand-deep) $sp-8,
+            var(--sand-deep) calc(100% - #{$sp-8}),
+            transparent
+          );
         }
 
         // Niente content-visibility qui: il contenimento taglierebbe
@@ -55,7 +61,7 @@
             column-gap: $sp-3;
             width: 100%;
             text-align: left;
-            @include pressable(.98);
+            @include pressable(0.98);
             @include focus-ring;
 
             .node {
@@ -73,7 +79,7 @@
 
               // Nota senza emozioni: un punto neutro
               &:empty::before {
-                content: '';
+                content: "";
                 @include size(8px);
                 border-radius: 50%;
                 background: var(--ink-faint);
@@ -105,7 +111,7 @@
                 margin-top: 6px;
                 @include font-display($fs-md, $fw-regular, 100);
                 line-height: 1.5;
-                letter-spacing: -.005em;
+                letter-spacing: -0.005em;
                 color: var(--ink);
                 white-space: pre-wrap;
                 overflow-wrap: anywhere;
@@ -125,7 +131,9 @@
           .entry:last-child {
             .btn {
               .node {
-                box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px color-mix(in oklab, var(--emo) 28%, transparent);
+                box-shadow:
+                  0 0 0 4px var(--paper),
+                  0 0 0 7px color-mix(in oklab, var(--emo) 28%, transparent);
                 animation: breathe 3.4s ease-in-out infinite;
 
                 @include reduced-motion {
@@ -169,15 +177,15 @@
     }
   }
 
-  // Fine del quaderno
-  .end {
-    @include flex(column, center, center, $sp-3);
+  // La nota di oggi chiude la pagina: è qui che il quaderno si apre
+  .group.today-note {
     margin-top: $sp-10;
+    scroll-margin-bottom: $sp-10;
 
-    p {
-      @include font-display($fs-sm, $fw-regular, 100);
-      font-style: italic;
-      color: var(--ink-faint);
+    .head {
+      .title {
+        color: var(--ember);
+      }
     }
   }
 }

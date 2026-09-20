@@ -111,10 +111,20 @@ export function createReminder({ store, onInvite }) {
     timer = setTimeout(() => { maybe(); arm(); }, Math.min(nextEvening() - Date.now(), MAX_DELAY));
   }
 
+  // Quando la notifica non è potuta partire, il promemoria aspetta qui
+  function greet() {
+    if (!on() || done() || !pastEvening() || !empty()) return '';
+    write(SEEN, todayKey());
+    return line();
+  }
+
   // I timer si fermano quando iOS sospende la pagina: si ricontrolla a ogni risveglio
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) maybe();
-    else arm();
+    if (document.hidden) { maybe(); return; }
+    arm();
+    // Rientro a sera con la giornata ancora vuota: l'invito compare adesso
+    const text = greet();
+    if (text) onInvite?.(text);
   });
 
   arm();
@@ -176,11 +186,6 @@ export function createReminder({ store, onInvite }) {
 
     clearSeen() { write(SEEN, null); },
 
-    // Quando la notifica non è potuta partire, il promemoria aspetta all'apertura
-    greet() {
-      if (!on() || done() || !pastEvening() || !empty()) return '';
-      write(SEEN, todayKey());
-      return line();
-    },
+    greet,
   };
 }

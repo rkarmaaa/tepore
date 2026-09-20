@@ -3,6 +3,9 @@ import { haptic } from './haptics.js';
 
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
 
+// Soglia prima di decidere la direzione del gesto: sotto non si muove nulla
+const AXIS_SLOP = 6;
+
 // Riga emozione con slider a scatti (0–5), touch e tastiera
 export class MoodSlider {
   constructor(emotion, index, { onInput, onChange }) {
@@ -73,20 +76,41 @@ export class MoodSlider {
       return clamp01((x - grab - r.left - r.height / 2) / (r.width - r.height));
     };
 
-    // iOS: blocca lo scroll se il gesto parte dal pomello o è orizzontale
+    // Il gesto vale per uno solo: o scorre la pagina o muove lo slider.
+    // Decide il primo movimento oltre la soglia, per direzione prevalente.
     let touch = null;
+
+    // Verdetto "pagina": lo slider molla ogni presa e lascia scorrere il browser
+    const abort = () => {
+      if (!start) return;
+      if (dragging) {
+        this.value = start.v;
+        this.el.style.setProperty('--p', this.value / MAX_LEVEL);
+        this.#paint(false);
+        s.classList.remove('is-dragging');
+        this.el.classList.remove('is-dragging');
+      }
+      if (s.hasPointerCapture?.(start.id)) s.releasePointerCapture(start.id);
+      this.tap.hidden = false;
+      start = null;
+      dragging = false;
+    };
+
     s.addEventListener('touchstart', (e) => {
       const t = e.touches[0];
-      const grabbing = onThumb(t.clientX, t.clientY);
-      touch = { x: t.clientX, y: t.clientY, decided: grabbing, lock: grabbing };
+      touch = { x: t.clientX, y: t.clientY, decided: false, lock: false };
     }, { passive: true });
 
     s.addEventListener('touchmove', (e) => {
       if (!touch || this.disabled) return;
       if (!touch.decided) {
         const t = e.touches[0];
+        const dx = Math.abs(t.clientX - touch.x);
+        const dy = Math.abs(t.clientY - touch.y);
+        if (Math.max(dx, dy) < AXIS_SLOP) return;
         touch.decided = true;
-        touch.lock = Math.abs(t.clientX - touch.x) >= Math.abs(t.clientY - touch.y);
+        touch.lock = dx > dy;
+        if (!touch.lock) abort();
       }
       if (touch.lock && e.cancelable) e.preventDefault();
     }, { passive: false });
@@ -132,17 +156,15 @@ export class MoodSlider {
         grab = Math.max(-r.width / 2, Math.min(r.width / 2, e.clientX - r.left - r.width / 2));
       }
       start = { x: e.clientX, y: e.clientY, v: this.value, id: e.pointerId };
-      // Mouse o pomello: si trascina subito; sulla traccia si attende la direzione
-      if (e.pointerType === 'mouse' || thumb) this.#startDrag(e, () => { dragging = true; });
+      // Col mouse si trascina subito; al tocco decide touchmove, anche sul pomello
+      if (e.pointerType === 'mouse') this.#startDrag(e, () => { dragging = true; });
     });
 
     s.addEventListener('pointermove', (e) => {
       if (!start || e.pointerId !== start.id) return;
-      const dx = e.clientX - start.x;
-      const dy = e.clientY - start.y;
-      const wants = touch?.decided ? touch.lock : Math.abs(dx) > 4 && Math.abs(dx) > Math.abs(dy);
-      if (!dragging && wants) {
-        this.#startDrag(e, () => { dragging = true; });
+      if (e.pointerType !== 'mouse') {
+        if (!touch?.decided || !touch.lock) return;
+        if (!dragging) this.#startDrag(e, () => { dragging = true; });
       }
       if (dragging) move(pFromX(e.clientX));
     });
@@ -169,8 +191,6 @@ export class MoodSlider {
       end(true);
     });
 
-    s.addEventListener('lostpointercapture', () => { if (dragging) end(true); });
-
     s.addEventListener('keydown', (e) => {
       if (this.disabled) return;
       const steps = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 2, PageDown: -2 };
@@ -193,8 +213,10 @@ export class MoodSlider {
   // darebbe un tocco che non corrisponde a nessuno scatto.
   #startDrag(e, done) {
     haptic('tick');
-    this.tap.hidden = true;
+    // Prima la cattura, poi si toglie di mezzo lo switch: altrimenti il
+    // browser rilascia il puntatore insieme all'elemento che lo teneva.
     this.slider.setPointerCapture?.(e.pointerId);
+    this.tap.hidden = true;
     this.slider.classList.add('is-dragging');
     this.el.classList.add('is-dragging');
     done();

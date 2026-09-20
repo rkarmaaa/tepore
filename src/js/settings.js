@@ -17,8 +17,8 @@ function when(ms) {
   return fmtDate.format(d);
 }
 
-// Impostazioni: backup manuale, promemoria, aptica, backup automatico
-export function createSettings({ store, toast, backup, reminder, go }) {
+// Impostazioni: backup manuale, tema, aptica, backup automatico
+export function createSettings({ store, toast, backup, go }) {
   const root = document.getElementById('view-settings');
   const $ = (sel) => root.querySelector(sel);
 
@@ -31,9 +31,6 @@ export function createSettings({ store, toast, backup, reminder, go }) {
     haptics: $('[data-haptics]'),
     hapticsState: $('[data-haptics-state]'),
     hapticsGroup: $('.group.options'),
-    reminder: $('[data-reminder]'),
-    reminderState: $('[data-reminder-state]'),
-    reminderGroup: $('.group.reminder'),
     backup: $('[data-backup]'),
     backupState: $('[data-backup-state]'),
     backupTitle: $('[data-backup-title]'),
@@ -60,29 +57,6 @@ export function createSettings({ store, toast, backup, reminder, go }) {
     els.hapticsState.textContent = els.haptics.checked ? 'Attivo' : 'Non attivo';
     haptic('double');
   });
-
-  // --- Promemoria serale ---
-  function paintReminder(s = reminder.state) {
-    els.reminder.checked = s.enabled;
-    els.reminder.disabled = !s.supported;
-    els.reminderGroup.classList.toggle('is-off', !s.supported);
-    els.reminderState.textContent = !s.supported
-      ? 'Non disponibile'
-      : s.enabled ? `Ogni sera alle ${s.hour}` : 'Non attivo';
-  }
-
-  // Il permesso si puo chiedere solo qui dentro, nel tocco dell'utente
-  els.reminder.addEventListener('change', async () => {
-    haptic('firm');
-    const outcome = await reminder.setEnabled(els.reminder.checked);
-    paintReminder();
-    if (outcome === 'on') toast('Promemoria attivo alle 22');
-    else if (outcome === 'blocked') { haptic('warn'); toast('Le notifiche sono bloccate: riattivale per Tepore nelle impostazioni di iPhone'); }
-    else if (outcome === 'unsupported') { haptic('warn'); toast('Serve Tepore installata sulla schermata Home'); }
-  });
-
-  reminder.subscribe(paintReminder);
-  paintReminder();
 
   function render() {
     const days = Object.values(store.all());

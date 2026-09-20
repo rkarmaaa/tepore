@@ -179,16 +179,7 @@
           <div class="head">
             <h2 class="title" id="note-title">Nota della giornata</h2>
           </div>
-          <div class="body">
-            <div class="editor">
-              <label class="sr-only" for="note-field">Nota della giornata</label>
-              <textarea class="field" id="note-field" rows="4" placeholder="Cosa ti porti via da questa giornata?" data-note></textarea>
-              <div class="meta">
-                <span class="status" data-note-status></span>
-                <span class="count" data-note-count>0</span>
-              </div>
-            </div>
-          </div>
+          <div class="body" data-note-mount></div>
         </section>
       </section>
 
@@ -231,54 +222,6 @@
           </div>
         </section>
 
-        <section class="group book">
-          <div class="body">
-            <button class="notebook-card" type="button" data-go="notebook" data-notebook-card>
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M6.5 3.5h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-10A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M8.5 3.5v17M11.5 8.5h4M11.5 11.5h4"/></svg>
-              </span>
-              <span class="text">
-                <strong>Quaderno</strong>
-                <span data-notebook-meta></span>
-              </span>
-              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
-              <span class="quote" data-notebook-quote hidden></span>
-            </button>
-          </div>
-        </section>
-      </section>
-
-      <!-- EMOZIONI -->
-      <section class="view report" id="view-report" data-view="report" aria-labelledby="report-title" hidden>
-        <header class="hero">
-          <div class="top">
-            <p class="date" data-report-range></p>
-          </div>
-          <h1 class="title" id="report-title" data-sentinel>Emozioni</h1>
-          <p class="lede">Come sono andate le tue giornate, viste da lontano.</p>
-        </header>
-
-        <section class="group lead" aria-labelledby="lead-title">
-          <div class="head">
-            <h2 class="title" id="lead-title">Ultimi 14 giorni</h2>
-            <span class="aside" data-lead-aside></span>
-          </div>
-          <div class="body">
-            <div class="portrait" data-lead></div>
-          </div>
-          <p class="foot" data-lead-foot></p>
-        </section>
-
-        <section class="group ranking" aria-labelledby="ranking-title">
-          <div class="head">
-            <h2 class="title" id="ranking-title">Tutte e otto</h2>
-          </div>
-          <div class="body">
-            <ul class="ranks" data-ranks></ul>
-          </div>
-          <p class="foot">Intensità media delle giornate segnate, da 0 a 5.</p>
-        </section>
-
         <section class="group year" aria-labelledby="year-title">
           <div class="head">
             <h2 class="title" id="year-title">Vista anno</h2>
@@ -298,6 +241,38 @@
             <div class="recap" data-year-recap></div>
           </div>
           <p class="foot">Ogni segno è una giornata, con la forma e il colore dell'emozione prevalente. Toccane uno per aprirlo.</p>
+        </section>
+      </section>
+
+      <!-- EMOZIONI -->
+      <section class="view report" id="view-report" data-view="report" aria-labelledby="report-title" hidden>
+        <header class="hero">
+          <div class="top">
+            <p class="date" data-report-range></p>
+          </div>
+          <h1 class="title" id="report-title" data-sentinel>Emozioni</h1>
+          <p class="lede" data-report-lede>Come sono andate le tue giornate negli ultimi 7 giorni.</p>
+        </header>
+
+        <section class="group lead" aria-labelledby="lead-title">
+          <div class="head">
+            <h2 class="title" id="lead-title">In primo piano</h2>
+            <span class="aside" data-lead-aside></span>
+          </div>
+          <div class="body">
+            <div class="portrait" data-lead></div>
+          </div>
+          <p class="foot" data-lead-foot></p>
+        </section>
+
+        <section class="group ranking" aria-labelledby="ranking-title">
+          <div class="head">
+            <h2 class="title" id="ranking-title">Tutte e otto</h2>
+          </div>
+          <div class="body">
+            <ul class="ranks" data-ranks></ul>
+          </div>
+          <p class="foot">Intensità media delle giornate segnate, da 0 a 5.</p>
         </section>
       </section>
 
@@ -333,29 +308,6 @@
             </div>
           </div>
           <p class="foot">Una copia da tenere dove vuoi: su iPhone passa dal foglio di condivisione. Il backup automatico, più in basso, fa lo stesso lavoro da solo.</p>
-        </section>
-
-        <section class="group reminder" aria-labelledby="reminder-title">
-          <div class="head">
-            <h2 class="title" id="reminder-title">Promemoria</h2>
-            <span class="aside" data-reminder-state></span>
-          </div>
-          <div class="body">
-            <label class="toggle" for="reminder-input">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M20.2 14.8A8.4 8.4 0 0 1 9.2 3.8a8.4 8.4 0 1 0 11 11z"/></svg>
-              </span>
-              <span class="text">
-                <strong>Promemoria serale</strong>
-                <span>Un invito alle 22, se la giornata è ancora vuota</span>
-              </span>
-              <span class="switch">
-                <input class="input" id="reminder-input" type="checkbox" switch role="switch" data-reminder>
-                <span class="track" aria-hidden="true"></span>
-              </span>
-            </label>
-          </div>
-          <p class="foot">Serve Tepore installata sulla schermata Home. La notifica parte dal telefono, senza passare da nessun server: quando non riesce, il promemoria ti aspetta alla prima apertura.</p>
         </section>
 
         <section class="group theme" aria-labelledby="theme-title">
@@ -480,10 +432,7 @@
       <section class="view notebook" id="view-notebook" data-view="notebook" aria-labelledby="notebook-title" hidden>
         <header class="hero">
           <div class="top">
-            <button class="chip" type="button" data-back>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
-              Calendario
-            </button>
+            <p class="date" data-notebook-tally></p>
           </div>
           <h1 class="title" id="notebook-title" data-sentinel>Quaderno</h1>
           <p class="lede" data-notebook-lede></p>
@@ -491,10 +440,13 @@
 
         <ol class="timeline" data-notebook></ol>
 
-        <div class="end" data-notebook-end hidden>
-          <p>Sei arrivato alla nota più recente</p>
-          <button class="pill-btn ghost" type="button" data-write>Scrivi la nota di oggi</button>
-        </div>
+        <section class="group today-note" aria-labelledby="notebook-note-title">
+          <div class="head">
+            <h2 class="title" id="notebook-note-title">Nota di oggi</h2>
+          </div>
+          <div class="body" data-notebook-note></div>
+          <p class="foot">Si salva da sola: domani la ritrovi qui sopra, al suo posto.</p>
+        </section>
       </section>
     </main>
 
@@ -502,28 +454,33 @@
       <div class="glass" role="tablist">
         <span class="indicator" data-tab-indicator aria-hidden="true"></span>
         <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="view-today" data-tab="today" data-haptic="soft">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle class="fill-on" cx="12" cy="12" r="4.2"/>
-            <path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.5 5.5 17 7M7 17l-1.5 1.5M18.5 18.5 17 17M7 7 5.5 5.5"/>
-          </svg>
+          <svg viewBox="0 0 256 256" aria-hidden="true"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>
           <span class="sr-only">Oggi</span>
         </button>
         <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-calendar" data-tab="calendar" data-haptic="soft">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect class="fill-on" x="3.5" y="5" width="17" height="15.5" rx="4"/>
-            <path d="M3.5 10h17M8 3v4M16 3v4"/>
-            <circle cx="8.5" cy="14.5" r=".6"/><circle cx="12" cy="14.5" r=".6"/><circle cx="15.5" cy="14.5" r=".6"/>
-          </svg>
+          <svg viewBox="0 0 256 256" aria-hidden="true"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM84,184a12,12,0,1,1,12-12A12,12,0,0,1,84,184Zm44,0a12,12,0,1,1,12-12A12,12,0,0,1,128,184Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,128,144Zm44,40a12,12,0,1,1,12-12A12,12,0,0,1,172,184Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,172,144Zm36-64H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24Z"/></svg>
           <span class="sr-only">Calendario</span>
         </button>
+        <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-notebook" data-tab="notebook" data-haptic="soft">
+          <svg viewBox="0 0 256 256" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM80,208H48V48H80Zm96-56H112a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H112a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></svg>
+          <span class="sr-only">Quaderno</span>
+        </button>
         <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="view-report" data-tab="report" data-haptic="soft">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect class="fill-on" x="3.6" y="12.4" width="4.6" height="7.8" rx="2.3"/>
-            <rect class="fill-on" x="9.7" y="6.6" width="4.6" height="13.6" rx="2.3"/>
-            <rect class="fill-on" x="15.8" y="9.6" width="4.6" height="10.6" rx="2.3"/>
-          </svg>
+          <svg viewBox="0 0 256 256" aria-hidden="true"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1,0-16h8V136a8,8,0,0,1,8-8H72a8,8,0,0,1,8,8v64H96V88a8,8,0,0,1,8-8h32a8,8,0,0,1,8,8V200h16V40a8,8,0,0,1,8-8h40a8,8,0,0,1,8,8V200h8A8,8,0,0,1,232,208Z"/></svg>
           <span class="sr-only">Emozioni</span>
         </button>
+      </div>
+    </nav>
+
+    <nav class="subbar" aria-label="Periodo del resoconto" aria-hidden="true" data-subbar>
+      <div class="glass">
+        <div class="rail" role="tablist" data-subbar-rail>
+          <span class="ink" data-subbar-ink aria-hidden="true"></span>
+          <button class="item is-active" type="button" role="tab" tabindex="-1" aria-selected="true" data-period="settimana" data-haptic="off">Settimana</button>
+          <button class="item" type="button" role="tab" tabindex="-1" aria-selected="false" data-period="mese" data-haptic="off">Mese</button>
+          <button class="item" type="button" role="tab" tabindex="-1" aria-selected="false" data-period="trimestre" data-haptic="off">Trimestre</button>
+          <button class="item" type="button" role="tab" tabindex="-1" aria-selected="false" data-period="anno" data-haptic="off">Anno</button>
+        </div>
       </div>
     </nav>
 

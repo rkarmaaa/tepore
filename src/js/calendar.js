@@ -1,6 +1,7 @@
 import { EMOTIONS, APATHY, shapeSVG, dominantOf } from './emotions.js';
 import { keyOf, todayKey, monthName, dateOf, cap } from './dates.js';
 import { haptic } from './haptics.js';
+import { createYear } from './year.js';
 
 export function createCalendar({ store, onPick, onTitle, toast }) {
   const root = document.getElementById('view-calendar');
@@ -14,6 +15,9 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
     summary: $('[data-summary]'),
     legend: $('[data-legend]'),
   };
+
+  // Vista anno: vive in fondo al calendario, con la sua navigazione
+  const yearView = createYear({ store, root, onPick });
 
   const now = new Date();
   let y = now.getFullYear();
@@ -131,12 +135,12 @@ export function createCalendar({ store, onPick, onTitle, toast }) {
     if (e.target.closest('[data-go-today]')) onPick(todayKey());
   });
 
-  store.subscribe(() => { if (!root.hidden) render(); });
+  store.subscribe(() => { if (!root.hidden) { render(); yearView.refresh(); } });
 
   render();
 
   return {
-    refresh: () => render(),
+    refresh: () => { render(); yearView.refresh(); },
     goTo(key) {
       const d = dateOf(key);
       y = d.getFullYear();

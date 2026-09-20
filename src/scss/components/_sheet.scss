@@ -109,11 +109,6 @@
       margin-top: $sp-6;
     }
 
-    // Il contenuto entra dopo la card, con un lieve ritardo a cascata
-    > * {
-      opacity: 0;
-    }
-
     // Trascinamento: segue il dito, senza inerzia di transizione
     &.is-dragging {
       transition: none;
@@ -128,17 +123,6 @@
 
     .card {
       translate: 0 0;
-
-      > * {
-        @include enter(rise, $dur-base, 40ms, 180ms);
-        animation-fill-mode: both;
-
-        @for $i from 1 through 6 {
-          &:nth-child(#{$i}) {
-            --i: #{$i - 1};
-          }
-        }
-      }
     }
   }
 
@@ -146,11 +130,6 @@
     .scrim,
     .card {
       transition: none;
-    }
-
-    .card > * {
-      opacity: 1;
-      animation: none;
     }
   }
 }

@@ -2,7 +2,7 @@
 
 // Tab bar fluttuante in liquid glass (stile iOS 26), sole icone
 $tab-pad: 5px;
-$tab-count: 3;
+$tab-count: 4;
 
 .tabbar {
   position: fixed;
@@ -29,55 +29,48 @@ $tab-count: 3;
     @include liquid-glass($r-pill, 22px);
     display: grid;
     grid-template-columns: repeat($tab-count, 1fr);
-    width: min(100%, 240px);
+    width: min(100%, 288px);
     height: $tabbar-h;
     padding: $tab-pad;
     pointer-events: auto;
+    transform: translateZ(0);
 
     @include mq(md) {
-      width: 276px;
+      width: 320px;
     }
 
-    // Goccia di vetro: il bordo d'attacco parte, quello di coda insegue
+    // Goccia di vetro: scivola su translate, così il browser non rifà il layout.
+    // `scale` resta libero per lo scatto di `pill-lift`, che gira in parallelo.
     .indicator {
       position: absolute;
       top: $tab-pad;
       bottom: $tab-pad;
+      left: $tab-pad;
       z-index: 0;
+      width: calc((100% - #{$tab-pad * 2}) / #{$tab-count});
       border-radius: $r-pill;
       background: var(--pill);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), inset 0 -1px 0 rgba(120, 70, 40, .06), 0 3px 10px -2px rgba(88, 44, 20, .18);
-      transition: left .5s $ease-liquid, right .5s $ease-liquid;
+      translate: calc(100% * var(--pos, 0)) 0;
+      transition: translate .46s $ease-liquid;
 
       @include dark {
         box-shadow: inset 0 1px 0 rgba(255, 236, 214, .14), 0 4px 12px -2px rgba(0, 0, 0, .4);
       }
 
-      // Posizioni esatte: la colonna tiene conto del padding della capsula
-      @for $i from 0 through $tab-count - 1 {
-        &[data-pos='#{$i}'] {
-          left: calc(#{$tab-pad} + (100% - #{$tab-pad * 2}) / #{$tab-count} * #{$i});
-          right: calc(#{$tab-pad} + (100% - #{$tab-pad * 2}) / #{$tab-count} * #{$tab-count - 1 - $i});
-        }
-      }
-
-      &.is-going-right {
-        transition: right .34s $ease-liquid, left .52s $ease-liquid .07s;
-      }
-
-      &.is-going-left {
-        transition: left .34s $ease-liquid, right .52s $ease-liquid .07s;
-      }
-
       // Si solleva come una lente mentre scivola
       &.is-moving {
-        will-change: left, right;
-        animation: pill-lift .6s $ease-out;
+        will-change: translate, scale;
+        animation: pill-lift .52s $ease-out;
+      }
+
+      // Primo disegno e cambi di rotta: si posiziona senza scivolare
+      &.is-instant {
+        transition: none;
       }
 
       @include reduced-motion {
         transition-duration: .01s;
-        transition-delay: 0s;
         animation: none;
       }
     }
@@ -91,19 +84,19 @@ $tab-count: 3;
       transition: color $dur-base $ease-out;
       @include focus-ring(-2px);
 
+      // Phosphor "fill": forme piene, opacità come stato di riposo
       svg {
-        @include size(26px);
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.7;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        transition: transform $dur-base $ease-spring;
+        @include size(25px);
+        fill: currentColor;
+        stroke: none;
+        opacity: .58;
+        scale: 1;
+        transition: opacity $dur-base $ease-out, scale $dur-base $ease-spring;
       }
 
       &:active {
         svg {
-          transform: scale(.86);
+          scale: .86;
         }
       }
 
@@ -111,16 +104,12 @@ $tab-count: 3;
         color: var(--ember);
 
         svg {
-          transform: scale(1.04);
+          opacity: 1;
+          scale: 1.04;
           animation: tab-bounce .55s $ease-out;
 
           @include reduced-motion {
             animation: none;
-          }
-
-          .fill-on {
-            fill: currentColor;
-            fill-opacity: .18;
           }
         }
       }

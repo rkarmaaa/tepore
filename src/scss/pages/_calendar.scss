@@ -131,6 +131,8 @@
 
   // Legenda delle forme
   .group.legend {
+    display: none;
+
     .shapes {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -182,76 +184,118 @@
     }
   }
 
-  // Accesso al quaderno, con l'ultima nota in anteprima
-  .group.book {
-    .notebook-card {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      column-gap: $sp-4;
-      width: 100%;
-      padding: $sp-4;
-      border-radius: inherit;
-      text-align: left;
-      @include pressable(0.98);
-      @include focus-ring;
+  // Dodici mini-mesi: l'anno intero in una schermata
+  .group.year {
+    .body {
+      padding: $sp-4 $sp-3 $sp-5;
+    }
 
-      .icon {
-        @include ember-tile(48px, 14px);
+    .yearbar {
+      @include flex(row, center, space-between, $sp-3);
+      padding: 0 $sp-1 $sp-4;
+
+      .label {
+        @include font-display($fs-xl, $fw-medium, 100);
+        font-weight: 400;
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
       }
+
+      .glass-btn {
+        @include size(36px);
+
+        svg {
+          @include size(18px);
+        }
+      }
+    }
+
+    .months {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: $sp-4 $sp-2;
+
+      @include mq-down(xs) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      @include mq(md) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: $sp-5 $sp-3;
+      }
+
+      &.is-in-right {
+        animation: month-in-right 0.44s $ease-out both;
+      }
+
+      &.is-in-left {
+        animation: month-in-left 0.44s $ease-out both;
+      }
+
+      .mini {
+        min-width: 0;
+        @include enter(rise, $dur-base, 24ms, 30ms);
+
+        .label {
+          display: block;
+          margin-bottom: $sp-1;
+          padding-left: 1px;
+          @include font-ui($fs-2xs, $fw-semibold);
+          color: var(--ink-faint);
+          letter-spacing: 0.02em;
+        }
+
+        .cells {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: 2px;
+
+          .cell {
+            min-width: 0;
+            aspect-ratio: 1;
+            border-radius: 3px;
+
+            &.void {
+              background: color-mix(in oklab, var(--sand) 48%, transparent);
+            }
+
+            // Giorni che devono ancora arrivare: appena accennati
+            &.future {
+              background: color-mix(in oklab, var(--sand) 16%, transparent);
+            }
+
+            &.pad {
+              visibility: hidden;
+            }
+
+            &.filled {
+              @include grid-center;
+              @include emo-tint(24%);
+              @include pressable(0.82);
+              @include focus-ring(1px);
+
+              .shape {
+                @include size(82%);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .recap {
+      margin-top: $sp-5;
+      padding: $sp-4 $sp-1 0;
+      border-top: 0.5px solid var(--line);
 
       .text {
-        @include flex(column, flex-start, center, 3px);
-        min-width: 0;
-
-        strong {
-          @include font-display($fs-xl, $fw-medium, 100);
-          color: var(--ink);
-        }
-
-        span {
-          @include font-ui($fs-sm, $fw-medium);
-          color: var(--ink-soft);
-        }
-      }
-
-      .chevron {
-        @include size(20px);
-        fill: none;
-        stroke: var(--ink-faint);
-        stroke-width: 2.2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        transition: translate $dur-base $ease-spring;
-      }
-
-      .quote {
-        grid-column: 1 / -1;
-        display: -webkit-box;
-        margin-top: $sp-4;
-        overflow: hidden;
-        // Bordo trasparente al posto del padding: il clamp non lascia intravedere la 3a riga
-        border: $sp-3 solid transparent;
-        border-inline-width: $sp-4;
-        border-radius: $r-sm;
-        background: color-mix(in oklab, var(--sand) 60%, transparent);
-        @include font-display($fs-md, $fw-regular, 100);
-        font-style: italic;
-        line-height: 1.45;
-        letter-spacing: -0.005em;
+        @include font-ui($fs-sm, $fw-regular);
         color: var(--ink-soft);
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-
-        &[hidden] {
-          display: none;
-        }
       }
 
-      @include hover {
-        .chevron {
-          translate: 3px 0;
-        }
+      .bar {
+        @include emo-bar(10px);
+        margin-top: $sp-3;
       }
     }
   }

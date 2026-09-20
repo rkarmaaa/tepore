@@ -1,49 +1,43 @@
 import { dominantOf, shapeSVG } from './emotions.js';
-import { dateOf, todayKey, daysBetween, monthName, cap } from './dates.js';
+import { dateOf, todayKey, monthName, cap } from './dates.js';
+import { createNote } from './note.js';
 
 const fmtDay = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric' });
 const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ESC[c]);
 const plural = (n) => `${n} ${n === 1 ? 'nota' : 'note'}`;
 
-const ago = (key) => {
-  const n = daysBetween(key, todayKey());
-  return n <= 0 ? 'oggi' : n === 1 ? 'ieri' : `${n} giorni fa`;
-};
-
 const BOOK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-10A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M8.5 3.5v17M11.5 8.5h4M11.5 11.5h4"/></svg>';
 
-// Quaderno: tutte le note, dalla più lontana alla più recente
-export function createNotebook({ store, onPick, onWrite }) {
+// Quaderno: tutte le note dalla più lontana alla più recente,
+// e in fondo l'editor della nota di oggi, dove si apre la pagina.
+export function createNotebook({ store, onPick }) {
   const root = document.getElementById('view-notebook');
   const list = root.querySelector('[data-notebook]');
   const lede = root.querySelector('[data-notebook-lede]');
-  const end = root.querySelector('[data-notebook-end]');
-  const card = document.querySelector('[data-notebook-card]');
-  const meta = card.querySelector('[data-notebook-meta]');
-  const quote = card.querySelector('[data-notebook-quote]');
+  const tally = root.querySelector('[data-notebook-tally]');
+
+  const note = createNote({
+    store,
+    mount: root.querySelector('[data-notebook-note]'),
+    key: todayKey(),
+    id: 'notebook-note',
+  });
 
   const entries = () => Object.entries(store.all())
     .filter(([, d]) => d.note?.trim())
     .sort(([a], [b]) => a.localeCompare(b));
 
-  function renderCard(all) {
-    const last = all.at(-1);
-    meta.textContent = last ? `${plural(all.length)} · l'ultima ${ago(last[0])}` : 'Tutte le tue note, giorno dopo giorno';
-    quote.hidden = !last;
-    quote.textContent = last ? last[1].note.trim() : '';
-  }
-
   function renderList(all) {
-    end.hidden = !all.length;
+    tally.textContent = all.length ? plural(all.length) : '';
+
     if (!all.length) {
-      lede.textContent = 'Qui si raccolgono le tue note.';
+      lede.textContent = 'Qui si raccolgono le tue note, una dopo l\'altra.';
       list.innerHTML = `
         <li class="empty">
           <span class="icon">${BOOK}</span>
           <strong>Il quaderno è ancora vuoto</strong>
-          <p>Ogni nota che scrivi nella giornata trova posto qui, una dopo l'altra.</p>
-          <button class="pill-btn ember" type="button" data-write>Scrivi la nota di oggi</button>
+          <p>Scrivi qui sotto la nota di oggi: da domani troverai questa pagina piena.</p>
         </li>`;
       return;
     }
@@ -81,20 +75,24 @@ export function createNotebook({ store, onPick, onWrite }) {
     list.innerHTML = `${html}</ol></li>`;
   }
 
-  function render({ list: withList = !root.hidden } = {}) {
-    const all = entries();
-    renderCard(all);
-    if (withList) renderList(all);
+  function render() {
+    renderList(entries());
   }
 
-  root.addEventListener('click', (e) => {
+  list.addEventListener('click', (e) => {
     const entry = e.target.closest('[data-key]');
-    if (entry) { onPick(entry.dataset.key); return; }
-    if (e.target.closest('[data-write]')) onWrite();
+    if (entry) onPick(entry.dataset.key);
   });
 
-  store.subscribe(() => render());
+  store.subscribe(() => { if (!root.hidden) render(); });
   render();
 
-  return { refresh: () => render({ list: true }) };
+  return {
+    // La nota di oggi resta sempre l'ultima cosa della pagina
+    refresh() {
+      note.load(todayKey());
+      render();
+    },
+    focusNote: () => note.focus(),
+  };
 }

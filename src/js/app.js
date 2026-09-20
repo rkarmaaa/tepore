@@ -13,15 +13,18 @@ import { haptic, armHaptics } from './haptics.js';
 store.init();
 
 // Tab principali e pagine interne, ognuna con la sua tab di appartenenza
-const TABS = ['today', 'calendar', 'report'];
-const PARENT = { today: 'today', calendar: 'calendar', report: 'report', settings: 'today', dev: 'today', notebook: 'calendar' };
-const HASH = { today: '', calendar: 'calendario', report: 'emozioni', settings: 'impostazioni', dev: 'sviluppatore', notebook: 'quaderno' };
-const BACK_LABEL = { settings: 'Oggi', dev: 'Impostazioni', notebook: 'Calendario' };
+const TABS = ['today', 'calendar', 'notebook', 'report'];
+const PARENT = { today: 'today', calendar: 'calendar', notebook: 'notebook', report: 'report', settings: 'today', dev: 'today' };
+const HASH = { today: '', calendar: 'calendario', notebook: 'quaderno', report: 'emozioni', settings: 'impostazioni', dev: 'sviluppatore' };
+const BACK_LABEL = { settings: 'Oggi', dev: 'Impostazioni' };
 
 const views = Object.fromEntries(Object.keys(PARENT).map((v) => [v, document.querySelector(`[data-view="${v}"]`)]));
 const tabs = [...document.querySelectorAll('[data-tab]')];
 const indicator = document.querySelector('[data-tab-indicator]');
 const navbar = document.querySelector('[data-navbar]');
+const subbar = document.querySelector('[data-subbar]');
+const subRail = subbar.querySelector('[data-subbar-rail]');
+const subInk = subbar.querySelector('[data-subbar-ink]');
 const navTitle = navbar.querySelector('[data-navbar-title]');
 const navBack = navbar.querySelector('[data-back]');
 const navBackLabel = navbar.querySelector('[data-navbar-back]');
@@ -30,7 +33,7 @@ const toastText = toastEl.querySelector('[data-toast-text]');
 const toastAction = toastEl.querySelector('[data-toast-action]');
 
 const isSub = (v) => PARENT[v] !== v;
-const titles = { today: 'Oggi', calendar: '', report: 'Emozioni', settings: 'Impostazioni', dev: 'Sviluppatore', notebook: 'Quaderno' };
+const titles = { today: 'Oggi', calendar: '', notebook: 'Quaderno', report: 'Emozioni', settings: 'Impostazioni', dev: 'Sviluppatore' };
 const scrollMemory = {};
 let active = 'today';
 
@@ -72,36 +75,26 @@ const calendar = createCalendar({ store, toast, onTitle: setTitle('calendar'), o
 const report = createReport({ store, onPick: openDay });
 const backup = createBackup({ store, toast });
 const reminder = createReminder({ store, onInvite: (text) => toast(text) });
-const settings = createSettings({ store, toast, backup, reminder, go: (name) => push(name) });
+const settings = createSettings({ store, toast, backup, go: (name) => push(name) });
 const dev = createDev({ toast, reminder });
-const notebook = createNotebook({
-  store,
-  onPick: openDay,
-  onWrite: () => {
-    openDay(todayKey());
-    const field = document.getElementById('note-field');
-    requestAnimationFrame(() => {
-      field.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      field.focus({ preventScroll: true });
-    });
-  },
-});
+const notebook = createNotebook({ store, onPick: openDay });
 
 // Pillola della tab bar: il bordo d'attacco parte, quello di coda insegue
 function moveIndicator(from, to, instant) {
   const a = TABS.indexOf(from);
   const b = TABS.indexOf(to);
-  indicator.dataset.pos = b;
   if (instant) {
-    indicator.style.transition = 'none';
+    indicator.classList.add('is-instant');
+    indicator.style.setProperty('--pos', b);
     void indicator.offsetWidth;
-    indicator.style.transition = '';
+    indicator.classList.remove('is-instant');
     return;
   }
   if (a === b) return;
-  indicator.classList.remove('is-moving', 'is-going-left', 'is-going-right');
+  indicator.style.setProperty('--pos', b);
+  indicator.classList.remove('is-moving');
   void indicator.offsetWidth;
-  indicator.classList.add('is-moving', b > a ? 'is-going-right' : 'is-going-left');
+  indicator.classList.add('is-moving');
 }
 indicator.addEventListener('animationend', () => indicator.classList.remove('is-moving'));
 
@@ -126,17 +119,20 @@ function show(name, { instant = false } = {}) {
     }
     active = name;
 
+    if (name === 'today') today.syncNote();
     if (name === 'calendar') calendar.refresh();
     if (name === 'report') report.refresh();
     if (name === 'settings') settings.refresh();
     if (name === 'dev') dev.refresh();
     if (name === 'notebook') notebook.refresh();
 
-    // Il quaderno si apre sulla nota più recente, in fondo
+    // Il quaderno si apre in fondo, sulla nota di oggi da scrivere
     const back = PARENT[prev] === name;
     const top = name === 'notebook' ? document.documentElement.scrollHeight
       : (name === 'calendar' || name === 'report' || back) ? (scrollMemory[name] || 0) : 0;
     window.scrollTo({ top, behavior: 'instant' });
+    // Il fondo si sposta mentre la vista entra: si ricontrolla al frame dopo
+    if (name === 'notebook') requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
   }
 
   moveIndicator(PARENT[prev], PARENT[name], instant);
@@ -149,8 +145,40 @@ function show(name, { instant = false } = {}) {
   navTitle.textContent = titles[name];
   navBackLabel.textContent = BACK_LABEL[name] || '';
   navbar.classList.toggle('has-back', isSub(name));
+  setSubbar(name === 'report');
   updateNavbar();
 }
+
+// Sottobarra del periodo: vive sopra la tab bar, solo nella vista Emozioni
+function setSubbar(on) {
+  subbar.classList.toggle('is-visible', on);
+  subbar.setAttribute('aria-hidden', String(!on));
+  subRail.querySelectorAll('.item').forEach((b) => { b.tabIndex = on ? 0 : -1; });
+  if (on) requestAnimationFrame(moveInk);
+}
+
+// Pillola della sottobarra: segue la voce attiva, anche a rail scorso
+function moveInk() {
+  const on = subRail.querySelector('.item.is-active');
+  if (!on) return;
+  subInk.style.width = `${on.offsetWidth}px`;
+  subInk.style.translate = `${on.offsetLeft}px 0`;
+}
+
+subRail.addEventListener('click', (e) => {
+  const item = e.target.closest('[data-period]');
+  if (!item || item.classList.contains('is-active')) return;
+  subRail.querySelectorAll('.item').forEach((b) => {
+    const active = b === item;
+    b.classList.toggle('is-active', active);
+    b.setAttribute('aria-selected', String(active));
+  });
+  moveInk();
+  item.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  report.setPeriod(item.dataset.period);
+});
+
+subRail.addEventListener('scroll', moveInk, { passive: true });
 
 const urlOf = (name) => (HASH[name] ? `#${HASH[name]}` : location.pathname + location.search);
 const fromHash = () => Object.keys(HASH).find((k) => HASH[k] && `#${HASH[k]}` === location.hash) || 'today';
@@ -249,7 +277,7 @@ function watchSentinel(sentinel) {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(updateNavbar, 160);
+  resizeTimer = setTimeout(() => { updateNavbar(); moveInk(); }, 160);
 }, { passive: true });
 
 // Cambio di giorno (app lasciata aperta oltre la mezzanotte)
