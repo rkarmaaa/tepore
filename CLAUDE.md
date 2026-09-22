@@ -6,7 +6,7 @@ Leggi questo file prima di qualsiasi modifica. Descrive visione, funzioni, desig
 
 ## 1. Visione
 
-Tepore è un diario delle emozioni tascabile, pensato per iPhone e installato come web app sulla schermata Home. Ogni giorno si registra quanto si è sentita ciascuna delle 8 emozioni primarie di Plutchik; il calendario si colora giorno dopo giorno con l'emozione prevalente.
+Tepore è un diario delle emozioni tascabile, pensato per iPhone e installato come web app sulla schermata Home. Ogni giorno si registra quanto si è sentita ciascuna delle 7 emozioni di base (gioia, tristezza, paura, rabbia, disgusto, sorpresa, disprezzo); il calendario si colora giorno dopo giorno con l'emozione prevalente.
 
 Il tono è quello di un oggetto caldo e intimo, non di uno strumento clinico: carta, cacao e brace, tipografia editoriale, movimenti morbidi. L'ispirazione estetica è Claude (calore, accoglienza) unita alla cura dei dettagli Apple (liquid glass, aptica, gesture fluide). L'app non giudica: frasi gentili, nessun punteggio, nessuna gamification.
 
@@ -20,9 +20,9 @@ Principi da non tradire:
 
 **Oggi** (tab 1)
 - Hero con data, titolo grande "Oggi" e sottotitolo. Scorrendo, il titolo passa nella navbar compatta in alto (pattern iOS large title, via `data-sentinel`).
-- **Ritratto del giorno** (`.bloom`): le 8 forme disposte in cerchio (coordinate `x/y` in `emotions.js`) crescono e si illuminano con l'intensità. Sotto, l'**aura**: una macchia sfocata per emozione, grande quanto l'intensità, fuse in un unico bagliore che respira (`plus-lighter` nel tema scuro). L'emozione dominante unica "respira" con glow. Una didascalia in corsivo commenta la giornata ("Prevale la gioia.").
-- **8 slider** (`MoodSlider`), ispirati al selettore modello dell'app ChatGPT: 6 livelli 0–5 (`LEVELS`: Per niente → Moltissimo), riempimento del colore dell'emozione, tacche, tick aptico a ogni scatto, drag col dito, frecce da tastiera, `role="slider"` con `aria-valuenow`. **Il gesto vale per uno solo**: o scorre la pagina o muove lo slider, e lo decide il primo movimento oltre i 6px (`AXIS_SLOP`), per direzione prevalente — pomello compreso. Finché non ha deciso non succede nulla; se vince la verticale `abort()` molla la presa e lascia scorrere il browser, se vince l'orizzontale `touchmove` (non passivo) chiama `preventDefault`. Traccia e pomello stanno entrambi in `touch-action: pan-y`.
-- **Scheda dell'emozione**: pulsante `.info` (cerchietto "i") in fondo a destra della riga `.head` di uno slider. Si apre un foglio in stile iOS con forma, nome, emozione opposta e la descrizione (`desc` in `emotions.js`). Si chiude trascinandolo verso il basso, toccando lo sfondo, dal pulsante o con Esc. Tutto in `sheet.js`. Niente tocco prolungato: su iOS entrava in conflitto con selezione e menu di sistema.
+- **Ritratto del giorno** (`.bloom`): le 7 forme disposte in cerchio (coordinate `x/y` in `emotions.js`) crescono e si illuminano con l'intensità. Sotto, l'**aura**: una macchia sfocata per emozione, grande quanto l'intensità, fuse in un unico bagliore che respira (`plus-lighter` nel tema scuro). L'emozione dominante unica "respira" con glow. Una didascalia in corsivo commenta la giornata ("Prevale la gioia.").
+- **7 slider** (`MoodSlider`), ispirati al selettore modello dell'app ChatGPT: 6 livelli 0–5 (`LEVELS`: Per niente → Moltissimo), riempimento del colore dell'emozione, tacche, tick aptico a ogni scatto, drag col dito, frecce da tastiera, `role="slider"` con `aria-valuenow`. **Il gesto vale per uno solo**: o scorre la pagina o muove lo slider, e lo decide il primo movimento oltre i 6px (`AXIS_SLOP`), per direzione prevalente — pomello compreso. Finché non ha deciso non succede nulla; se vince la verticale `abort()` molla la presa e lascia scorrere il browser, se vince l'orizzontale `touchmove` (non passivo) chiama `preventDefault`. Traccia e pomello stanno entrambi in `touch-action: pan-y`.
+- **Scheda dell'emozione**: pulsante `.info` (cerchietto "i") in fondo a destra della riga `.head` di uno slider. Si apre un foglio in stile iOS con forma, nome, a cosa serve (`role`) e la descrizione (`desc` in `emotions.js`). Testi semplici, neutri e accoglienti: frasi brevi, parole di tutti i giorni. Si chiude trascinandolo verso il basso, toccando lo sfondo, dal pulsante o con Esc. Tutto in `sheet.js`. Niente tocco prolungato: su iOS entrava in conflitto con selezione e menu di sistema.
 - **Apatia**: switch "Oggi non ho sentito nulla". Richiude l'intera sezione degli slider (`.group.moods.collapsible`, altezza misurata da JS), spegne l'aura e mostra un alone grigio caldo. **I valori restano nello store e tornano al primo sblocco**: l'apatia non cancella mai nulla.
 - **Nota della giornata**: textarea con salvataggio automatico (debounce), ora dell'ultimo salvataggio e conteggio caratteri.
 - Si possono modificare anche i giorni passati: dal calendario si apre il giorno nella vista Oggi ("5 giorni fa", chip "Torna a oggi").
@@ -36,9 +36,10 @@ Principi da non tradire:
 - **Vista anno** in fondo (`year.js`): dodici mini-mesi, ogni giornata un quadratino con la forma e il colore dell'emozione prevalente. Frecce e scorrimento orizzontale per cambiare anno (mai oltre l'anno in corso o prima della prima giornata registrata); il tocco su un giorno lo apre in Oggi. Sotto, il riepilogo dell'anno con la barra delle prevalenze.
 
 **Emozioni** (tab 4) — il resoconto, in `report.js`
-- **Sottobarra del periodo** (`.subbar`, vedi sezione 7): Settimana / Mese / Trimestre / Anno, cioè 7 / 30 / 90 / 365 giorni. La finestra scelta governa tutta la pagina — `.lede` dell'intestazione, intervallo di date, misure e classifica. Le finestre sono definite in `PERIODS` dentro `report.js`: una sola tabella da toccare per aggiungerne o rinominarne una.
+- **Sottobarra del periodo** (`.subbar`, vedi sezione 7): S / 2S / M / 3M / 6M / A, cioè 7 / 14 / 30 / 90 / 182 / 365 giorni. A riposo le voci mostrano la sigla (`.subbar-short`), la voce attiva il nome intero (`.subbar-full`: "Settimana", "2 settimane", "Mese"…), che è anche l'`aria-label`. La finestra scelta governa tutta la pagina — `.lede` dell'intestazione, intervallo di date, misure, resoconto e classifica. Le finestre sono definite in `PERIODS` dentro `report.js` (`short`, `label`, `days`, testi) e **le voci della sottobarra si generano da lì**: una sola tabella da toccare per aggiungerne o rinominarne una.
 - **In primo piano**: l'emozione con la somma di intensità più alta nella finestra, con la sua forma su un alone del proprio colore, una frase che ne racconta il peso e tre misure (presente in N giornate, intensità media, prevale in N). Sotto, la direzione rispetto alla finestra precedente della stessa ampiezza: solo "più" e "meno", mai percentuali.
-- **Tutte e otto**: classifica con barra e intensità media; le emozioni mai sentite restano in elenco, in punta di piedi.
+- **Il resoconto** (`insight.js`, `analyze(store, end, span)`): lettura automatica del periodo. Ogni giornata ha un **tono** da -1 a 1 (`(gioia - negativa più forte) / 5`); da lì escono il **clima** (Leggero / Altalenante / Impegnativo / Quieto) su una scala divergente, un titolo, un riassunto (chi ha dato il tono, oscillazioni, confronto col periodo prima), il **grafico dell'andamento** (una barra per giorno fino a 31 giorni, poi per settimana; sopra le giornate leggere, sotto le pesanti, colore dell'emozione prevalente; tocco e trascinamento per il dettaglio) e fino a quattro **pattern** scelti per forza: ritmo della settimana, fine settimana, emozioni in coppia, giorni di fila, ultimi giorni, novità/scomparse rispetto al periodo prima, emozione di sottofondo, giornate miste, note. Chiude "Un'idea" dal pattern più forte e, solo se il periodo è pesante da almeno due settimane, un invito gentile a parlarne con qualcuno. Mai diagnosi, mai percentuali.
+- **Tutte e sette**: classifica con barra e intensità media; le emozioni mai sentite restano in elenco, in punta di piedi.
 - Le finestre si calcolano con `windowStats(store, end, span, back)`: `felt` = giornate segnate meno quelle in apatia, ed è il denominatore di tutte le medie.
 
 **Impostazioni** (pagina interna di Oggi) — nell'ordine:
@@ -54,7 +55,7 @@ Principi da non tradire:
 - **Notifiche**: stato completo (permesso, promemoria acceso, giornata vuota, passate le 22, invito già mostrato) e quattro comandi: chiedi permesso, notifica adesso, notifica fra 10 secondi, azzera il segno «già vista».
 
 **Quaderno** (tab 3)
-- Timeline verticale di tutte le note: la più vecchia in alto, la più recente in fondo; si apre già in fondo.
+- Timeline verticale di tutte le note **tranne quella di oggi** (vive già nell'editor in fondo): la più vecchia in alto, la più recente in fondo; si apre già in fondo.
 - **In fondo, l'editor della nota di oggi**: è la prima cosa che si vede aprendo la pagina. È lo stesso componente di Oggi (`note.js`, montato su `[data-notebook-note]`); le due copie si riallineano da sole — `note.sync()` quando si torna su Oggi, `note.load(todayKey())` quando si entra nel Quaderno — e mai mentre si sta scrivendo.
 - Etichetta del mese sticky in vetro, nodo con la forma dell'emozione prevalente; tocco su una nota: apre il giorno in Oggi.
 - Ogni bottone nota ha `data-haptic="off"`: sono card grandi in una lista che si scorre col dito, e lo switch invisibile dell'aptica (vedi sezione 8) intercettava il trascinamento e bloccava lo scroll.
@@ -105,7 +106,8 @@ tepore/
    │  ├─ reminder.js       # promemoria serale (notifica locale alle 22)
    │  ├─ today.js          # vista Oggi (bloom, aura, slider, apatia, nota)
    │  ├─ calendar.js       # vista Calendario
-   │  ├─ report.js         # vista Emozioni (finestra scelta, classifica)
+   │  ├─ report.js         # vista Emozioni (finestra scelta, resoconto, classifica)
+   │  ├─ insight.js        # analisi del periodo: clima, andamento, pattern
    │  ├─ year.js           # vista anno, in fondo al Calendario
    │  ├─ note.js           # editor della nota del giorno (Oggi e Quaderno)
    │  ├─ settings.js       # pagina Impostazioni (backup, versione)
@@ -174,14 +176,15 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 | id | Colore | Forma |
 |---|---|---|
 | gioia | `#EEB02F` ambra | cerchio |
-| fiducia | `#7FA05D` salvia | quadrato arrotondato |
-| paura | `#8F6293` prugna | rombo |
-| sorpresa | `#EF8C5C` albicocca | stella a 4 punte |
 | tristezza | `#6F89A8` ardesia (unico blu, polveroso e caldo) | goccia |
-| disgusto | `#93633F` nocciola | esagono |
+| paura | `#8F6293` prugna | rombo |
 | rabbia | `#C93B2F` rosso mattone | triangolo |
-| attesa | `#DB869C` rosa antico | semicerchio (alba) |
+| disgusto | `#93633F` nocciola | esagono |
+| sorpresa | `#EF8C5C` albicocca | stella a 4 punte |
+| disprezzo | `#8C9448` oliva | falce di luna |
 | apatia | `#B3A89E` grigio caldo | anello |
+
+Fino al 22 settembre 2026 il set era quello di Plutchik, con **fiducia** e **attesa**. Sono in `LEGACY` (`emotions.js`): non si mostrano più, ma `sanitize()` in `store.js` ne conserva i valori salvati, così nessun dato vecchio va perso.
 
 ### Tipografia
 
@@ -213,8 +216,8 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - **Liquid glass** (`@include liquid-glass($radius, $blur)`): vetro caldo con blur + saturazione, bordo a gradiente luminoso (`::before` mascherato) e riflesso speculare (`::after`). Usato per tab bar, chip e controlli flottanti. Occupa entrambi gli pseudo-elementi: non aggiungerne altri sullo stesso elemento.
 - **Tab bar**: capsula di vetro flottante in basso, **solo icone** (il nome resta in `.sr-only` per VoiceOver), quattro destinazioni, aptica al cambio. Le icone sono **Phosphor, peso `fill`** (`viewBox="0 0 256 256"`, `fill: currentColor`, niente stroke), incollate in linea: nessuna libreria, nessun pacchetto. Lo stato di riposo è `opacity: .58`, l'attivo pieno in brace. Per aggiungerne una si prende l'SVG da `@phosphor-icons/core/assets/fill/` e si incolla il solo `<path>`.
 - **Pillola della tab bar**: larghezza fissa `(100% - padding) / $tab-count` e spostamento su `translate: calc(100% * var(--pos))`, impostata da `moveIndicator()`. Si anima solo `translate` — composita, zero layout per frame — mentre `pill-lift` resta libero di animare `scale`; `is-instant` la posiziona senza scivolare al primo disegno. **Non tornare a `left`/`right`**: rifanno il layout a ogni frame ed è da lì che veniva lo scatto della barra.
-- **Sottobarra** (`.subbar`, `_subbar.scss`): capsula di vetro appoggiata sopra la tab bar, visibile solo nella vista Emozioni (`is-visible`, gestita da `setSubbar()` in `app.js`). Il binario scorre di lato quando le voci non ci stanno; la pastiglia `.ink` segue la voce attiva con `translate` + `width` misurati in JS (`moveInk()`, richiamata anche sullo scroll del binario e al `resize`). La vista sotto si allarga di `$subbar-h` in `padding-bottom` per non finirci sotto.
-- **Navbar**: invisibile in cima, compare in vetro con il titolo quando il large title esce dallo schermo.
+- **Sottobarra** (`.subbar`, `_subbar.scss`): capsula di vetro (`.subbar-glass`) appoggiata sopra la tab bar, visibile solo nella vista Emozioni (`is-visible`, gestita da `setSubbar()` in `app.js`). Solo il binario (`.subbar-rail`), che scorre di lato quando le voci non ci stanno. Ogni `.subbar-item` contiene `.subbar-short` e `.subbar-full`, due griglie che si scambiano la larghezza da `0fr` a `1fr`: la voce attiva si allarga sul nome intero senza salti. La pastiglia `.subbar-ink` segue la voce attiva con `translate` + `width` misurati in JS (`moveInk()`; `followInk()` la ricalcola a ogni frame per ~480ms mentre le voci cambiano larghezza, poi si ferma; anche sullo scroll del binario e al `resize`). L'ingresso (opacità, `translate`, `scale`) si anima **sul vetro, non su `.subbar`**: un antenato con `opacity` < 1 diventa radice del backdrop e il `backdrop-filter` smette di sfocare finché l'animazione non finisce. Vale per ogni vetro: mai animare l'opacità di un genitore di `liquid-glass`. La vista sotto si allarga di `$subbar-h` in `padding-bottom` per non finirci sotto.
+- **Navbar**: invisibile in cima, compare in vetro con il titolo quando il large title esce dallo schermo. La soglia (`navEdge`) si misura una volta per vista in `updateNavbar()` (anche al `resize` e a font pronti); poi a ogni scroll c'è solo un confronto con `scrollY`, nessuna lettura di layout. Prima era un `IntersectionObserver` sul `[data-sentinel]`, ma su iOS lasciava la barra accesa in cima al Quaderno.
 - **Group** (`.group` con `.head`, `.title`, `.aside`, `.body`, `.foot` annidati): sezione stile Impostazioni iOS; il body è una card `@include surface`. Con `.collapsible` si richiude: il JS misura l'altezza e commuta `is-collapsed`.
 - **Slider**: traccia sabbia alta `$slider-h` 34px, riempimento `var(--emo)` di larghezza `calc(var(--h) + (100% - var(--h)) * var(--p))`, pomello bianco con vetro, tacche per ogni livello.
 - **Switch**: stile iOS, tinta brace.
@@ -229,7 +232,11 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 ## 6. Convenzioni SCSS (obbligatorie)
 
 - Commenti corti: massimo 2 righe.
-- **Nomi di classe semplici: niente `--` e niente `__`.** Una parola quando basta (`head`, `body`, `title`, `track`, `fill`), al massimo con un trattino singolo (`mood-list`, `glass-btn`, `notebook-card`). I nomi generici si disambiguano con il nesting, non con i prefissi.
+- **Nomi di classe descrittivi e ricercabili** (regola dal 22 settembre 2026): ogni figlio di un componente porta il **prefisso del componente** con un trattino singolo, così un nome cercato nel progetto porta a un solo posto. Esempi: dentro `.subbar` → `.subbar-glass`, `.subbar-rail`, `.subbar-item`, `.subbar-ink`; dentro `.toast` → `.toast-title`, `.toast-action`; dentro `.sheet` → `.sheet-card`, `.sheet-title`. Mai nomi nudi e generici (`.now`, `.title`, `.item`, `.text`) per un elemento nuovo.
+  - Il prefisso è il **blocco**, non tutta la catena: `.subbar-item`, non `.subbar-rail-item`. Se un sotto-elemento è a sua volta un piccolo componente, prende il suo prefisso (`.subbar-item` contiene `.subbar-short`, `.subbar-full`).
+  - Sempre **niente `--` e niente `__`**: le varianti restano classi affiancate (`.pill-btn.ember`), gli stati `is-*`.
+  - Il nesting resta pesante: `.subbar { .subbar-glass { .subbar-rail { .subbar-item { … } } } }`. La specificità viene dal nesting, la ricercabilità dal nome.
+  - **Migrazione**: il codice esistente usa ancora molti nomi generici (`.head`, `.title`, `.body`, `.foot`…). Si rinominano quando si tocca quel componente, aggiornando insieme HTML, SCSS e i selettori in JS. Già migrata: la sottobarra.
 - Nesting pesante e alta specificità: ogni vista sotto il suo scope (`.view.today { … }`, `.view.calendar { … }`) e dentro ogni componente i figli annidati per nome (`.group { .head { .title { … } } }`). È il nesting a dare il significato: `.mood .head` e `.entry .head` convivono senza conflitti.
 - Le varianti sono classi affiancate, non modificatori: `.pill-btn.ember`, `.day.filled`, `.glass-btn.gear`.
 - Media query **dentro** il singolo selettore nidificato (`@include mq(sm) { … }`), mai blocchi responsive separati a fondo file.
@@ -241,7 +248,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 ### Prestazioni (l'app deve stare a 60 fps)
 
 - Animazioni continue in pausa fuori schermo: `@include idle-pause` più un `IntersectionObserver` che aggiunge `is-idle`.
-- Niente listener di `scroll` per la navbar: la comanda un `IntersectionObserver` sul `[data-sentinel]`.
+- La navbar ascolta lo `scroll` (passivo) ma fa solo un confronto numerico: niente `getBoundingClientRect` né scritture se lo stato non cambia.
 - Niente `mix-blend-mode` su strati a tutto schermo: la grana di carta (`--grain`) è già tinta per tema.
 - `backdrop-filter` solo quando l'elemento è davvero visibile (navbar in `is-visible`).
 - `contain` sulle card, `@include offscreen-skip($h)` sulle liste lunghe. Mai `contain: paint` né `content-visibility` dove ci sono ombre o glow che escono dal riquadro: il ritratto del giorno, e le note del quaderno (l'ombra e l'anello dei nodi della timeline).
@@ -264,7 +271,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - `report.js` è una factory come le altre: riceve `store` e `onPick(key)`, e non conosce la navigazione.
 - `reminder.js` non tocca la vista: espone `state`, `subscribe`, `setEnabled(on)` (`on` / `off` / `blocked` / `unsupported`), `greet()` e, per la pagina Sviluppatore, `debug()`, `ask()`, `fire(body)`, `clearSeen()`. Riceve `onInvite(testo)`: quando la sera arriva con l'app aperta, l'invito passa di lì e diventa un toast, perché una notifica di sistema in primo piano non comparirebbe comunque. Il timer si riarma a ogni ritorno in primo piano, perché iOS sospende i `setTimeout` lunghi.
 - **Limite vero delle notifiche su iOS**: una PWA chiusa ha il JavaScript sospeso, quindi un `setTimeout` fino alle 22 non scatta mai. Senza Web Push (che vorrebbe un server, escluso dai principi) il promemoria può essere solo: notifica se l'app è viva in quel momento, altrimenti invito dentro l'app alla prima apertura. Non promettere altro nei testi dell'interfaccia.
-- **Nomi di classe**: prima di riusare un nome già speso da un componente (`.slider`, `.track`, `.switch`) controlla che non collida.
+- **Nomi di classe**: nel markup generato da JS usa i nomi con prefisso (`subbar-item`), e aggancia sempre il JS a `data-*`, mai alle classi. Prima di introdurre un prefisso nuovo cercalo nel progetto: deve dare risultati solo nel suo componente.
 
 ## 8. Requisiti Apple / PWA
 
@@ -306,7 +313,7 @@ Ogni emozione ha un colore (`--emo-{id}`) e una forma SVG 24×24 (`path` in `emo
 - Framework, librerie UI, CDN aggiuntive, tracciamento, backend propri (il backup usa il Dropbox dell'utente, non un nostro server).
 - Percorsi assoluti (`/`), `localStorage` con chiavi nuove senza prefisso `tepore:`.
 - Media query separate dal selettore, commenti lunghi, valori "magici" ripetuti.
-- Classi con `--` o `__`: la nomenclatura è semplice e il significato lo dà il nesting.
+- Classi con `--` o `__`, e nomi nudi e generici per elementi nuovi (`.now`, `.item`): usa il prefisso del componente (`.subbar-now`, `.subbar-item`).
 - Scorrimento orizzontale: `html`, `body` e `.app` stanno in `overflow-x: clip` con `touch-action: pan-y`. Non introdurre elementi più larghi della colonna: nelle griglie usa `minmax(0, 1fr)`, altrimenti la dimensione naturale delle forme SVG le allarga.
 - Rimuovere le forme delle emozioni o l'etichetta testuale del livello.
 - Aggiungere `haptic()` dentro il click di un pulsante: ci pensa già la delega in `app.js`.

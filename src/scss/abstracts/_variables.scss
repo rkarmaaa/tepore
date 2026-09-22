@@ -24,26 +24,24 @@ $c-night-ink: #F5EADD;
 $c-night-ink-soft: #C9B3A1;
 $c-night-ink-faint: #8E7867;
 
-// Le 8 emozioni di Plutchik
+// Le 7 emozioni di base
 $c-gioia: #EEB02F;
-$c-fiducia: #7FA05D;
-$c-paura: #8F6293;
-$c-sorpresa: #EF8C5C;
 $c-tristezza: #6F89A8;
-$c-disgusto: #93633F;
+$c-paura: #8F6293;
 $c-rabbia: #C93B2F;
-$c-attesa: #DB869C;
+$c-disgusto: #93633F;
+$c-sorpresa: #EF8C5C;
+$c-disprezzo: #8C9448;
 $c-apatia: #B3A89E;
 
 $emotions: (
   gioia: $c-gioia,
-  fiducia: $c-fiducia,
-  paura: $c-paura,
-  sorpresa: $c-sorpresa,
   tristezza: $c-tristezza,
-  disgusto: $c-disgusto,
+  paura: $c-paura,
   rabbia: $c-rabbia,
-  attesa: $c-attesa,
+  disgusto: $c-disgusto,
+  sorpresa: $c-sorpresa,
+  disprezzo: $c-disprezzo,
   apatia: $c-apatia
 );
 

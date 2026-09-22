@@ -1,4 +1,4 @@
-import { EMOTIONS, MAX_LEVEL } from './emotions.js';
+import { EMOTIONS, LEGACY, MAX_LEVEL } from './emotions.js';
 
 const KEY = 'tepore:v1';
 const listeners = new Set();
@@ -9,9 +9,10 @@ const clamp = (n) => Math.max(0, Math.min(MAX_LEVEL, Math.round(Number(n) || 0))
 
 function sanitize(day) {
   const values = {};
-  for (const e of EMOTIONS) {
-    const v = clamp(day?.values?.[e.id]);
-    if (v) values[e.id] = v;
+  // Anche le emozioni tolte: nessun dato vecchio va perso
+  for (const id of [...EMOTIONS.map((e) => e.id), ...LEGACY]) {
+    const v = clamp(day?.values?.[id]);
+    if (v) values[id] = v;
   }
   return {
     values,

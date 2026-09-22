@@ -26,7 +26,7 @@ export function openSheet(id) {
   card.dataset.emo = e.id;
   els.icon.innerHTML = shapeSVG(e.id);
   els.title.textContent = e.name;
-  els.lede.textContent = e.pair || '';
+  els.lede.textContent = e.role || '';
   els.text.textContent = e.desc || '';
 
   haptic('soft');

@@ -27,6 +27,7 @@
     width: 100%;
     max-width: $sheet-max;
     padding: $sp-3 $sp-6 $sp-6;
+    padding-bottom: $sp-16;
     border-radius: $sheet-radius $sheet-radius 0 0;
     background: var(--surface);
     box-shadow:
@@ -34,7 +35,7 @@
       0 -24px 60px -20px rgba(60, 26, 8, 0.45);
     touch-action: none;
     translate: 0 100%;
-    transition: translate $dur-slow $ease-spring;
+    transition: translate $dur-slow $ease-out;
 
     @include mq(md) {
       margin-bottom: $sp-6;
@@ -70,10 +71,10 @@
       @include grid-center;
       @include size(66px);
       margin-bottom: $sp-4;
-      border-radius: 22px;
+      border-radius: 16px;
       @include emo-tint(20%);
-      box-shadow: inset 0 0 0 0.5px
-        color-mix(in oklab, var(--emo) 30%, transparent);
+      // box-shadow: inset 0 0 0 0.5px
+      //   color-mix(in oklab, var(--emo) 30%, transparent);
 
       .shape {
         @include size(34px);
@@ -105,6 +106,8 @@
     }
 
     .close {
+      display: none;
+
       width: 100%;
       margin-top: $sp-6;
     }

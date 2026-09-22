@@ -16,6 +16,7 @@ const SHELL = [
   './js/today.js',
   './js/calendar.js',
   './js/report.js',
+  './js/insight.js',
   './js/settings.js',
   './js/notebook.js',
   './js/note.js',

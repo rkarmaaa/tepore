@@ -1,62 +1,59 @@
-// Le 8 emozioni primarie (Plutchik): colore via CSS, forma via SVG.
-// x/y = posizione nel "ritratto del giorno" (percentuali).
-// pair = emozione opposta, desc = spiegazione mostrata nella scheda.
+// Le 7 emozioni di base (Ekman, con il disprezzo): colore via CSS, forma via SVG.
+// x/y = posizione nel "ritratto del giorno" (percentuali), in cerchio.
+// role = a cosa serve, in una riga; desc = spiegazione mostrata nella scheda.
 export const EMOTIONS = [
   {
     id: 'gioia', name: 'Gioia', the: 'la gioia', of: 'della gioia', x: 50, y: 15,
-    pair: 'Opposta alla tristezza',
+    role: 'Ti dice che stai bene e ti invita a restarci',
     path: 'M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18z',
-    desc: 'La gioia è l\'emozione che allarga: il respiro si apre, il corpo si alleggerisce, il tempo sembra bastare. Nasce quando qualcosa che desideravi arriva davvero, anche in dose piccolissima — una notizia, una persona, una luce giusta. Non ha bisogno di grandi occasioni: segnarla alta significa che oggi, da qualche parte, c\'era spazio per te.',
+    desc: 'La gioia arriva quando qualcosa va come speravi: una bella notizia, una persona cara, un momento tranquillo. Il corpo si rilassa e tutto sembra più leggero. Non servono grandi occasioni, conta anche un momento piccolo. Serve a tenerti vicino a ciò che ti fa bene.',
   },
   {
-    id: 'fiducia', name: 'Fiducia', the: 'la fiducia', of: 'della fiducia', x: 79, y: 31,
-    pair: 'Opposta al disgusto',
-    path: 'M7.5 3.5h9a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4h-9a4 4 0 0 1-4-4v-9a4 4 0 0 1 4-4z',
-    desc: 'La fiducia è la sensazione di poter appoggiare il peso su qualcosa senza controllarlo di continuo: una persona, un luogo, una decisione presa. Abbassa la guardia e lascia respirare l\'attenzione. Quando è alta, la giornata costa meno fatica; quando cala, tutto richiede una verifica in più.',
+    id: 'tristezza', name: 'Tristezza', the: 'la tristezza', of: 'della tristezza', x: 79, y: 31,
+    role: 'Ti aiuta a fermarti dopo una perdita',
+    path: 'M12 2.4c4 4.7 7.2 8.6 7.2 12.3a7.2 7.2 0 0 1-14.4 0c0-3.7 3.2-7.6 7.2-12.3z',
+    desc: 'La tristezza arriva quando perdi qualcosa o qualcuno, o quando una cosa finisce. Ti fa rallentare e ti porta a pensare. Non è un errore da correggere: è il modo in cui la mente affronta un momento difficile. Se le lasci spazio, di solito passa prima.',
   },
   {
     id: 'paura', name: 'Paura', the: 'la paura', of: 'della paura', x: 85, y: 64,
-    pair: 'Opposta alla rabbia',
+    role: 'Ti avvisa di un pericolo e ti prepara a reagire',
     path: 'M12 2.2 21.8 12 12 21.8 2.2 12z',
-    desc: 'La paura è l\'emozione che restringe il campo: il corpo si prepara, l\'attenzione si punta su un solo punto. Parla di qualcosa che potrebbe accadere, non di qualcosa che è già accaduto — per questo vive al futuro. Riconoscerla non la aumenta: le dà un nome, e un nome è già un confine.',
+    desc: 'La paura si accende quando senti che qualcosa potrebbe farti male. Il cuore accelera, l\'attenzione si stringe e il corpo si prepara a scappare o ad agire. Spesso riguarda qualcosa che deve ancora succedere. Darle un nome la rende già un po\' più piccola.',
   },
   {
-    id: 'sorpresa', name: 'Sorpresa', the: 'la sorpresa', of: 'della sorpresa', x: 65, y: 86,
-    pair: 'Opposta all\'attesa',
-    path: 'M12 1.8c.95 5.6 4.6 9.25 10.2 10.2-5.6.95-9.25 4.6-10.2 10.2-.95-5.6-4.6-9.25-10.2-10.2 5.6-.95 9.25-4.6 10.2-10.2z',
-    desc: 'La sorpresa è la più breve di tutte: dura il tempo di accorgersi che le cose non stanno come pensavi. È neutra per natura — prepara il terreno a un\'altra emozione, che arriva subito dopo. Segnarla alta racconta una giornata che ha cambiato direzione senza chiedere il permesso.',
-  },
-  {
-    id: 'tristezza', name: 'Tristezza', the: 'la tristezza', of: 'della tristezza', x: 35, y: 86,
-    pair: 'Opposta alla gioia',
-    path: 'M12 2.4c4 4.7 7.2 8.6 7.2 12.3a7.2 7.2 0 0 1-14.4 0c0-3.7 3.2-7.6 7.2-12.3z',
-    desc: 'La tristezza rallenta di proposito: chiede tempo per stare accanto a qualcosa che manca o che è finito. Non è un guasto da riparare in fretta, è il modo in cui una perdita viene riconosciuta. Quando la lasci esistere, di solito si muove; quando la spingi via, resta ferma più a lungo.',
-  },
-  {
-    id: 'disgusto', name: 'Disgusto', the: 'il disgusto', of: 'del disgusto', x: 15, y: 64,
-    pair: 'Opposto alla fiducia',
-    path: 'M12 2.3 20.4 7.15v9.7L12 21.7 3.6 16.85v-9.7z',
-    desc: 'Il disgusto allontana: nato per proteggere il corpo da ciò che fa male, protegge anche da situazioni, gesti e parole che senti sbagliati. È l\'emozione dei confini — spesso dice "questo non mi appartiene" molto prima che tu riesca a spiegarne il motivo.',
-  },
-  {
-    id: 'rabbia', name: 'Rabbia', the: 'la rabbia', of: 'della rabbia', x: 21, y: 31,
-    pair: 'Opposta alla paura',
+    id: 'rabbia', name: 'Rabbia', the: 'la rabbia', of: 'della rabbia', x: 65, y: 86,
+    role: 'Difende i tuoi confini quando qualcosa non è giusto',
     path: 'M12 3.2 21.6 20H2.4z',
-    desc: 'La rabbia compare dove c\'è un ostacolo tra te e qualcosa che conta: un limite superato, un\'ingiustizia, un bisogno ignorato. È energia che spinge in avanti, non un difetto di carattere. Sotto, quasi sempre, c\'è qualcosa di più fragile che merita di essere ascoltato.',
+    desc: 'La rabbia nasce quando subisci un torto o vedi qualcosa di ingiusto. Porta energia e voglia di reagire. Non è un difetto: ti segnala che un tuo limite è stato superato. Ascoltarla ti aiuta a capire cosa conta per te, prima di decidere cosa farne.',
   },
   {
-    id: 'attesa', name: 'Attesa', the: 'l\'attesa', of: 'dell\'attesa', x: 50, y: 53,
-    pair: 'Opposta alla sorpresa',
-    path: 'M2.4 17a9.6 9.6 0 0 1 19.2 0z',
-    desc: 'L\'attesa è lo sguardo puntato su ciò che deve ancora arrivare: prepara, immagina, organizza. Può prendere il colore della speranza o quello della tensione, a seconda di quanto ti fidi del finale. Quando occupa tutta la giornata, vale la pena chiedersi cosa sta rimandando.',
+    id: 'disgusto', name: 'Disgusto', the: 'il disgusto', of: 'del disgusto', x: 35, y: 86,
+    role: 'Ti tiene lontano da ciò che ti fa male',
+    path: 'M12 2.3 20.4 7.15v9.7L12 21.7 3.6 16.85v-9.7z',
+    desc: 'Il disgusto è una reazione di rifiuto. Nasce per proteggerci da cibi e odori che fanno male, ma vale anche per gesti, parole o situazioni che senti sbagliate. È un modo veloce per dire "questo no", anche prima di sapere spiegare il perché.',
+  },
+  {
+    id: 'sorpresa', name: 'Sorpresa', the: 'la sorpresa', of: 'della sorpresa', x: 15, y: 64,
+    role: 'Porta subito la tua attenzione su qualcosa di inatteso',
+    path: 'M12 1.8c.95 5.6 4.6 9.25 10.2 10.2-5.6.95-9.25 4.6-10.2 10.2-.95-5.6-4.6-9.25-10.2-10.2 5.6-.95 9.25-4.6 10.2-10.2z',
+    desc: 'La sorpresa arriva quando succede qualcosa che non ti aspettavi. Dura pochissimo, il tempo di capire cosa sta succedendo. Può essere bella o brutta, e spesso lascia il posto a un\'altra emozione. Segnarla racconta una giornata che ha preso una strada diversa dal previsto.',
+  },
+  {
+    id: 'disprezzo', name: 'Disprezzo', the: 'il disprezzo', of: 'del disprezzo', x: 21, y: 31,
+    role: 'Prende le distanze da chi giudichi scorretto',
+    path: 'M15.5 3.7A9 9 0 1 0 15.5 20.3A10 10 0 0 1 15.5 3.7z',
+    desc: 'Il disprezzo nasce quando senti qualcuno sotto di te o lontano dai tuoi valori, spesso per come si è comportato. Ti fa prendere le distanze. A volte protegge ciò in cui credi, a volte chiude il dialogo. Accorgertene ti aiuta a capire cosa ti ha deluso davvero.',
   },
 ];
 
+// Emozioni del vecchio set: non si mostrano più, ma i valori salvati restano
+export const LEGACY = ['fiducia', 'attesa'];
+
 export const APATHY = {
   id: 'apatia', name: 'Apatia', the: 'l\'apatia', of: 'dell\'apatia',
-  pair: 'Nessuna emozione in primo piano',
+  role: 'Nessuna emozione in primo piano',
   path: 'M12 4.6a7.4 7.4 0 1 1 0 14.8a7.4 7.4 0 1 1 0-14.8z',
-  desc: 'Ci sono giornate senza rilievo: niente che spinga, niente che tiri. L\'apatia non è il vuoto, è il piatto — e registrarla è un dato prezioso quanto gli altri, perché racconta i ritmi che le emozioni forti coprono.',
+  desc: 'Ci sono giornate in cui non senti niente di particolare: nessuna emozione spicca sulle altre. Va bene così. Segnarle è utile quanto il resto, perché mostra i tuoi momenti di calma o di stanchezza.',
 };
 
 export const MAX_LEVEL = 5;

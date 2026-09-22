@@ -1,16 +1,23 @@
-import { EMOTIONS, APATHY, MAX_LEVEL, shapeSVG, dominantOf } from './emotions.js';
+import { EMOTIONS, APATHY, MAX_LEVEL, shapeSVG, dominantOf, emotion } from './emotions.js';
 import { keyOf, todayKey, dateOf, cap } from './dates.js';
 import { haptic } from './haptics.js';
+import { analyze } from './insight.js';
 
 const MIN_TREND = .35;
 
-// Finestre di lettura: la prima è quella di partenza
+// Finestre di lettura: la prima è quella di partenza.
+// short = sigla della sottobarra, label = nome per esteso (sulla voce attiva).
 export const PERIODS = [
-  { id: 'settimana', label: 'Settimana', days: 7, lede: 'negli ultimi 7 giorni', span: 'gli ultimi 7 giorni', prev: 'ai 7 giorni prima' },
-  { id: 'mese', label: 'Mese', days: 30, lede: 'negli ultimi 30 giorni', span: 'gli ultimi 30 giorni', prev: 'ai 30 giorni prima' },
-  { id: 'trimestre', label: 'Trimestre', days: 90, lede: 'negli ultimi 3 mesi', span: 'gli ultimi 3 mesi', prev: 'ai 3 mesi prima' },
-  { id: 'anno', label: 'Anno', days: 365, lede: 'nell\'ultimo anno', span: 'l\'ultimo anno', prev: 'all\'anno prima' },
+  { id: 'settimana', short: 'S', label: 'Settimana', days: 7, lede: 'negli ultimi 7 giorni', span: 'gli ultimi 7 giorni', prev: 'ai 7 giorni prima' },
+  { id: 'due-settimane', short: '2S', label: '2 settimane', days: 14, lede: 'nelle ultime 2 settimane', span: 'le ultime 2 settimane', prev: 'alle 2 settimane prima' },
+  { id: 'mese', short: 'M', label: 'Mese', days: 30, lede: 'negli ultimi 30 giorni', span: 'gli ultimi 30 giorni', prev: 'ai 30 giorni prima' },
+  { id: 'tre-mesi', short: '3M', label: '3 mesi', days: 90, lede: 'negli ultimi 3 mesi', span: 'gli ultimi 3 mesi', prev: 'ai 3 mesi prima' },
+  { id: 'sei-mesi', short: '6M', label: '6 mesi', days: 182, lede: 'negli ultimi 6 mesi', span: 'gli ultimi 6 mesi', prev: 'ai 6 mesi prima' },
+  { id: 'anno', short: 'A', label: 'Anno', days: 365, lede: 'nell\'ultimo anno', span: 'l\'ultimo anno', prev: 'all\'anno prima' },
 ];
+
+// Clima del periodo, in una parola
+const MOOD = { light: 'Leggero', mixed: 'Altalenante', heavy: 'Impegnativo', flat: 'Quieto', few: 'In attesa di dati' };
 
 const one = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const fmtDayMonth = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long' });
@@ -73,7 +80,9 @@ export function createReport({ store, onPick }) {
     leadAside: $('[data-lead-aside]'),
     leadFoot: $('[data-lead-foot]'),
     ranks: $('[data-ranks]'),
+    digest: $('[data-digest]'),
   };
+  let chart = [];
 
   let period = PERIODS[0];
 
@@ -116,6 +125,7 @@ export function createReport({ store, onPick }) {
         </div>`;
       els.leadFoot.textContent = `Il resoconto guarda ${period.span}.`;
       renderRanks(ranked, now);
+      renderDigest(end);
       return;
     }
 
@@ -156,9 +166,90 @@ export function createReport({ store, onPick }) {
     const pause = now.apathy ? ` ${giorni(now.apathy)} in pausa.` : '';
     els.leadFoot.textContent = `Hai segnato ${giorni(now.logged)} su ${days}.${pause}`;
     renderRanks(ranked, now);
+    renderDigest(end);
   }
 
-  // --- Classifica delle otto emozioni ---
+  // --- Resoconto: clima, andamento e pattern ---
+  function renderDigest(end) {
+    const r = analyze(store, end, period.days);
+    chart = r.chart;
+    // Nessuna giornata nella finestra: basta l'invito di "In primo piano"
+    els.digest.closest('.group').hidden = !chart.some((b) => b.logged);
+    const pos = r.mood === 'few' ? .5 : (r.balance + 1) / 2;
+    // Scala sul massimo del periodo: anche le oscillazioni lievi si leggono
+    const peak = Math.max(.4, ...chart.map((b) => Math.abs(b.tone ?? 0)));
+    const bars = chart.map((b, i) => {
+      if (b.tone === null) return `<span class="bar${b.logged ? ' still' : ' void'}" style="--i:${i}"></span>`;
+      const side = b.tone >= 0 ? 'up' : 'down';
+      return `<span class="bar ${side}"${b.lead ? ` data-emo="${b.lead}"` : ''} style="--i:${i};--v:${Math.max(Math.abs(b.tone) / peak, .06).toFixed(3)}"></span>`;
+    }).join('');
+    const icon = (p) => `<span class="icon${p.emo2 ? ' duo' : ''}"><span data-emo="${p.emo}">${shapeSVG(p.emo)}</span>${p.emo2 ? `<span data-emo="${p.emo2}">${shapeSVG(p.emo2)}</span>` : ''}</span>`;
+
+    els.digest.innerHTML = `
+      <div class="verdict">
+        <div class="climate" data-mood="${r.mood}">
+          <span class="label">Clima <strong>${MOOD[r.mood]}</strong></span>
+          <span class="scale" aria-hidden="true"><span class="dot" style="--x:${pos.toFixed(3)}"></span></span>
+        </div>
+        <h3 class="headline">${r.headline}</h3>
+        <p class="summary">${r.summary}</p>
+      </div>
+      ${r.mood === 'few' ? '' : `<figure class="trace" aria-label="Andamento del periodo: sopra le giornate più leggere, sotto le più pesanti">
+        <div class="plot" data-trace style="--n:${chart.length}">
+          <span class="tick top">più leggere</span>
+          <span class="tick bottom">più pesanti</span>
+          <span class="bars">${bars}</span>
+        </div>
+        <figcaption class="readout" data-readout>${chart[0]?.size > 1 ? 'Una barra per settimana' : 'Una barra per giornata'} · tocca per i dettagli</figcaption>
+      </figure>`}
+      ${r.patterns.length ? `
+        <div class="patterns">
+          <p class="kicker">Cose che forse non hai notato</p>
+          <ul class="list">
+            ${r.patterns.map((p, i) => `
+              <li class="pattern" style="--i:${i}">
+                ${icon(p)}
+                <span class="copy">
+                  <span class="tag">${p.tag}</span>
+                  <span class="text">${p.text}</span>
+                </span>
+              </li>`).join('')}
+          </ul>
+        </div>` : ''}
+      ${r.hint || r.care ? `
+        <div class="hint">
+          ${r.hint ? `<p class="idea"><strong>Un'idea</strong>${r.hint}</p>` : ''}
+          ${r.care ? `<p class="care">${r.care}</p>` : ''}
+        </div>` : ''}`;
+  }
+
+  // Tocco o trascinamento sul grafico: la barra sotto il dito si racconta
+  function readBar(x) {
+    const plot = els.digest.querySelector('[data-trace]');
+    if (!plot || !chart.length) return;
+    const bars = plot.querySelectorAll('.bar');
+    const r = plot.querySelector('.bars').getBoundingClientRect();
+    const i = Math.max(0, Math.min(chart.length - 1, Math.floor(((x - r.left) / r.width) * chart.length)));
+    const b = chart[i];
+    bars.forEach((el, n) => el.classList.toggle('is-on', n === i));
+    const lead = b.lead ? `prevale ${emotion(b.lead).the}` : '';
+    const feel = b.tone === null ? (b.logged ? 'nessuna emozione in primo piano' : 'non segnata')
+      : b.tone > .1 ? 'più leggera' : b.tone < -.1 ? 'più pesante' : 'in equilibrio';
+    const what = b.size > 1 ? `${giorni(b.logged)} · ${feel}` : feel;
+    els.digest.querySelector('[data-readout]').innerHTML = `<strong>${b.label}</strong> · ${[what, lead].filter(Boolean).join(' · ')}`;
+  }
+
+  let reading = false;
+  els.digest.addEventListener('pointerdown', (e) => {
+    if (!e.target.closest('[data-trace]')) return;
+    reading = true;
+    readBar(e.clientX);
+    haptic('tick');
+  });
+  els.digest.addEventListener('pointermove', (e) => { if (reading) readBar(e.clientX); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => els.digest.addEventListener(t, () => { reading = false; }));
+
+  // --- Classifica delle sette emozioni ---
   function renderRanks(ranked, now) {
     const max = ranked[0]?.total || 0;
     els.ranks.innerHTML = ranked.map(({ e, total }, i) => {
@@ -197,6 +288,9 @@ export function createReport({ store, onPick }) {
       els.lead.classList.remove('is-swapping');
       void els.lead.offsetWidth;
       els.lead.classList.add('is-swapping');
+      els.digest.classList.remove('is-swapping');
+      void els.digest.offsetWidth;
+      els.digest.classList.add('is-swapping');
       renderLead();
     },
   };

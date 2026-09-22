@@ -1,16 +1,16 @@
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 .view.dev {
   // Elenco di rilevamenti: etichetta a sinistra, valore a destra
   .facts {
-    padding: 0 $sp-4;
+    padding: $sp-1 $sp-4;
 
     .fact {
       @include flex(row, baseline, space-between, $sp-4);
       padding: $sp-3 0;
 
       & + .fact {
-        border-top: .5px solid var(--line);
+        border-top: 0.5px solid var(--line);
       }
 
       dt {
@@ -31,10 +31,11 @@
   // Comandi delle notifiche, a capo quando non ci stanno
   .group.notif {
     .acts {
-      @include flex(row, center, flex-start, $sp-2);
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: $sp-2;
       padding: $sp-4;
-      border-top: .5px solid var(--line);
+      border-top: 0.5px solid var(--line);
 
       .pill-btn {
         flex: 1 1 auto;

@@ -24,8 +24,9 @@ export function createNotebook({ store, onPick }) {
     id: 'notebook-note',
   });
 
+  // Oggi resta fuori: la sua nota vive già nell'editor in fondo
   const entries = () => Object.entries(store.all())
-    .filter(([, d]) => d.note?.trim())
+    .filter(([k, d]) => k !== todayKey() && d.note?.trim())
     .sort(([a], [b]) => a.localeCompare(b));
 
   function renderList(all) {

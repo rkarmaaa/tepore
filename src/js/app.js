@@ -1,7 +1,7 @@
 import { store } from './store.js';
 import { createToday } from './today.js';
 import { createCalendar } from './calendar.js';
-import { createReport } from './report.js';
+import { createReport, PERIODS } from './report.js';
 import { createSettings } from './settings.js';
 import { createDev } from './dev.js';
 import { createNotebook } from './notebook.js';
@@ -149,32 +149,51 @@ function show(name, { instant = false } = {}) {
   updateNavbar();
 }
 
+// Voci della sottobarra: sigla a riposo, nome intero sulla voce attiva
+subRail.insertAdjacentHTML('beforeend', PERIODS.map((p, i) => `
+  <button class="subbar-item${i ? '' : ' is-active'}" type="button" role="tab" tabindex="-1" aria-selected="${!i}" aria-label="${p.label}" data-period="${p.id}" data-haptic="off">
+    <span class="subbar-short" aria-hidden="true"><span class="subbar-text">${p.short}</span></span>
+    <span class="subbar-full" aria-hidden="true"><span class="subbar-text">${p.label}</span></span>
+  </button>`).join(''));
+const subItems = [...subRail.querySelectorAll('[data-period]')];
+
 // Sottobarra del periodo: vive sopra la tab bar, solo nella vista Emozioni
 function setSubbar(on) {
   subbar.classList.toggle('is-visible', on);
   subbar.setAttribute('aria-hidden', String(!on));
-  subRail.querySelectorAll('.item').forEach((b) => { b.tabIndex = on ? 0 : -1; });
+  subItems.forEach((b) => { b.tabIndex = on ? 0 : -1; });
   if (on) requestAnimationFrame(moveInk);
 }
 
 // Pillola della sottobarra: segue la voce attiva, anche a rail scorso
 function moveInk() {
-  const on = subRail.querySelector('.item.is-active');
+  const on = subRail.querySelector('[data-period].is-active');
   if (!on) return;
   subInk.style.width = `${on.offsetWidth}px`;
   subInk.style.translate = `${on.offsetLeft}px 0`;
 }
 
+// Le voci si allargano e si stringono: la pillola le insegue finché si muovono
+let followUntil = 0;
+function followInk() {
+  followUntil = performance.now() + 480;
+  const step = (t) => {
+    moveInk();
+    if (t < followUntil) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 subRail.addEventListener('click', (e) => {
   const item = e.target.closest('[data-period]');
   if (!item || item.classList.contains('is-active')) return;
-  subRail.querySelectorAll('.item').forEach((b) => {
+  subItems.forEach((b) => {
     const active = b === item;
     b.classList.toggle('is-active', active);
     b.setAttribute('aria-selected', String(active));
   });
-  moveInk();
-  item.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  followInk();
+  setTimeout(() => item.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }), 360);
   report.setPeriod(item.dataset.period);
 });
 
@@ -247,31 +266,32 @@ if ('MutationObserver' in window) {
 });
 
 // Barra compatta quando il titolo grande esce dallo schermo.
-// Un osservatore al posto del listener di scroll: zero lavoro per frame.
-let observer = null;
+// Soglia misurata una volta per vista, poi a ogni scroll solo un confronto:
+// l'IntersectionObserver su iOS lasciava la barra accesa in cima al Quaderno.
+let navEdge = Infinity;
+let navOn = null;
 
 function setNavbar(visible) {
+  if (visible === navOn) return;
+  navOn = visible;
   navbar.classList.toggle('is-visible', visible);
   navbar.setAttribute('aria-hidden', String(!visible));
   navBack.tabIndex = visible && isSub(active) ? 0 : -1;
 }
 
+const checkNavbar = () => setNavbar(window.scrollY > navEdge);
+
 function updateNavbar() {
   const sentinel = views[active].querySelector('[data-sentinel]');
-  setNavbar(sentinel.getBoundingClientRect().bottom < navbar.getBoundingClientRect().bottom);
-  watchSentinel(sentinel);
+  const edge = navbar.getBoundingClientRect().bottom;
+  // Posizione nel documento, al netto dello scorrimento
+  navEdge = sentinel.getBoundingClientRect().bottom + window.scrollY - edge;
+  navOn = null;
+  checkNavbar();
 }
 
-function watchSentinel(sentinel) {
-  observer?.disconnect();
-  if (!('IntersectionObserver' in window)) return;
-  const edge = Math.round(navbar.getBoundingClientRect().bottom);
-  observer = new IntersectionObserver(([entry]) => setNavbar(!entry.isIntersecting), {
-    rootMargin: `-${edge}px 0px 0px 0px`,
-    threshold: 0,
-  });
-  observer.observe(sentinel);
-}
+window.addEventListener('scroll', checkNavbar, { passive: true });
+document.fonts?.ready.then(updateNavbar);
 
 // La safe area cambia ruotando il telefono: si rimisura il bordo
 let resizeTimer;

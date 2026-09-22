@@ -161,7 +161,361 @@
     }
   }
 
-  // Classifica delle otto, con la loro intensità media
+  // Resoconto: clima, andamento e pattern del periodo
+  .group.digest {
+    $plot-h: 124px;
+    $plot-gap: 18px;
+
+    .reading {
+      &.is-swapping {
+        animation: rise $dur-base $ease-out both;
+      }
+
+      .verdict {
+        padding: $sp-5 $sp-5 $sp-4;
+
+        .climate {
+          @include flex(row, center, space-between, $sp-4);
+
+          // Senza dati la scala non ha nulla da indicare
+          &[data-mood='few'] {
+            .scale {
+              display: none;
+            }
+          }
+
+          .label {
+            white-space: nowrap;
+            @include font-ui($fs-2xs, $fw-semibold);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-faint);
+
+            strong {
+              margin-left: 4px;
+              color: var(--ember);
+              font-weight: inherit;
+            }
+          }
+
+          // Scala divergente: pesante a sinistra, leggero a destra
+          .scale {
+            position: relative;
+            flex: 0 1 112px;
+            min-width: 56px;
+            height: 6px;
+            border-radius: $r-pill;
+            background: linear-gradient(90deg,
+              color-mix(in oklab, var(--emo-tristezza) 70%, var(--sand)),
+              var(--sand) 50%,
+              color-mix(in oklab, var(--emo-gioia) 80%, var(--sand)));
+
+            .dot {
+              position: absolute;
+              top: 50%;
+              left: calc(var(--x) * 100%);
+              @include size(14px);
+              translate: -50% -50%;
+              border-radius: 50%;
+              background: var(--surface);
+              box-shadow: 0 0 0 2px var(--ink), 0 2px 6px -1px rgba(60, 26, 8, .35);
+              animation: pop $dur-slow $ease-spring backwards;
+            }
+          }
+        }
+
+        .headline {
+          margin-top: $sp-3;
+          @include font-display($fs-xl, $fw-medium, 100);
+          font-weight: 400;
+          line-height: 1.15;
+          letter-spacing: -.01em;
+          color: var(--ink);
+          text-wrap: balance;
+          @include enter(rise, $dur-slow, 0ms, 60ms);
+        }
+
+        .summary {
+          margin-top: $sp-2;
+          @include font-ui($fs-sm, $fw-regular);
+          line-height: 1.55;
+          color: var(--ink-soft);
+          text-wrap: pretty;
+          @include enter(rise, $dur-slow, 0ms, 120ms);
+        }
+      }
+
+      // Andamento: sopra le giornate leggere, sotto le pesanti
+      .trace {
+        margin: 0 $sp-5;
+        padding: $sp-4 0 $sp-3;
+        border-top: .5px solid var(--line);
+
+        .plot {
+          position: relative;
+          height: $plot-h;
+          padding-left: 0;
+          touch-action: pan-y;
+          cursor: crosshair;
+
+          // Linea di equilibrio
+          &::before {
+            content: "";
+            position: absolute;
+            inset: 50% 0 auto;
+            border-top: 1px dashed color-mix(in oklab, var(--ink-faint) 55%, transparent);
+          }
+
+          .tick {
+            position: absolute;
+            left: 0;
+            z-index: 1;
+            @include font-ui($fs-2xs, $fw-medium);
+            color: var(--ink-faint);
+            pointer-events: none;
+
+            &.top {
+              top: 0;
+            }
+
+            &.bottom {
+              bottom: 0;
+            }
+          }
+
+          // Le etichette hanno le loro strisce: le barre non ci finiscono sotto
+          .bars {
+            position: absolute;
+            inset: $plot-gap 0;
+            display: grid;
+            grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+            column-gap: 2px;
+
+            .bar {
+              position: relative;
+              height: 100%;
+
+              &::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                width: min(100%, 12px);
+                min-width: 2px;
+                height: calc(var(--v, 0) * 50%);
+                translate: -50% 0;
+                background: var(--emo, var(--ink-faint));
+                transition: opacity $dur-fast $ease-out, scale $dur-base $ease-spring;
+                animation: grow $dur-slow $ease-out backwards;
+                animation-delay: calc(var(--i) * 12ms);
+              }
+
+              &.up::after {
+                bottom: 50%;
+                border-radius: 4px 4px 1px 1px;
+                transform-origin: bottom;
+              }
+
+              &.down::after {
+                top: 50%;
+                border-radius: 1px 1px 4px 4px;
+                transform-origin: top;
+                opacity: .82;
+              }
+
+              // Segnata ma senza emozioni: un punto sulla linea
+              &.still::after {
+                top: 50%;
+                @include size(4px);
+                min-width: 0;
+                translate: -50% -50%;
+                border-radius: 50%;
+                background: var(--ink-faint);
+              }
+
+              &.void::after {
+                display: none;
+              }
+
+              // Giorno vuoto sotto il dito: un anello sulla linea
+              &.void.is-on::after {
+                display: block;
+                top: 50%;
+                @include size(6px);
+                min-width: 0;
+                translate: -50% -50%;
+                border-radius: 50%;
+                background: var(--surface);
+                box-shadow: 0 0 0 1.5px var(--ink-faint);
+              }
+
+              &.is-on::after {
+                scale: 1.12;
+                box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--emo, var(--ink-faint));
+              }
+
+              @include reduced-motion {
+                &::after {
+                  animation: none;
+                }
+              }
+            }
+          }
+
+          // Un dettaglio acceso spegne un po' gli altri
+          &:has(.is-on) {
+            .bars {
+              .bar:not(.is-on)::after {
+                opacity: .38;
+              }
+            }
+          }
+        }
+
+        .readout {
+          margin-top: $sp-3;
+          min-height: 1.4em;
+          @include font-ui($fs-xs, $fw-regular);
+          color: var(--ink-faint);
+          font-variant-numeric: tabular-nums;
+
+          strong {
+            font-weight: $fw-semibold;
+            color: var(--ink-soft);
+          }
+        }
+      }
+
+      // Cose che forse non hai notato
+      .patterns {
+        padding: $sp-4 $sp-5 $sp-2;
+        border-top: .5px solid var(--line);
+
+        .kicker {
+          @include font-ui($fs-2xs, $fw-semibold);
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          color: var(--ink-faint);
+        }
+
+        .list {
+          margin-top: $sp-2;
+
+          .pattern {
+            display: grid;
+            grid-template-columns: 40px minmax(0, 1fr);
+            align-items: start;
+            gap: $sp-3;
+            padding: $sp-3 0;
+            @include enter(rise, $dur-base, 60ms, 180ms);
+
+            & + .pattern {
+              border-top: .5px solid var(--line);
+            }
+
+            .icon {
+              position: relative;
+              @include grid-center;
+              @include size(40px);
+              border-radius: $r-sm;
+
+              > span {
+                @include grid-center;
+                @include cover;
+                border-radius: inherit;
+                @include emo-tint(18%);
+
+                .shape {
+                  @include size(18px);
+                }
+              }
+
+              // Due emozioni: tessere sfalsate, come carte
+              &.duo {
+                > span {
+                  @include size(30px);
+                  inset: auto;
+                  border-radius: $r-xs;
+
+                  .shape {
+                    @include size(14px);
+                  }
+
+                  &:first-child {
+                    top: 0;
+                    left: 0;
+                  }
+
+                  &:last-child {
+                    right: 0;
+                    bottom: 0;
+                    background: color-mix(in oklab, var(--emo) 22%, var(--surface));
+                    box-shadow: 0 0 0 2px var(--surface);
+                  }
+                }
+              }
+            }
+
+            .copy {
+              display: block;
+              min-width: 0;
+
+              .tag {
+                display: block;
+                @include font-ui($fs-2xs, $fw-semibold);
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                color: var(--ember);
+              }
+
+              .text {
+                display: block;
+                margin-top: 3px;
+                @include font-ui($fs-sm, $fw-regular);
+                line-height: 1.45;
+                color: var(--ink);
+                text-wrap: pretty;
+              }
+            }
+          }
+        }
+      }
+
+      // Un suggerimento, e se serve un invito a non restare soli
+      .hint {
+        padding: $sp-4 $sp-5 $sp-5;
+        border-top: .5px solid var(--line);
+        background: color-mix(in oklab, var(--sand) 42%, transparent);
+
+        .idea {
+          @include font-display($fs-md, $fw-regular, 100);
+          font-style: italic;
+          line-height: 1.45;
+          color: var(--ink-soft);
+
+          strong {
+            display: block;
+            margin-bottom: 2px;
+            @include font-ui($fs-2xs, $fw-semibold);
+            font-style: normal;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ember);
+          }
+        }
+
+        .care {
+          margin-top: $sp-3;
+          padding-top: $sp-3;
+          border-top: .5px solid var(--line);
+          @include font-ui($fs-xs, $fw-regular);
+          line-height: 1.5;
+          color: var(--ink-soft);
+        }
+      }
+    }
+  }
+
+  // Classifica delle sette, con la loro intensità media
   .group.ranking {
     .ranks {
       padding: $sp-3 0;

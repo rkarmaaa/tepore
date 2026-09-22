@@ -171,3 +171,10 @@
     transition-duration: .01ms !important;
   }
 }
+
+// Barra che cresce dalla linea di base
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+}

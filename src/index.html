@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <title>Tepore — il diario delle emozioni</title>
-  <meta name="description" content="Tepore è un piccolo diario delle emozioni: otto intensità, una nota, un calendario che si colora giorno dopo giorno.">
+  <meta name="description" content="Tepore è un piccolo diario delle emozioni: sette emozioni, una nota, un calendario che si colora giorno dopo giorno.">
 
   <!-- iOS / PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -265,9 +265,20 @@
           <p class="foot" data-lead-foot></p>
         </section>
 
+        <section class="group digest" aria-labelledby="digest-title">
+          <div class="head">
+            <h2 class="title" id="digest-title">Il resoconto</h2>
+            <span class="aside">Lettura automatica</span>
+          </div>
+          <div class="body">
+            <div class="reading" data-digest></div>
+          </div>
+          <p class="foot">Una lettura dei tuoi dati, non un giudizio né una diagnosi. Più giornate segni, più diventa precisa.</p>
+        </section>
+
         <section class="group ranking" aria-labelledby="ranking-title">
           <div class="head">
-            <h2 class="title" id="ranking-title">Tutte e otto</h2>
+            <h2 class="title" id="ranking-title">Tutte e sette</h2>
           </div>
           <div class="body">
             <ul class="ranks" data-ranks></ul>
@@ -445,7 +456,6 @@
             <h2 class="title" id="notebook-note-title">Nota di oggi</h2>
           </div>
           <div class="body" data-notebook-note></div>
-          <p class="foot">Si salva da sola: domani la ritrovi qui sopra, al suo posto.</p>
         </section>
       </section>
     </main>
@@ -473,13 +483,10 @@
     </nav>
 
     <nav class="subbar" aria-label="Periodo del resoconto" aria-hidden="true" data-subbar>
-      <div class="glass">
-        <div class="rail" role="tablist" data-subbar-rail>
-          <span class="ink" data-subbar-ink aria-hidden="true"></span>
-          <button class="item is-active" type="button" role="tab" tabindex="-1" aria-selected="true" data-period="settimana" data-haptic="off">Settimana</button>
-          <button class="item" type="button" role="tab" tabindex="-1" aria-selected="false" data-period="mese" data-haptic="off">Mese</button>
-          <button class="item" type="button" role="tab" tabindex="-1" aria-selected="false" data-period="trimestre" data-haptic="off">Trimestre</button>
-          <button class="item" type="button" role="tab" tabindex="-1" aria-selected="false" data-period="anno" data-haptic="off">Anno</button>
+      <div class="subbar-glass">
+        <div class="subbar-rail" role="tablist" data-subbar-rail>
+          <span class="subbar-ink" data-subbar-ink aria-hidden="true"></span>
+          <!-- Voci generate da PERIODS in report.js -->
         </div>
       </div>
     </nav>
